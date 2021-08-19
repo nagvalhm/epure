@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "${workspaceFolder}\\py\\env39\\Scripts\\python.exe",
+    "files.watcherExclude": {
+        "**/target": true
+    },
+    
+}

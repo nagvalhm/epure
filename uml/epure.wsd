@@ -1,0 +1,48 @@
+
+' enum box{
+'     null(abstract)
+'     this(parent)
+'     Storage.get(storageName)
+' }
+
+class Epure{
+    mask
+}
+
+class Box{
+    add()
+    get()
+    store()
+    take()
+}
+
+' Storage <|-- EpureStorage
+EpureBox *--> Epure
+' Model --> container
+Epure --> Box
+Box <|-up- Primitive
+
+
+Box *--> Box
+Box <|-left- Storage
+Storage <|-left- Table
+Storage <|-- NoSql
+
+Category *-right-> Ref
+Box <|-right- Category
+Box --> Mask
+
+
+' Model --> View
+' Category <|-- View
+' View o--> Model
+
+Category <|-- Role
+' Access -up-> Node
+    Access -right-> Role
+    Access -left-> Mask
+    Access -up-> Box
+    ' Access -down-> Predicate
+
+Migration --> BD
+Migration --> Epure
