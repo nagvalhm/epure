@@ -2,7 +2,8 @@ class Box:
     mask = 0b0101
     def add():
         pass
-    def get():
+    @classmethod
+    def get(cls):
         pass
     def store():
         pass
@@ -14,8 +15,14 @@ epure_box = {
 }
 
 class Epure(type):
-    def __init__(sels, store):
-        sels.store = store   
+    # def __init__(sels, store):
+    #     sels.store = store   
+
+    def __new__(mcls, name, bases, attrs):
+        return super(Epure, mcls).__new__(mcls, name, bases, attrs)
+
+    def __init__(self, name, bases, attrs):
+        super(Epure, self).__init__(name, bases, attrs)
 
     # def __call__(self, ep):
     #     def init_substitute():        
@@ -51,19 +58,21 @@ def epure(storage):
         
         epure_box[ep.__name__] = storage
         ep.get = Epure.decorator_get(ep, ep.get)
-        print("I got decorated")
+        # print("I got decorated")
 
         return ep
     return decor
 
 
 
+# tmp = Epure()
+# print(type(tmp))
 
-@epure("lamp_store")
+# @epure("lamp_store")
 class Lamp(Box):
+    # __metaclass__ = Epure
     def lamp_name():
         return "good"
-
 
 lamp = Lamp()
 Lamp.get()
@@ -71,7 +80,3 @@ lamp.get()
 
 
 
-print(lamp.mask)
-# lamp = {
-#     lamp_name = "good"
-# }

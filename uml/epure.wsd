@@ -6,31 +6,48 @@
 ' }
 
 class Epure{
+    parent
+    __new__()    
+    store(make, storage)
+    take(storage)
+    delete(storage)
+
+    storage()
+
+    pack(): row
+    unpack(row)
+}
+
+class Make{
+    add()
+    get()
     mask
 }
 
-class Box{
-    add()
-    get()
-    store()
-    take()
-}
-
 ' Storage <|-- EpureStorage
-EpureBox *--> Epure
+' EpureBox *--> Epure
 ' Model --> container
-Epure --> Box
-Box <|-up- Primitive
+Epure --> Make
+' Make <|-up- Primitive
 
 
-Box *--> Box
-Box <|-left- Storage
+Make *--> Make
+Make <|-left- Storage
 Storage <|-left- Table
-Storage <|-- NoSql
+' Storage <|-- NoSql
+
+Epure --|> Make
+Epure <|-left- DBEpure
+Field -up-|> Epure
+DBEpure -left-> DB
+Field <|-- Table
+DB *--> Table
+Table --> Header
+Table *--> Row
 
 Category *-right-> Ref
-Box <|-right- Category
-Box --> Mask
+Make <|-right- Category
+Make --> Mask
 
 
 ' Model --> View
@@ -41,8 +58,8 @@ Category <|-- Role
 ' Access -up-> Node
     Access -right-> Role
     Access -left-> Mask
-    Access -up-> Box
+    Access -up-> Make
     ' Access -down-> Predicate
 
-Migration --> BD
-Migration --> Epure
+' Migration --> BD
+' Migration --> Epure
