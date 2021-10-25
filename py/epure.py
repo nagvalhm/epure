@@ -6,26 +6,51 @@ def foo(self):
     return 2
 
 class Epure(type):
-    def __new__(mcls, cls_name, bases, attrs):
-        for atr_name, value in attrs:
-            mcls.on_setattr(atr_name, value)
-        return super().__new__(mcls, cls_name, bases, attrs)
+
+    def __new__(mcls, epure_name, bases, attrs):
+        for atr_name, value in attrs.items():
+            mcls.on_setattr(epure_name, atr_name, value)
+        
+        for foo_name in ('add', 'get', 'exec'):
+            if foo_name not in attrs.keys():
+                attrs[foo_name] = getattr(mcls, foo_name)
+        
+        return super().__new__(mcls, epure_name, bases, attrs)
 
     def __init__(cls, cls_name, bases, attrs):
 
-        return super().__new__(cls, cls_name, bases, attrs)
+        for foo_name in ('add', 'get', 'exec'):
+            foo = getattr(cls, foo_name)            
+            setattr(cls, foo_name, classmethod(foo))
 
-    def __setattr__(mcls, atr_name: str, value: Any) -> None:
-        mcls.on_setattr(atr_name, value)
+        return super().__init__(cls_name, bases, attrs)
+
+    def __setattr__(cls, atr_name: str, value: Any) -> None:
+        mcls = type(cls)
+        mcls.on_setattr(cls.__name__, atr_name, value)
         return super().__setattr__(atr_name, value)
 
-    def on_setattr(mcls, atr_name: str, value: Any):
-        print('on_setattr', atr_name, value)
+    def on_setattr(epure_name: str, atr_name: str, value: Any):
+        print('on_setattr', epure_name, atr_name, value)
         pass
 
+    def add(cls, make):
+        print('add is called')
+
+    def get(cls):
+        print('get is called')
+
+    def exec(cls, query):
+        print('exec is called')
+
+class Query:
+    __exec__
+    __query__
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        pass
 
 def epure(storage, execute: callable=None) -> Any:
-    
+
     def epure_creator(cls):
         if type(cls) is Epure:
             return cls
@@ -47,14 +72,3 @@ def epure(storage, execute: callable=None) -> Any:
 
         return res
     return epure_creator
-
-@epure('stror', 'as')
-class A():
-    a_filed = 1
-
-    def __setattr__(self, name: str, value: Any) -> None:
-        print('hi5')
-        return super().__setattr__(name, value)
-
-A.a_filed
-print(A._storage)

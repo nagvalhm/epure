@@ -22,5 +22,14 @@
             "args": [],
             "console": "integratedTerminal"
         }
+
+        {
+            "name": "run tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/py/tests.py",            
+            "args": [],
+            "console": "integratedTerminal"
+        }
     ]
 }
