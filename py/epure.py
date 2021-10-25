@@ -1,82 +1,60 @@
-class Box:
-    mask = 0b0101
-    def add():
-        pass
-    @classmethod
-    def get(cls):
-        pass
-    def store():
-        pass
-    def take():
-        pass
 
-epure_box = {
-    Box: None
-}
+from typing import Any
+
+
+def foo(self):
+    return 2
 
 class Epure(type):
-    # def __init__(sels, store):
-    #     sels.store = store   
+    def __new__(mcls, cls_name, bases, attrs):
+        for atr_name, value in attrs:
+            mcls.on_setattr(atr_name, value)
+        return super().__new__(mcls, cls_name, bases, attrs)
 
-    def __new__(mcls, name, bases, attrs):
-        return super(Epure, mcls).__new__(mcls, name, bases, attrs)
+    def __init__(cls, cls_name, bases, attrs):
 
-    def __init__(self, name, bases, attrs):
-        super(Epure, self).__init__(name, bases, attrs)
+        return super().__new__(cls, cls_name, bases, attrs)
 
-    # def __call__(self, ep):
-    #     def init_substitute():        
-    #         if Box not in ep.__bases__:            
-    #             raise BaseException('Only box can be epured')
-            
-    #         ep.get = self.get_decorator(ep.get)
-    #         # epure_box[ep.__name__] = storage
-    #         print("I got decorated")
+    def __setattr__(mcls, atr_name: str, value: Any) -> None:
+        mcls.on_setattr(atr_name, value)
+        return super().__setattr__(atr_name, value)
 
-    #         return ep
-
-    #     return init_substitute
-
-    def decorator_get(ep, origin_get):
-        def substitute_get(self=None):
-            # if type(self) is type:
-            if self is None:
-                return Epure.get(ep)
-            else:
-                return origin_get()
-        
-        return substitute_get
-
-    
-    def get(self):
+    def on_setattr(mcls, atr_name: str, value: Any):
+        print('on_setattr', atr_name, value)
         pass
 
-def epure(storage):
-    def decor(ep):        
-        if Box not in ep.__bases__:            
-            raise BaseException('Only box can be epured')
-        
-        epure_box[ep.__name__] = storage
-        ep.get = Epure.decorator_get(ep, ep.get)
-        # print("I got decorated")
 
-        return ep
-    return decor
+def epure(storage, execute: callable=None) -> Any:
+    
+    def epure_creator(cls):
+        if type(cls) is Epure:
+            return cls
 
+        attrs = dict(cls.__dict__)        
+        attrs['_storage'] = storage
+        if execute:
+            #type check
+            if not callable(execute):
+                raise Exception('execute must be callable')
+            attrs['exec'] = execute
 
+        res = Epure(cls.__name__, cls.__bases__, attrs)
+        del cls
+        # try:
+        #     res = Epure(cls.__name__, cls.__bases__, cls.__dict__)
+        # except Exception:
+        #     raise Exception
 
-# tmp = Epure()
-# print(type(tmp))
+        return res
+    return epure_creator
 
-# @epure("lamp_store")
-class Lamp(Box):
-    # __metaclass__ = Epure
-    def lamp_name():
-        return "good"
+@epure('stror', 'as')
+class A():
+    a_filed = 1
 
-lamp = Lamp()
-Lamp.get()
-lamp.get()
+    def __setattr__(self, name: str, value: Any) -> None:
+        print('hi5')
+        return super().__setattr__(name, value)
 
-
-
+A.a_filed
+print(A._storage)
