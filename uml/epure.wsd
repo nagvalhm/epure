@@ -8,7 +8,7 @@
 class Epure{
     parent
     __new__()    
-    store(make, storage)
+    save(make, storage)
     take(storage)
     delete(storage)
 

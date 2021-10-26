@@ -12,7 +12,8 @@ class Epure(type):
         
         for foo_name in ('save', 'take', 'exec'):
             if foo_name not in attrs.keys():
-                attrs[foo_name] = getattr(mcls, foo_name)
+                raise Exception(f'{foo_name} must be implemented')
+                # attrs[foo_name] = getattr(mcls, foo_name)
         
         return super().__new__(mcls, epure_name, bases, attrs)
 
@@ -40,20 +41,6 @@ class Epure(type):
     def on_setattr(epure_name: str, atr_name: str, value: Any):
         print('on_setattr', epure_name, atr_name, value)
         pass
-
-
-    '''
-    Make methods
-    '''
-    def save(self=None):
-        return 'save is called'
-
-    def take(self=None):
-        return 'taker script'
-
-    def exec(query):
-        print(f'"{query}" executed')        
-
 
 
 
