@@ -6,33 +6,41 @@ from .make import Make
 
 class Epure(type):
 
-    def __new__(mcls, cls):
 
-        
-        
-        return super().__new__(mcls, cls.__name__, cls.__bases__, cls.__dict__)
+    def __new__(mcls, cls, make=None):    
 
-    # def __new__(mcls, epure_name, bases, attrs):
-    #     for atr_name, value in attrs.items():
-    #         mcls.on_setattr(epure_name, atr_name, value)
-        
-    #     for foo_name in ('save', 'take', 'put', 'find'):
-    #         if foo_name not in attrs.keys():
-    #             raise EpureProtocolException(f'{foo_name} must be implemented')                
-        
-    #     return super().__new__(mcls, epure_name, bases, attrs)
+        name, bases, attrs = cls.__name__, cls.__bases__, cls.__dict__
+
+        methods = ('save', 'take', 'put', 'find')
+        if any(not hasattr(cls, foo_name) for foo_name in methods):
+            if not make:
+                not_implemented = set(methods).difference(dir(cls))
+                raise EpureProtocolException(f'{not_implemented} must be implemented')
+            else:
+                bases = [*bases, make]
 
 
+        for atr_name in dir(cls):
+            value = getattr(cls, atr_name, None)
+            mcls.on_setattr(cls.__name__, atr_name, value)  
 
-    def __init__(cls, cls_name, bases, attrs):
+        res = super().__new__(mcls, name, tuple(bases), dict(attrs))
+        del cls
 
-        execute = getattr(cls, 'exec')
-        setattr(cls, 'exec', staticmethod(execute))
-        for foo_name in ('save', 'take'):
-            foo = getattr(cls, foo_name)            
-            setattr(cls, foo_name, Query(foo, execute))
+        return res
 
-        return super().__init__(cls_name, bases, attrs)
+
+
+    def __init__(*args, **kwargs):
+        print(1)
+        # cls, cls_name, bases, attrs
+        # execute = getattr(cls, 'exec')
+        # setattr(cls, 'exec', staticmethod(execute))
+        # for foo_name in ('save', 'take'):
+        #     foo = getattr(cls, foo_name)            
+        #     setattr(cls, foo_name, Query(foo, execute))
+
+        # return super().__init__(*args, **kwargs)
 
 
 
@@ -44,8 +52,11 @@ class Epure(type):
 
 
     def on_setattr(epure_name: str, atr_name: str, value: Any):
-        print('on_setattr', epure_name, atr_name, value)
-        pass
+        if atr_name[:3] != "___" or atr_name[-3:] != "___":
+            return
+
+        print(f'on_setattr {epure_name}, {atr_name}, {value}')
+        
 
 class EpureProtocolException(Exception):
     pass

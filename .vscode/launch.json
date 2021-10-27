@@ -28,7 +28,8 @@
             "name": "sandbox",
             "type": "python",
             "request": "launch",
-            "module": "pyt.sandbox",            
+            "justMyCode": false,
+            "module": "pyt.tests.test_epure",            
             "console": "integratedTerminal"
         },
 
@@ -38,6 +39,7 @@
             "request": "launch",            
             "justMyCode": true,
             "module": "pytest",
+            "args": ["-s"],
             "console": "integratedTerminal"
         }
     ]
