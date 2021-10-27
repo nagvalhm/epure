@@ -1,11 +1,8 @@
 
 from typing import Any
-from query import Query
-from make import Make
+from .query import Query
+from .make import Make
 
-# import tests
-# print(tests.test_foo)
-# print(tests.__dict__)
 
 class Epure(type):
 

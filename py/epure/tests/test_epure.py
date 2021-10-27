@@ -1,8 +1,18 @@
 
+import sys
+import pprint
+
+# from epure import *
+
+# pprint.pprint(sys.path)
 
 
+# print(Epure)
 def test_foo():
-    assert 1==2
+    from ..epure import Epure
+    print(Epure)
+    assert 1==1
+
 
 # class tests_epure(TestCase):
 

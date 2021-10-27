@@ -2,15 +2,10 @@
     "python.pythonPath": "${workspaceFolder}\\py\\env39\\Scripts\\python.exe",
     "files.watcherExclude": {
         "**/target": true
-    },
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./py",
-        "-p",
-        "test_*.py"
-    ],
-    "python.testing.pytestEnabled": false,
-    "python.testing.unittestEnabled": true,
+    }
     
 }
+
+//pip install virtualenv
+//py -m virtualenv py/env39 -p D:\python\python39\python.exe
+//set-executionpolicy remotesigned
