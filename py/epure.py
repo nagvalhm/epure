@@ -1,21 +1,29 @@
 
 from typing import Any
 from query import Query
+from make import Make
 
+# import tests
+# print(tests.test_foo)
+# print(tests.__dict__)
 
 class Epure(type):
 
+    def __new__(mcls, cls):
 
-    def __new__(mcls, epure_name, bases, attrs):
-        for atr_name, value in attrs.items():
-            mcls.on_setattr(epure_name, atr_name, value)
         
-        for foo_name in ('save', 'take', 'exec'):
-            if foo_name not in attrs.keys():
-                raise Exception(f'{foo_name} must be implemented')
-                # attrs[foo_name] = getattr(mcls, foo_name)
         
-        return super().__new__(mcls, epure_name, bases, attrs)
+        return super().__new__(mcls, cls.__name__, cls.__bases__, cls.__dict__)
+
+    # def __new__(mcls, epure_name, bases, attrs):
+    #     for atr_name, value in attrs.items():
+    #         mcls.on_setattr(epure_name, atr_name, value)
+        
+    #     for foo_name in ('save', 'take', 'put', 'find'):
+    #         if foo_name not in attrs.keys():
+    #             raise EpureProtocolException(f'{foo_name} must be implemented')                
+        
+    #     return super().__new__(mcls, epure_name, bases, attrs)
 
 
 
@@ -42,18 +50,26 @@ class Epure(type):
         print('on_setattr', epure_name, atr_name, value)
         pass
 
-
+class EpureProtocolException(Exception):
+    pass
 
 def epure(storage) -> Any:
 
     def epure_creator(cls):
         if type(cls) is Epure:
-            return cls
+            return cls      
+        
 
-        attrs = dict(cls.__dict__)        
-        attrs['_storage'] = storage
+        # attrs = dict(cls.__dict__)        
+        # attrs['_storage'] = storage
+        res = None
+        try:
+            res = Epure(cls)
+            # res = Epure(cls.__name__, cls.__bases__, cls.__dict__)
+        except EpureProtocolException:
+            # cls.__bases__ = cls.__bases__ + (Make,)
+            res = Epure(cls.__name__, [*cls.__bases__, Make], cls.__dict__)
 
-        res = Epure(cls.__name__, cls.__bases__, attrs)
         del cls
         # try:
         #     res = Epure(cls.__name__, cls.__bases__, cls.__dict__)
