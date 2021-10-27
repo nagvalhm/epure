@@ -19,7 +19,7 @@
             "name": "install requirements",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/py/requirements.py",            
+            "program": "${workspaceFolder}/pyt/requirements.py",            
             "args": [],
             "console": "integratedTerminal"
         },
@@ -28,7 +28,7 @@
             "name": "sandbox",
             "type": "python",
             "request": "launch",
-            "module": "py.sandbox",            
+            "module": "pyt.sandbox",            
             "console": "integratedTerminal"
         },
 

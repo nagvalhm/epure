@@ -1,5 +1,5 @@
 # import tests
-from epure import *
+from .epure import *
 # print(epure.Epure)
 # from sys import modules
 # print(modules['epure'])
