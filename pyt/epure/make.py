@@ -7,20 +7,21 @@ class Savable():
         pass
 
     @abstractmethod
-    def take(self=None):
+    def find(self=None):
         pass
 
-class Finable():
+class Outable():
 
     @abstractmethod
     def put(self=None):
         pass
 
     @abstractmethod
-    def find(self=None):
+    def out(self=None):
         pass
 
-class Make(Savable, Finable):
+
+class Make(Savable, Outable):
 
     @abstractmethod
     def __new__(cls):

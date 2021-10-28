@@ -7,17 +7,20 @@ from .make import Make
 class Epure(type):
 
 
-    def __new__(mcls, cls, make=None):    
+    def __new__(mcls, cls, cls_with_methods=None, *, store=None):
+
+        if type(cls) is Epure:
+            return cls
 
         name, bases, attrs = cls.__name__, cls.__bases__, cls.__dict__
 
-        methods = ('save', 'take', 'put', 'find')
+        methods = ('save', 'find', 'put', 'out')
         if any(not hasattr(cls, foo_name) for foo_name in methods):
-            if not make:
+            if not cls_with_methods:
                 not_implemented = set(methods).difference(dir(cls))
                 raise EpureProtocolException(f'{not_implemented} must be implemented')
             else:
-                bases = [*bases, make]
+                bases = [*bases, cls_with_methods]
 
 
         for atr_name in dir(cls):
@@ -25,6 +28,9 @@ class Epure(type):
             mcls.on_setattr(cls.__name__, atr_name, value)  
 
         res = super().__new__(mcls, name, tuple(bases), dict(attrs))
+        if store:
+            res._store = store
+
         del cls
 
         return res
@@ -61,28 +67,7 @@ class Epure(type):
 class EpureProtocolException(Exception):
     pass
 
-def epure(storage) -> Any:
-
+def epure(store_) -> Any:
     def epure_creator(cls):
-        if type(cls) is Epure:
-            return cls      
-        
-
-        # attrs = dict(cls.__dict__)        
-        # attrs['_storage'] = storage
-        res = None
-        try:
-            res = Epure(cls)
-            # res = Epure(cls.__name__, cls.__bases__, cls.__dict__)
-        except EpureProtocolException:
-            # cls.__bases__ = cls.__bases__ + (Make,)
-            res = Epure(cls.__name__, [*cls.__bases__, Make], cls.__dict__)
-
-        del cls
-        # try:
-        #     res = Epure(cls.__name__, cls.__bases__, cls.__dict__)
-        # except Exception:
-        #     raise Exception
-
-        return res
+        return Epure(cls, Make, store=store_)
     return epure_creator
