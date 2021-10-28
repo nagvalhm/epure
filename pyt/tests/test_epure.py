@@ -7,7 +7,7 @@ class Cap:
     ___cap_field___ = '___cap_field_val'
     __cap_field__ = '__cap_field_val'
     field = 'asdf'
-    def take():
+    def out():
         pass
 
 

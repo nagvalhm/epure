@@ -30,8 +30,8 @@ class Make(Savable, Outable):
     def save(self=None):
         return 'save is called'
 
-    def take(self=None):
-        return 'take is called'
+    def out(self=None):
+        return 'make out'
     
     def put(self=None):
         return 'put is called'

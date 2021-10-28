@@ -1,3 +1,3 @@
 import subprocess
 
-subprocess.call(["pip", "install", "-r", "py/requirements.txt"], shell=True)
+subprocess.call(["pip", "install", "-r", "pyt/requirements.txt"], shell=True)

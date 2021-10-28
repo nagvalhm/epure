@@ -16,7 +16,7 @@
         },
 
         {
-            "name": "install requirements",
+            "name": "requirements",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/pyt/requirements.py",            
@@ -25,7 +25,7 @@
         },
 
         {
-            "name": "sandbox",
+            "name": "tests.test_epure",
             "type": "python",
             "request": "launch",
             "justMyCode": false,
@@ -34,7 +34,16 @@
         },
 
         {
-            "name": "run tests",
+            "name": "sandbox",
+            "type": "python",
+            "request": "launch",
+            "justMyCode": false,
+            "module": "pyt.sandbox",            
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "pytest",
             "type": "python",
             "request": "launch",            
             "justMyCode": true,

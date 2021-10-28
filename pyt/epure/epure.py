@@ -15,7 +15,8 @@ class Epure(type):
         name, bases, attrs = cls.__name__, cls.__bases__, cls.__dict__
 
         methods = ('save', 'find', 'put', 'out')
-        if any(not hasattr(cls, foo_name) for foo_name in methods):
+        if not all(hasattr(cls, foo_name)
+        and callable(getattr(cls, foo_name)) for foo_name in methods):
             if not cls_with_methods:
                 not_implemented = set(methods).difference(dir(cls))
                 raise EpureProtocolException(f'{not_implemented} must be implemented')
@@ -25,7 +26,7 @@ class Epure(type):
 
         for atr_name in dir(cls):
             value = getattr(cls, atr_name, None)
-            mcls.on_setattr(cls.__name__, atr_name, value)  
+            mcls.on_setattr(cls.__name__, atr_name, value)
 
         res = super().__new__(mcls, name, tuple(bases), dict(attrs))
         if store:
@@ -38,7 +39,7 @@ class Epure(type):
 
 
     def __init__(*args, **kwargs):
-        print(1)
+        pass
         # cls, cls_name, bases, attrs
         # execute = getattr(cls, 'exec')
         # setattr(cls, 'exec', staticmethod(execute))
@@ -67,7 +68,7 @@ class Epure(type):
 class EpureProtocolException(Exception):
     pass
 
-def epure(store_) -> Any:
+def epure(store_=None) -> Any:
     def epure_creator(cls):
         return Epure(cls, Make, store=store_)
     return epure_creator
