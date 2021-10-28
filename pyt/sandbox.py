@@ -26,9 +26,9 @@ class Shaker(Cap):
     __shaker_field__ = '__shaker_field_val'
 
 
-# Shaker = Epure(Shaker, Make, store='')
+# Shaker = Epure(Shaker, EpureProtocol, store='')
 
 
-print(issubclass(Shaker, Make))
+print(issubclass(Shaker, EpureProtocol))
 
 print(Shaker.out())

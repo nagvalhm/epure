@@ -21,7 +21,7 @@ class Outable():
         pass
 
 
-class Make(Savable, Outable):
+class EpureProtocol(Savable, Outable):
 
     @abstractmethod
     def __new__(cls):
@@ -31,7 +31,7 @@ class Make(Savable, Outable):
         return 'save is called'
 
     def out(self=None):
-        return 'make out'
+        return 'EpureProtocol out'
     
     def put(self=None):
         return 'put is called'

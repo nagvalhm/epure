@@ -23,7 +23,7 @@ def test_raise_EpureProtocolException():
 #epure_constructed
 @pytest.fixture
 def epure_constructed(capsys):    
-    res = Epure(Shaker, Make)
+    res = Epure(Shaker, EpureProtocol)
     captured = capsys.readouterr()
     assert_epure_msg(captured.out)
     assert type(res) == Epure

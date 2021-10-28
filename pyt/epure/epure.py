@@ -1,34 +1,34 @@
 
 from typing import Any
 from .query import Query
-from .make import Make
+from .epure_protocol import EpureProtocol
 
 
 class Epure(type):
 
 
-    def __new__(mcls, cls, cls_with_methods=None, *, store=None):
+    def __new__(mcls, cls, protocol_cls=None, *, store=None):
 
         if type(cls) is Epure:
             return cls
 
-        name, bases, attrs = cls.__name__, cls.__bases__, cls.__dict__
 
         methods = ('save', 'find', 'put', 'out')
-        if not all(hasattr(cls, foo_name)
-        and callable(getattr(cls, foo_name)) for foo_name in methods):
-            if not cls_with_methods:
-                not_implemented = set(methods).difference(dir(cls))
-                raise EpureProtocolException(f'{not_implemented} must be implemented')
-            else:
-                bases = [*bases, cls_with_methods]
-
+        for foo_name in methods:
+            if not (hasattr(cls, foo_name) and callable(getattr(cls, foo_name))):
+                if not protocol_cls:
+                    raise EpureProtocolException(f'{foo_name} must be implemented')
+                else:
+                    val = getattr(protocol_cls, foo_name)
+                    setattr(cls, foo_name, val)
+                    
 
         for atr_name in dir(cls):
             value = getattr(cls, atr_name, None)
             mcls.on_setattr(cls.__name__, atr_name, value)
 
-        res = super().__new__(mcls, name, tuple(bases), dict(attrs))
+
+        res = super().__new__(mcls, cls.__name__, cls.__bases__, dict(cls.__dict__))
         if store:
             res._store = store
 
@@ -70,5 +70,5 @@ class EpureProtocolException(Exception):
 
 def epure(store_=None) -> Any:
     def epure_creator(cls):
-        return Epure(cls, Make, store=store_)
+        return Epure(cls, EpureProtocol, store=store_)
     return epure_creator
