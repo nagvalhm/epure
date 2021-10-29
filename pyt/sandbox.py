@@ -31,4 +31,8 @@ class Shaker(Cap):
 
 print(issubclass(Shaker, EpureProtocol))
 
-print(Shaker.out())
+print(Shaker.on_setattr)
+shak = Shaker()
+
+
+print(type(Epure))

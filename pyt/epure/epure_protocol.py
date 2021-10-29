@@ -20,22 +20,40 @@ class Outable():
     def out(self=None):
         pass
 
+class StoreNotFound(Exception):
+    pass
 
 class EpureProtocol(Savable, Outable):
 
-    @abstractmethod
-    def __new__(cls):
-        return super().__new__(cls)
+    store = None
+    parent = None
+    __proto__ = None
+    heap = dict()
 
-    def save(self=None):
-        return 'save is called'
+    def save(self, store=None):
+        store = self.get_store(self, store)        
+        return store.put(self)
 
-    def out(self=None):
-        return 'EpureProtocol out'
+    def find(self, store=None):
+        store = self.get_store(self, store)
+        return store.out()
+
+    def put(self, node):
+        heap: dict = type(self).heap
+        heap[id(node)] = node
+        return id(node)
+
+    def out(self, key):
+        heap: dict = type(self).heap        
+        return heap[key]
+
+    def get_store(self, store=None):
+        store = store or self.store or type(self).heap
+        if not store:
+            raise StoreNotFound
+        return store
     
-    def put(self=None):
-        return 'put is called'
 
-    def find(self=None):
-        return 'find is called'
+
+
 

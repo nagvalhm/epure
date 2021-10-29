@@ -72,3 +72,5 @@ def epure(store_=None) -> Any:
     def epure_creator(cls):
         return Epure(cls, EpureProtocol, store=store_)
     return epure_creator
+
+Epure = Epure(Epure, EpureProtocol)
