@@ -17,7 +17,7 @@ class Shaker(Cap):
 
 
 def test_raise_NodeException():    
-    with pytest.raises(Node):
+    with pytest.raises(NodeException):
         res = Epure(Shaker)
 
 #epure_constructed
