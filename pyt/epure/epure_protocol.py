@@ -13,7 +13,7 @@ class Savable():
 class Outable():
 
     @abstractmethod
-    def put(self=None):
+    def search(self=None):
         pass
 
     @abstractmethod
@@ -23,7 +23,7 @@ class Outable():
 class StoreNotFound(Exception):
     pass
 
-class EpureProtocol(Savable, Outable):
+class Node(Savable, Outable):
 
     store = None
     parent = None
@@ -32,13 +32,13 @@ class EpureProtocol(Savable, Outable):
 
     def save(self, store=None):
         store = self.get_store(self, store)        
-        return store.put(self)
+        return store.search(self)
 
     def find(self, store=None):
         store = self.get_store(self, store)
         return store.out()
 
-    def put(self, node):
+    def search(self, node):
         heap: dict = type(self).heap
         heap[id(node)] = node
         return id(node)

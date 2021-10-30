@@ -15,7 +15,7 @@ class Cap:
 
     # def find():
     #     pass
-    # def put():
+    # def search():
     #     pass
     # def save():
     #     pass
@@ -26,10 +26,10 @@ class Shaker(Cap):
     __shaker_field__ = '__shaker_field_val'
 
 
-# Shaker = Epure(Shaker, EpureProtocol, store='')
+# Shaker = Epure(Shaker, Node, store='')
 
 
-print(issubclass(Shaker, EpureProtocol))
+print(issubclass(Shaker, Node))
 
 print(Shaker.on_setattr)
 shak = Shaker()

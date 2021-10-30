@@ -1,5 +1,5 @@
 # Enviroment
-py/env39
+pyt/env39
 # # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -52,6 +52,7 @@ __pycache__/
 # *.py,cover
 # .hypothesis/
 # .pytest_cache/
+pyt/sandbox.py
 
 # # Translations
 # *.mo

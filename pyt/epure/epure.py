@@ -1,7 +1,7 @@
 
 from typing import Any
 from .query import Query
-from .epure_protocol import EpureProtocol
+from .epure_protocol import Node
 
 
 class Epure(type):
@@ -13,11 +13,11 @@ class Epure(type):
             return cls
 
 
-        methods = ('save', 'find', 'put', 'out')
+        methods = ('save', 'find', 'search', 'out')
         for foo_name in methods:
             if not (hasattr(cls, foo_name) and callable(getattr(cls, foo_name))):
                 if not protocol_cls:
-                    raise EpureProtocolException(f'{foo_name} must be implemented')
+                    raise NodeException(f'{foo_name} must be implemented')
                 else:
                     val = getattr(protocol_cls, foo_name)
                     setattr(cls, foo_name, val)
@@ -65,12 +65,12 @@ class Epure(type):
         print(f'on_setattr {epure_name}, {atr_name}, {value}')
         
 
-class EpureProtocolException(Exception):
+class NodeException(Exception):
     pass
 
 def epure(store_=None) -> Any:
     def epure_creator(cls):
-        return Epure(cls, EpureProtocol, store=store_)
+        return Epure(cls, Node, store=store_)
     return epure_creator
 
-Epure = Epure(Epure, EpureProtocol)
+# Epure = Epure(Epure, Node)

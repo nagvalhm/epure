@@ -16,14 +16,14 @@ class Shaker(Cap):
     __shaker_field__ = '__shaker_field_val'
 
 
-def test_raise_EpureProtocolException():    
-    with pytest.raises(EpureProtocolException):
+def test_raise_NodeException():    
+    with pytest.raises(Node):
         res = Epure(Shaker)
 
 #epure_constructed
 @pytest.fixture
 def epure_constructed(capsys):    
-    res = Epure(Shaker, EpureProtocol)
+    res = Epure(Shaker, Node)
     captured = capsys.readouterr()
     assert_epure_msg(captured.out)
     assert type(res) == Epure
