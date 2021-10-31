@@ -3,6 +3,7 @@ pyt/env39
 # # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+pyt/sandbox.py
 # *$py.class
 
 # # C extensions
@@ -52,7 +53,7 @@ __pycache__/
 # *.py,cover
 # .hypothesis/
 # .pytest_cache/
-pyt/sandbox.py
+
 
 # # Translations
 # *.mo
