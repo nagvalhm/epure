@@ -7,7 +7,7 @@ class Cap:
     ___cap_field___ = '___cap_field_val'
     __cap_field__ = '__cap_field_val'
     field = 'asdf'
-    def out():
+    def search():
         pass
 
 
@@ -25,7 +25,7 @@ def test_raise_NodeException():
 def epure_constructed(capsys):    
     res = Epure(Shaker, Node)
     captured = capsys.readouterr()
-    assert_epure_msg(captured.out)
+    assert_epure_msg(captured.search)
     assert type(res) == Epure
     return res
 
@@ -49,7 +49,7 @@ def assert_setattr_msg(test_epure, capsys):
     captured = capsys.readouterr()    
 
     instr = f'on_setattr Shaker, ___added_field___, {val}'
-    assert instr in captured.out
+    assert instr in captured.search
 
 #epure_decorated
 del Shaker
@@ -62,7 +62,7 @@ class Shaker(Cap):
 def epure_decorated(capsys):    
     res = epure('storage')(Shaker)
     captured = capsys.readouterr()
-    assert_epure_msg(captured.out)
+    assert_epure_msg(captured.search)
     assert type(res) == Epure
     return res
 
