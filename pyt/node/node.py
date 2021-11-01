@@ -31,7 +31,8 @@ class Node(Storage, Storable):
     heap = dict()
 
     def __init__(self, storage=None):
-        self.storage = storage
+        if storage:
+            self.storage = storage
 
     def save(self, storage=None):
         storage = self.get_storage(self, storage)        
