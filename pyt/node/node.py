@@ -30,6 +30,9 @@ class Node(Storage, Storable):
     __proto__ = None
     heap = dict()
 
+    def __init__(storage):
+        pass
+
     def save(self, storage=None):
         storage = self.get_storage(self, storage)        
         return storage.put(self)
@@ -52,6 +55,7 @@ class Node(Storage, Storable):
         if not storage:
             raise StorageNotFound
         return storage
+    
     
 
 
