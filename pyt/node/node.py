@@ -30,7 +30,7 @@ class Node(Storage, Storable):
     __proto__ = None
     heap = dict()
 
-    def __init__(self, storage):
+    def __init__(self, storage=None):
         self.storage = storage
 
     def save(self, storage=None):
