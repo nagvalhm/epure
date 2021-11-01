@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-class Savable():
+class Storable():
 
     @abstractmethod
     def save(self=None):
@@ -10,7 +10,7 @@ class Savable():
     def find(self=None):
         pass
 
-class Outable():
+class Storage():
 
     @abstractmethod
     def put(self=None):
@@ -23,7 +23,7 @@ class Outable():
 class StorageNotFound(Exception):
     pass
 
-class Node(Savable, Outable):
+class Node(Storage, Storable):
 
     storage = None
     parent = None
