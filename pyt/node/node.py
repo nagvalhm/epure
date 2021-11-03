@@ -33,6 +33,9 @@ class Node(Storage, Storable):
     def __init__(self, storage=None):
         if storage:
             self.storage = storage
+    
+    # def __del__(self, node):
+    #     pass
 
     def save(self, storage=None):
         storage = self.get_storage(self, storage)        
