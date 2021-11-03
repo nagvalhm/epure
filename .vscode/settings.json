@@ -7,5 +7,5 @@
 }
 
 //pip install virtualenv
-//py -m virtualenv py/env39 -p D:\python\python39\python.exe
+//py -m virtualenv pyt/env39 -p D:\python\python39\python.exe
 //set-executionpolicy remotesigned
