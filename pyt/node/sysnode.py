@@ -21,27 +21,34 @@ class SysNode(Node):
         #     if not self.name:
         #         self.name = re.sub(r'(?<!^)(?=[A-Z])', '_', type(self).__name__).lower  #to snake_case
         #     path = Path(self.path + "/" + self.name)
-        if not os.path.exists(path):
-            path = Path(os.path.join(SysNode.heap, path))
-            path_dir = os.path.dirname(path)
-            if not os.path.exists(path_dir):
-                Path(path_dir).mkdir(parents=True, exist_ok=True)
+        path = os.path.join(SysNode.heap, path)
+        if os.path.exists(path):
+            return path
+        if not str(path).endswith("/"):
+            parent_dir = Path(path).parent
+            Path(parent_dir).mkdir(parents=True, exist_ok=True)
             open(path,"w")
+        else:
+            Path(path).mkdir(parents=True, exist_ok=True)
         return path
 
-    def __del__(path):
-        if os.path.exists(path):
-            if not os.path.isdir(path):
-                os.remove(path)
-                # path = Path(str(path))           #WindowsPath -> str path : \\dir\\file
-                path = str(path.as_posix())
-                path = path.split('/')              
-                del path[-1]
-                path = '/'.join(path)
-            while [path] != [SysNode.heap]:     #comparing to root dir
-                shutil.rmtree(path)
-                path = path.split('/')
-                del path[-1]
-                path = '/'.join(path)
-        else:
+    def delete(path):
+        if not os.path.exists(path):
             return False
+        if os.path.isfile(path):
+            endfile = os.path.basename(path)
+            os.remove(path)
+            path = str(path.as_posix())
+            path = path.removesuffix(f'/{endfile}')
+            return path
+        endfile = os.path.basename(path)
+        shutil.rmtree(path)
+        
+        # path = path.split('/')              
+        # del path[-1]
+        # path = '/'.join(path)
+        # while [path] != [SysNode.heap]:     #comparing to root dir
+        #     shutil.rmtree(path)
+        #     path = path.split('/')
+        #     del path[-1]
+        #     path = '/'.join(path)

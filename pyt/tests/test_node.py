@@ -21,6 +21,6 @@ def file_created():
 
 def test_node_sysnode_put_and_del(file_created):
     assert os.path.exists(file_created)
-    SysNode.__del__(file_created) 
+    SysNode.delete(file_created) 
     assert not os.path.exists(file_created)
     
