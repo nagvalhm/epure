@@ -14,41 +14,63 @@ class SysNode(Node):
         return cls._instance
     
     # def put(self, path=None, node=None)
-    def put(path):
+    def put(self, path):
+        
         # if not path:
         #     if not self.path:
         #         self.path = SysNode.heap = 'config'
         #     if not self.name:
         #         self.name = re.sub(r'(?<!^)(?=[A-Z])', '_', type(self).__name__).lower  #to snake_case
         #     path = Path(self.path + "/" + self.name)
-        path = os.path.join(SysNode.heap, path)
-        if os.path.exists(path):
+        
+        is_dir = str(path).endswith("/")
+
+        if self.path_exists(path):
             return path
-        if not str(path).endswith("/"):
-            parent_dir = Path(path).parent
-            Path(parent_dir).mkdir(parents=True, exist_ok=True)
-            open(path,"w")
+
+        full_path = self.full_path(path)
+        if is_dir:
+            Path(full_path).mkdir(parents=True, exist_ok=True)
         else:
-            Path(path).mkdir(parents=True, exist_ok=True)
+            self._create_file(full_path)
+
         return path
 
-    def delete(path):
-        if not os.path.exists(path):
+
+
+    def delete(self, path):
+
+        if not self.path_exists(path):
             return False
-        if os.path.isfile(path):
-            endfile = os.path.basename(path)
-            os.remove(path)
-            path = str(path.as_posix())
-            path = path.removesuffix(f'/{endfile}')
-            return path
-        endfile = os.path.basename(path)
-        shutil.rmtree(path)
+
+        full_path = self.full_path(path)        
+        if os.path.isfile(full_path):
+            os.remove(full_path)
+        else:
+            shutil.rmtree(full_path)
         
-        # path = path.split('/')              
-        # del path[-1]
-        # path = '/'.join(path)
-        # while [path] != [SysNode.heap]:     #comparing to root dir
-        #     shutil.rmtree(path)
-        #     path = path.split('/')
-        #     del path[-1]
-        #     path = '/'.join(path)
+        return str(Path(path).parent)
+
+
+    def path_exists(self, path:str, is_dir: bool=None) -> bool:
+        return os.path.exists(self.full_path(path))
+        
+
+    def full_path(self, path:str):
+        return os.path.join(self.heap, path)
+
+
+    # def path_exists(self, path:str, is_dir: bool=None) -> bool:
+    #     is_dir = is_dir or str(path).endswith("/")
+
+    #     if os.path.exists(path):
+    #         if ((is_dir and os.path.isdir(path)) 
+    #         or (not is_dir and os.path.isfile(path))):
+    #             return True
+    #     return False
+
+    def _create_file(self, path:str):
+        parent_dir = str(Path(path).parent)
+        if not os.path.exists(parent_dir):
+            Path(parent_dir).mkdir(parents=True, exist_ok=True)
+        open(path,"w")
