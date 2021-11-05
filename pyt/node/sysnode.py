@@ -8,20 +8,17 @@ class SysNode(Node):
     _instance = None
     heap = 'config'
 
+
+
     def __new__(cls):
         if not cls._instance:
             cls._instance = super().__new__(cls)
-        return cls._instance    
+        return cls._instance
+
+
 
     def put(self, node=None, path=None):
-        path = self.path(node, path)
-        # if not path:
-        #     if not self.path:
-        #         self.path = SysNode.heap = 'config'
-        #     if not self.name:
-        #         self.name = re.sub(r'(?<!^)(?=[A-Z])', '_', type(self).__name__).lower  #to snake_case
-        #     path = Path(self.path + "/" + self.name)
-        
+        path = self.path(node, path)        
         
         if self.contains(path=path):
             return path
@@ -52,23 +49,25 @@ class SysNode(Node):
         return str(Path(path).parent)
 
 
+
     def contains(self, node=None, path=None) -> bool:
         path = self.path(node, path)
         return os.path.exists(self._full_path(path))
 
 
+
     def _full_path(self, path):        
         return os.path.join(self.heap, path)
 
-    def path(self, node=None, path=None):
 
+
+    def path(self, node=None, path=None):
         if node and path:            
             return os.path.join(path, node.file_name)
-
         if node:
             path = node.path
-
         return path
+
 
 
     def _create_file(self, full_path:str):
