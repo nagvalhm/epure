@@ -33,9 +33,6 @@ class Node(Storage, Storable):
     def __init__(self, storage=None):
         if storage:
             self.storage = storage
-    
-    # def __del__(self, node):
-    #     pass
 
     def save(self, storage=None):
         storage = self.get_storage(self, storage)        
@@ -54,12 +51,19 @@ class Node(Storage, Storable):
         heap: dict = type(self).heap        
         return heap[key]
 
+    def delete(self, node):
+        pass
+
+    def contains(self, node) -> bool:
+        pass
+
     def get_storage(self, storage=None):
         storage = storage or self.storage or type(self).heap
         if not storage:
             raise StorageNotFound
         return storage
     
+
     
 
 
