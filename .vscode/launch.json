@@ -32,6 +32,16 @@
             "module": "pytest",
             "args": ["-s"],
             "console": "integratedTerminal"
+        },
+
+        {
+            "name": "pytest mypy",
+            "type": "python",
+            "request": "launch",            
+            "justMyCode": true,
+            "module": "py.test",
+            "args": ["--mypy"],
+            "console": "integratedTerminal"
         }
     ]
 }
