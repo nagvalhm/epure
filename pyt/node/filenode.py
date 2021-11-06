@@ -3,7 +3,7 @@ from .sysnode import SysNode
 
 
 class FileNode:
-    heap = SysNode()
+    storage = SysNode()
 
     def __init__(self, storage=None, name=None, path=None):
         self.name = name

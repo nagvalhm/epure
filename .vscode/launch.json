@@ -25,24 +25,6 @@
         },
 
         {
-            "name": "tests.test_epure",
-            "type": "python",
-            "request": "launch",
-            "justMyCode": false,
-            "module": "pyt.tests.test_epure",            
-            "console": "integratedTerminal"
-        },
-
-        {
-            "name": "sandbox",
-            "type": "python",
-            "request": "launch",
-            "justMyCode": false,
-            "module": "pyt.sandbox",            
-            "console": "integratedTerminal"
-        },
-
-        {
             "name": "pytest",
             "type": "python",
             "request": "launch",            

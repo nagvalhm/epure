@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from typing import Any
 
 class Storable():
 
@@ -28,23 +29,22 @@ class Node(Storage, Storable):
     storage = None
     parent = None
     __proto__ = None
-    heap = dict()
+    universe = {}
 
-    def __init__(self, storage=None):
+    def __init__(self:Any, storage:Any = None) -> None:
         if storage:
             self.storage = storage
 
     def save(self, storage=None):
-        storage = self.get_storage(self, storage)        
+        storage = self.get_storage(storage)
         return storage.put(self)
 
     def find(self, storage=None):
-        storage = self.get_storage(self, storage)
+        storage = self.get_storage(storage)
         return storage.search()
 
     def put(self, node):
-        heap: dict = type(self).heap
-        heap[id(node)] = node
+        self.universe[id(node)] = node
         return id(node)
 
     def search(self, key):
@@ -63,7 +63,7 @@ class Node(Storage, Storable):
             raise StorageNotFound
         return storage
     
-
+Node.heap = Node()
     
 
 

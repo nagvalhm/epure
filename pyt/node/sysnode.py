@@ -1,4 +1,5 @@
 import os
+from typing import Any
 from .node import Node
 from pathlib import Path
 import re
@@ -6,7 +7,7 @@ import shutil
 
 class SysNode(Node):
     _instance = None
-    heap = 'config'
+    root = 'config'
 
 
 
@@ -17,7 +18,7 @@ class SysNode(Node):
 
 
 
-    def put(self, node=None, path=None):
+    def put(self:Node, node:Node = None, path=None) -> Any:
         path = self.path(node, path)        
         
         if self.contains(path=path):
@@ -57,7 +58,7 @@ class SysNode(Node):
 
 
     def _full_path(self, path):        
-        return os.path.join(self.heap, path)
+        return os.path.join(self.root, path)
 
 
 
