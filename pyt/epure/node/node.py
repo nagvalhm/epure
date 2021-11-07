@@ -1,5 +1,6 @@
+from __future__ import annotations
 from abc import abstractmethod
-from typing import Any
+from typing import *
 
 class Storable():
 
@@ -24,12 +25,14 @@ class Storage():
 class StorageNotFound(Exception):
     pass
 
+
 class Node(Storage, Storable):
 
     storage = None
     parent = None
     __proto__ = None
-    universe = {}
+    universe:Dict[object, object] = {}
+    heap:Node
 
     def __init__(self:Any, storage:Any = None) -> None:
         if storage:

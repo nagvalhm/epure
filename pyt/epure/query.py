@@ -1,9 +1,9 @@
 from typing import Any
-from types import MethodType
+from types import *
 
 class Query:
-    __exec__ = None
-    __query_taker__ = None
+    __exec__:MethodType
+    __query_taker__:MethodType
 
     def __init__(self, query_taker, exec) -> None:
         self.__exec__ = exec

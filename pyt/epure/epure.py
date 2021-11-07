@@ -57,7 +57,7 @@ class Epure(type):
         return super().__setattr__(atr_name, value)
 
 
-
+    @staticmethod
     def on_setattr(epure_name: str, atr_name: str, value: Any):
         if atr_name[:3] != "___" or atr_name[-3:] != "___":
             return

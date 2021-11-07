@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 from typing import Any
 from .node import Node
@@ -18,7 +19,7 @@ class SysNode(Node):
 
 
 
-    def put(self:Node, node:Node = None, path=None) -> Any:
+    def put(self:SysNode, node:Node = None, path=None) -> Any:
         path = self.path(node, path)        
         
         if self.contains(path=path):
