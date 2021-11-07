@@ -35,12 +35,12 @@
         },
 
         {
-            "name": "pytest mypy",
+            "name": "mypy",
             "type": "python",
             "request": "launch",            
             "justMyCode": true,
-            "module": "py.test",
-            "args": ["--mypy"],
+            "module": "mypy",
+            "args": ["pyt/epure"],
             "console": "integratedTerminal"
         }
     ]
