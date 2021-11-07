@@ -1,7 +1,7 @@
 
 from typing import Any
 from .query import Query
-from ..node import Node
+from .node import Node
 
 
 class Epure(type):

@@ -1,6 +1,6 @@
 from os import path, putenv
 import pytest
-from ..node import *
+from ..epure.node import *
 import sys
 
 def test_node_node_init():
