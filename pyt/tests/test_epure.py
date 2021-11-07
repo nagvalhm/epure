@@ -1,6 +1,8 @@
+# type: ignore
+
 import pytest
 from ..epure import *
-import sys
+import subprocess
 
 
 class Cap:    
@@ -68,3 +70,9 @@ def epure_decorated(capsys):
 
 def test_setattr_decorated(epure_decorated, capsys):
     assert_setattr_msg(epure_decorated, capsys)
+
+def assert_shell_cmd(cmd):
+    assert not subprocess.call(cmd.split(), shell=True)
+
+def test_typing():
+    assert_shell_cmd("mypy pyt/epure")

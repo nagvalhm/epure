@@ -1,3 +1,4 @@
+# type: ignore
 from os import path, putenv
 import pytest
 from ..epure.node import *
