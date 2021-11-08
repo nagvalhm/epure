@@ -1,8 +1,10 @@
 from __future__ import annotations
+from typing import Optional
 import os
 from typing import Any
 from .node import Node
-from pathlib import Path
+from .filenode import FileNode
+from pathlib import Path, WindowsPath
 import re
 import shutil
 
@@ -10,17 +12,20 @@ class SysNode(Node):
     _instance = None
     root = 'config'
 
+    def __init__(self, storage: Any = None) -> None:
+        return super().__init__(storage)
 
 
-    def __new__(cls):
+
+    def __new__(cls) -> Any:
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
 
 
 
-    def put(self:SysNode, node:Node = None, path=None) -> Any:
-        path = self.path(node, path)        
+    def put(self, node:Node = None, **kwargs:Any) -> Any:
+        path = self.path(node, kwargs)       
         
         if self.contains(path=path):
             return path
@@ -36,8 +41,8 @@ class SysNode(Node):
 
 
 
-    def delete(self, node=None, path=None):
-        path = self.path(node, path)
+    def delete(self, node:Node = None, **kwargs:Any) -> Any:
+        path = self.path(node, kwargs)
 
         if not self.contains(path=path):
             return False
@@ -52,27 +57,30 @@ class SysNode(Node):
 
 
 
-    def contains(self, node=None, path=None) -> bool:
-        path = self.path(node, path)
+    def contains(self, node:Node=None, **kwargs:Any) -> bool:
+        path = self.path(node, kwargs)
         return os.path.exists(self._full_path(path))
 
 
 
-    def _full_path(self, path):        
+    def _full_path(self, path:str) -> str: 
         return os.path.join(self.root, path)
 
 
 
-    def path(self, node=None, path=None):
+    def path(self, node:Node=None, kwargs:Any=None) -> Any:
+        path = kwargs.get("path", None) 
+           
         if node and path:            
-            return os.path.join(path, node.file_name)
-        if node:
+            return str(os.path.join(path, node.name))
+
+        if node and isinstance(node, FileNode):
             path = node.path
         return path
 
 
 
-    def _create_file(self, full_path:str):
+    def _create_file(self, full_path:str) -> None:
         parent_dir = str(Path(full_path).parent)
         if not os.path.exists(parent_dir):
             Path(parent_dir).mkdir(parents=True, exist_ok=True)

@@ -1,13 +1,13 @@
-
+from __future__ import annotations
 from typing import Any
 from .query import Query
-from .node import Node
+from .node import Node # type: ignore
 
 
 class Epure(type):
 
 
-    def __new__(mcls, cls, protocol_cls=None, *, storage=None):
+    def __new__(mcls, cls:type, protocol_cls:type=None, *, storage:Any=None) -> Epure:
 
         if type(cls) is Epure:
             return cls
@@ -38,7 +38,7 @@ class Epure(type):
 
 
 
-    def __init__(*args, **kwargs):
+    def __init__(*args:Any, **kwargs:Any):
         pass
         # cls, cls_name, bases, attrs
         # execute = getattr(cls, 'exec')
@@ -58,7 +58,7 @@ class Epure(type):
 
 
     @staticmethod
-    def on_setattr(epure_name: str, atr_name: str, value: Any):
+    def on_setattr(epure_name: str, atr_name: str, value: Any) -> None:
         if atr_name[:3] != "___" or atr_name[-3:] != "___":
             return
 
@@ -68,8 +68,8 @@ class Epure(type):
 class NodeException(Exception):
     pass
 
-def epure(storage_=None) -> Any:
-    def epure_creator(cls):
+def epure(storage_:Any=None) -> Any:
+    def epure_creator(cls:type) -> type:
         return Epure(cls, Node, storage=storage_)
     return epure_creator
 

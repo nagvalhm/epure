@@ -49,10 +49,10 @@ def test_node_sysnode_delete():
 
 @pytest.fixture
 def file_node():
-    Node.path = property(lambda self: os.path.join(self.dir_name, self.file_name))
-    node = Node()
+    FileNode.path = property(lambda self: os.path.join(self.dir_name, self.name))
+    node = FileNode()
     node.dir_name = "dir1/dir2/"
-    node.file_name = "file.txt"    
+    node.name = "file.txt"    
     return node
 
 def test_node_sysnode_filenode(file_node):
@@ -64,22 +64,22 @@ def test_node_sysnode_filenode(file_node):
     sys_node.delete(file_node)
     assert not sys_node.contains(file_node)
     node_sysnode_delete(file_node.dir_name)
-    del Node.path
+    del FileNode.path
 
 def test_node_sysnode_filenode_and_path(file_node):
 
     another_parent = "dir3/dir4/coc/"
     sys_node = SysNode()
-    assert not sys_node.contains(file_node, another_parent)
-    sys_node.put(file_node, another_parent)
+    assert not sys_node.contains(file_node, path = another_parent)
+    sys_node.put(file_node, path = another_parent)
     assert not sys_node.contains(file_node)
-    assert sys_node.contains(file_node, another_parent)
-    sys_node.delete(file_node, another_parent)
-    assert not sys_node.contains(file_node, another_parent)
+    assert sys_node.contains(file_node, path = another_parent)
+    sys_node.delete(file_node, path = another_parent)
+    assert not sys_node.contains(file_node, path = another_parent)
     node_sysnode_delete(another_parent)
-    del Node.path
+    del FileNode.path
     
 
-def test_node_sysnode_save():
-    sys_node = SysNode()
-    sys_node.save()
+# def test_node_sysnode_save():
+#     sys_node = SysNode()
+#     sys_node.save()
