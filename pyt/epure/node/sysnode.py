@@ -68,7 +68,7 @@ class SysNode(Node):
 
 
 
-    def path(self, node:Node=None, kwargs:Any=None) -> Any:
+    def path(self, node:Node=None, kwargs:Any=None) -> str:
         path = kwargs.get("path", None) 
            
         if node and path:            
@@ -76,6 +76,10 @@ class SysNode(Node):
 
         if node and isinstance(node, FileNode):
             path = node.path
+
+        if not isinstance(path, str):
+            raise Exception('path must be string')
+
         return path
 
 
