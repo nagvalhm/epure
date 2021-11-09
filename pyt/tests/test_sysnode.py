@@ -80,6 +80,6 @@ def test_node_sysnode_filenode_and_path(file_node):
     del FileNode.path
     
 
-# def test_node_sysnode_save():
-#     sys_node = SysNode()
-#     sys_node.save()
+def test_node_sysnode_save():
+    sys_node = SysNode()
+    sys_node.save()

@@ -1,9 +1,12 @@
 from __future__ import annotations
+# from typing import TYPE_CHECKING
+# if TYPE_CHECKING:
+from .filenode import FileNode
+
 from typing import Optional
 import os
 from typing import Any
 from .node import Node
-from .filenode import FileNode
 from pathlib import Path, WindowsPath
 import re
 import shutil
@@ -25,7 +28,7 @@ class SysNode(Node):
 
 
     def put(self, node:Node = None, **kwargs:Any) -> Any:
-        path = self.path(node, kwargs)       
+        path = self._path(node, kwargs)       
         
         if self.contains(path=path):
             return path
@@ -42,7 +45,7 @@ class SysNode(Node):
 
 
     def delete(self, node:Node = None, **kwargs:Any) -> Any:
-        path = self.path(node, kwargs)
+        path = self._path(node, kwargs)
 
         if not self.contains(path=path):
             return False
@@ -58,7 +61,7 @@ class SysNode(Node):
 
 
     def contains(self, node:Node=None, **kwargs:Any) -> bool:
-        path = self.path(node, kwargs)
+        path = self._path(node, kwargs)
         return os.path.exists(self._full_path(path))
 
 
@@ -68,13 +71,13 @@ class SysNode(Node):
 
 
 
-    def path(self, node:Node=None, kwargs:Any=None) -> str:
+    def _path(self, node:Node=None, kwargs:Any=None) -> str:
         path = kwargs.get("path", None) 
            
         if node and path:            
             return str(os.path.join(path, node.name))
 
-        if node and isinstance(node, FileNode):
+        if node and isinstance(node, FileNode):        
             path = node.path
 
         if not isinstance(path, str):
@@ -89,3 +92,5 @@ class SysNode(Node):
         if not os.path.exists(parent_dir):
             Path(parent_dir).mkdir(parents=True, exist_ok=True)
         open(full_path,"w")
+
+FileNode.storage = SysNode()

@@ -2,11 +2,9 @@ from __future__ import annotations
 from typing import Any
 
 from pyt.epure.node.node import Node
-# from .sysnode import SysNode
 
 
-class FileNode(Node):
-    # storage = SysNode()
+class FileNode(Node):    
     name = None
     path = None
     def __init__(self, storage:Any=None, name:str=None, path:str=None) -> None:

@@ -5,21 +5,21 @@ from typing import *
 class Storable():
 
     @abstractmethod
-    def save(self:Storable) -> Any:
+    def save(self) -> Any:
         pass
 
     @abstractmethod
-    def find(self:Storable) -> Any:
+    def find(self) -> Any:
         pass
 
 class Searchable():
 
     @abstractmethod
-    def put(self:Searchable, node:Node=None, **kwargs:Any) -> Any:
+    def put(self, node:Node=None, **kwargs:Any) -> Any:
         pass
 
     @abstractmethod
-    def search(self:Searchable) -> Any:
+    def search(self, key:object) -> Any:
         pass
 
 class StorageNotFound(Exception):
@@ -31,7 +31,7 @@ class Node(Searchable, Storable):
     storage = None
     parent = None
     __proto__ = None
-    universe:Dict[object, object] = {}
+    dict:Dict[object, object] = {}
     heap:Node
 
     def __init__(self, storage:Any = None) -> None:
@@ -47,12 +47,11 @@ class Node(Searchable, Storable):
         return storage.search()
 
     def put(self, node:Node=None, **kwargs:Any) -> Any:
-        self.universe[id(node)] = node
+        self.dict[id(node)] = node
         return id(node)
 
-    # def search(self:Node, key:object) -> Any:
-    #     heap:Node = type(self).heap       
-    #     return heap[key]
+    def search(self, key:object) -> Any:        
+        return self.dict[key]
 
     def delete(self, node:Node = None, **kwargs:Any) -> bool:
         pass
@@ -66,7 +65,7 @@ class Node(Searchable, Storable):
             raise StorageNotFound
         return storage
     
-# Node.heap = Node()
+Node.heap = Node()
     
 
 
