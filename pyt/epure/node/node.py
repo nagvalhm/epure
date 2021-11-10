@@ -1,6 +1,8 @@
 from __future__ import annotations
 from abc import abstractmethod
+from os import name
 from typing import *
+import re
 
 class Storable():
 
@@ -27,47 +29,69 @@ class StorageNotFound(Exception):
 
 
 class Node(Searchable, Storable):
-    name:str
     storage = None
     parent = None
     __proto__ = None
     dict:Dict[object, object] = {}
     heap:Node
 
-    def __init__(self, storage:Any = None) -> None:
+    def __init__(self, storage:Any = None, **kwargs:Any) -> None:
         if storage:
             self.storage = storage
+
+
 
     def save(self, storage:Any=None) -> Any:
         storage = self.get_storage(storage)
         return storage.put(self)
 
+
+
     def find(self, storage:Any=None) -> Any:
         storage = self.get_storage(storage)
         return storage.search()
+
+
 
     def put(self, node:Node=None, **kwargs:Any) -> Any:
         self.dict[id(node)] = node
         return id(node)
 
+
+
     def search(self, key:object) -> Any:        
         return self.dict[key]
+
+
 
     def delete(self, node:Node = None, **kwargs:Any) -> bool:
         pass
 
+
+
     def contains(self, node:Node=None, **kwargs:Any) -> bool:
         pass
+
+
 
     def get_storage(self, storage:Any=None) -> Any:
         storage = storage or self.storage or type(self).heap
         if not storage:
             raise StorageNotFound
         return storage
+
     
+    
+    @property
+    def name(self) -> str:
+        if not self._name:
+            self._name:str = re.sub(r'(?<!^)(?=[A-Z])', '_', type(self).__name__).lower()
+        return self._name
+
+
+
+    @name.setter
+    def name(self, name:str) -> None:
+        self._name = name
+
 Node.heap = Node()
-    
-
-
-
-
