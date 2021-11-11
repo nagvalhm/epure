@@ -34,10 +34,12 @@ class Node(Searchable, Storable):
     __proto__ = None
     dict:Dict[object, object] = {}
     heap:Node
+    _name:str
 
-    def __init__(self, storage:Any = None, **kwargs:Any) -> None:
+    def __init__(self, storage:Any = None, name:str=None) -> None:
         if storage:
             self.storage = storage
+        self.name = name
 
 
 
@@ -85,7 +87,7 @@ class Node(Searchable, Storable):
     @property
     def name(self) -> str:
         if not self._name:
-            self._name:str = re.sub(r'(?<!^)(?=[A-Z])', '_', type(self).__name__).lower()
+            self._name = re.sub(r'(?<!^)(?=[A-Z])', '_', type(self).__name__).lower()
         return self._name
 
 

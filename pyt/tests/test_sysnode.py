@@ -55,8 +55,7 @@ def test_node_sysnode_delete():
 def file_node():
     node = FileNode()
     node.dir_name = "dir1/dir2/"
-    node.name = "file.txt"
-    node.path
+    node.name = "file.txt"    
     return node
 
 

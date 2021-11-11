@@ -13,12 +13,12 @@ import shutil
 
 class SysNode(Node):
     _instance = None
-    # root = 'config'
+    root = 'config'
 
-    def __init__(self, storage: Any = None, **kwargs:Any) -> None:
+    def __init__(self, storage: Any = None, name:str=None, *, root:str=None) -> None:
         self.storage = storage
-        self.root = kwargs.get('root', None)
-        return super().__init__(storage)
+        self.root = root
+        return super().__init__(storage, name)
 
 
 

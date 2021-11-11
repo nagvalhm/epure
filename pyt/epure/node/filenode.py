@@ -6,11 +6,11 @@ from pyt.epure.node.node import Node
 
 
 class FileNode(Node):    
-
-    def __init__(self, storage:Any=None, dir_name:str=None, name:str=None) -> None:
-        self._name = name
+    _dir_name:str
+    
+    def __init__(self, storage:Any=None, name:str=None, dir_name:str=None) -> None:        
         self._dir_name = dir_name
-        super().__init__(self)
+        super().__init__(self, name)
         self.save()
     
 

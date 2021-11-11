@@ -14,7 +14,7 @@ def filenode_dir_name_and_name_none():
     res = FileNode(storage, dir_name, name)
     res.name
     res.dir_name = 'dir'
-    res.dir_name
+    assert res.dir_name == 'dir/'
     return res.path
 
 def test_node_filenode_path_none(filenode_dir_name_and_name_none):
