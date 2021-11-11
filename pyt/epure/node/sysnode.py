@@ -13,14 +13,16 @@ import shutil
 
 class SysNode(Node):
     _instance = None
-    root = 'config'
+    # root = 'config'
 
-    def __init__(self, storage: Any = None) -> None:
+    def __init__(self, storage: Any = None, **kwargs:Any) -> None:
+        self.storage = storage
+        self.root = kwargs.get('root', None)
         return super().__init__(storage)
 
 
 
-    def __new__(cls) -> Any:
+    def __new__(cls, storage:Any=None, root:str=None) -> Any:
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
