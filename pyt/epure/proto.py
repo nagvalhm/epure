@@ -8,6 +8,7 @@ class MultipleInheritanceError(Exception):
     pass
 
 class ProtoMeta(type):
+    _proto_cls:ProtoMeta
 
     def __new__(mcl, name:str, bases:Tuple[type], namespace: dict[str, Any]) -> ProtoMeta:
         res_cls = super().__new__(mcl, name, bases, namespace)
@@ -25,23 +26,27 @@ class ProtoMeta(type):
 
     @property
     def proto_cls(cls) -> ProtoMeta:
+        if '_proto_cls' in vars(cls).keys():
+            return cls._proto_cls
+
         bases = cls.__bases__
         protos = list(filter(lambda base: issubclass(base, Proto), bases))
         if len(protos) > 1:
             raise MultipleInheritanceError(f'{cls.__name__} has more than one Proto ancestor: {protos}')
         
         if len(protos) == 0:
-            raise Exception()
+            raise
         res = protos[0]
         if not isinstance(res, ProtoMeta):
             raise Exception('res must be Proto')
 
+        cls._proto_cls = res
         return res
 
 
 
 class Proto(metaclass=ProtoMeta):
-    __proto__:Proto
+    __proto__:Proto = None
     __abstractclass__ = 1
     
 
@@ -50,20 +55,11 @@ class Proto(metaclass=ProtoMeta):
         res = super(type, cls).__new__(cls)
         if not isinstance(res, Proto):
             raise
-        # proto = res.proto()
+        proto_cls = cls.proto_cls
+        if '__abstractclass__' not in vars(proto_cls).keys():
+            res.__proto__ = proto_cls(*args, **kwargs)
 
         return res
-
-    # @property
-    def proto(self, *args: Any, **kwargs: Any) -> Proto:
-        self_cls = type(self)
-        if not hasattr(self, '__proto__'):
-            proto_cls = self_cls.proto_cls
-            if '__abstractclass__' in vars(proto_cls).keys():
-                return None
-            self.__proto__ = proto_cls(*args, **kwargs)
-        return self.__proto__
-
     
     def __setattr__(self, name: str, value: Any) -> None:
         self_cls = type(self)
@@ -75,7 +71,7 @@ class Proto(metaclass=ProtoMeta):
             return super().__setattr__(name, value)
 
 
-        self_proto = self.proto()
+        self_proto = self.__proto__
         if self_proto:
             setattr(self_proto, name, value)
         else:
@@ -88,7 +84,15 @@ class Proto(metaclass=ProtoMeta):
         if not self_cls.is_special_attr(name):            
             return super().__getattribute__(name)
 
-        if not hasattr(self_cls, name):
+        if name in vars(self_cls).keys():
+            print(f'{self_cls.__name__} get val for {name}')
+            return super().__getattribute__(name)
+
+
+        self_proto = self.__proto__
+        if self_proto:
+            return getattr(self_proto, name)
+        else:
             raise AttributeError(f'{type(self)} object has no attribute {name}')
 
 

@@ -30,7 +30,7 @@ class SysNode(Node):
 
 
     def put(self, node:Node = None, **kwargs:Any) -> Any:
-        path = self._path(node, kwargs)       
+        path = self._path(node, **kwargs)       
         
         if self.contains(path=path):
             return path
@@ -47,7 +47,7 @@ class SysNode(Node):
 
 
     def delete(self, node:Node = None, **kwargs:Any) -> Any:
-        path = self._path(node, kwargs)
+        path = self._path(node, **kwargs)
 
         if not self.contains(path=path):
             return False
@@ -63,7 +63,7 @@ class SysNode(Node):
 
 
     def contains(self, node:Node=None, **kwargs:Any) -> bool:
-        path = self._path(node, kwargs)
+        path = self._path(node, **kwargs)
         return os.path.exists(self._full_path(path))
 
 
@@ -73,9 +73,7 @@ class SysNode(Node):
 
 
 
-    def _path(self, node:Node=None, kwargs:Any=None) -> str:
-        path = kwargs.get("path", None) 
-           
+    def _path(self, node:Node=None, path:str=None) -> str:
         if node and path:            
             return str(os.path.join(path, node.name))
 

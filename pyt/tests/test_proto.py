@@ -3,9 +3,10 @@ import pytest
 from ..epure.proto import *
 
 class Container(Proto):
-    ___special_container___ = None
+    ___special_container___ = '___special_container___'
 
-    # def __init__(self, b) -> None:
+    def __init__(self, b) -> None:
+        print('Container.__init__')
     #     super().__init__()
 
 class Сow(Proto):
@@ -14,10 +15,11 @@ class Сow(Proto):
 class Cap(Container):
     not_special_cap:str = None
     not_inited_field:str
-    ___special_cap___ = None
+    ___special_cap___ = '___special_cap___'
 
-    # def __init__(self, b) -> None:
-    #     super().__init__(b)
+    def __init__(self, b) -> None:
+        print('Cap.__init__')
+        
 
     # def __new__(cls: ProtoMeta, *args: Any, **kwargs: Any) -> Proto:
     #     return super().__new__(*args, **kwargs)
@@ -27,12 +29,11 @@ class BarStuf:
 
 class Shaker(Cap):
     not_special_shaker:str
-    ___special_shaker___ = None
+    ___special_shaker___ = '___special_shaker___'
 
-
-
-    # def __init__(self, b) -> None:
-    #     pass# super().__init__(b)
+    def __init__(self, b) -> None:
+        print('Shaker.__init__')
+        # super().__init__(b)
 
 
 
@@ -82,7 +83,21 @@ def test_proto_setattr_error(proto, capsys):
     with pytest.raises(AttributeError):
         proto.___not_exist___ = 123
 
+
+###########################################
+def test_proto_getattr(proto, capsys):
+    a = proto.___special_container___
+    b = proto.___special_cap___
+    c = proto.___special_shaker___
+
+    captured = capsys.readouterr()
+    res = captured.out
+    print(res)
+    assert f'Container get val for ___special_container___' in res
+    assert f'Cap get val for ___special_cap___' in res
+    assert f'Shaker get val for ___special_shaker___' in res
+    # assert len(res) < 150
     
-# def test_proto_getattribute_error(proto, capsys):
-#     with pytest.raises(AttributeError):
-#         a = proto.___not_exist___
+def test_proto_getattribute_error(proto, capsys):
+    with pytest.raises(AttributeError):
+        a = proto.___not_exist___
