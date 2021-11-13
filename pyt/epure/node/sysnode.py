@@ -13,11 +13,17 @@ import shutil
 
 class SysNode(Node):
     _instance = None
+    _initialized = None
     root = 'config'
 
     def __init__(self, storage: Any = None, name:str=None, *, root:str=None) -> None:
+        if(self._initialized): 
+            return        
         self.storage = storage
-        self.root = root
+
+        if root:
+            self.root = root
+        self._initialized = True
         return super().__init__(storage, name)
 
 

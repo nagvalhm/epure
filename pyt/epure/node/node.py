@@ -38,7 +38,7 @@ class Node(Searchable, Storable):
     def __init__(self, storage:Any = None, name:str=None) -> None:
         if storage:
             self.storage = storage
-        self.name = name
+        self._name = name
 
 
 

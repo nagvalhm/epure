@@ -53,9 +53,7 @@ def test_node_sysnode_delete():
 
 @pytest.fixture
 def file_node():
-    node = FileNode()
-    node.dir_name = "dir1/dir2/"
-    node.name = "file.txt"    
+    node = FileNode(name = "file.txt", dir_name = "dir1/dir2/", save=False)
     return node
 
 
@@ -80,7 +78,7 @@ def test_node_sysnode_filenode_and_path(file_node):
     assert sys_node.contains(file_node, path = another_parent)
     sys_node.delete(file_node, path = another_parent)
     assert not sys_node.contains(file_node, path = another_parent)
-    node_sysnode_delete(another_parent)
+    node_sysnode_delete(another_parent)    
 
 
 def test_node_sysnode_save():

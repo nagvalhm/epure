@@ -6,13 +6,19 @@ import json
 from pyt.epure.node.node import Node
 
 
-class FileNode(Node):    
+class FileNode(Node):
     _dir_name:str
     
-    def __init__(self, storage:Any=None, name:str=None, dir_name:str=None) -> None:        
+    def __init__(self, storage:Any=None, name:str=None, dir_name:str=None, save:bool=True) -> None:
+
+        if dir_name and not dir_name.endswith("/"):
+            dir_name = dir_name + '/'
+
         self._dir_name = dir_name
-        super().__init__(self, name)
-        self.save()
+        super().__init__(storage, name)
+
+        if save:
+            self.save()
     
 
 
@@ -32,10 +38,19 @@ class FileNode(Node):
 
     @dir_name.setter
     def dir_name(self, dir_name:str) -> None:
-        if not dir_name.endswith("/"):
-            self._dir_name = dir_name + '/'
-            return
-        self._dir_name = dir_name
+        raise AttributeError(f'dir_name of existing file cannot be set to {dir_name}')
+
+
+
+    @property
+    def name(self) -> str:
+        return super().name
+
+
+
+    @name.setter
+    def name(self, name:str) -> None:
+        raise AttributeError(f'name of existing file cannot be set to {name}')
 
 
     def put(self, node:Node=None, **kwargs:Any) -> None:
