@@ -4,7 +4,8 @@ import pytest
 
 def test_node_filenode_init():
     res = FileNode()
-    assert type(res) == FileNode
+    assert os.path.exists(res.path)
+    
 
 @pytest.fixture
 def filenode_dir_name_and_name_none():
@@ -19,3 +20,13 @@ def filenode_dir_name_and_name_none():
 
 def test_node_filenode_path_none(filenode_dir_name_and_name_none):
     assert filenode_dir_name_and_name_none == 'dir/file_node'
+
+# @pytest.fixture
+# def filenode_put():
+#     res = FileNode('dir/', 'jsonfile_test')
+#     res.path
+#     res.put()
+#     super(res).put
+#     assert
+
+# def test_filenode_put(filenode_put):

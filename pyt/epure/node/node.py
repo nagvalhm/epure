@@ -1,8 +1,7 @@
 from __future__ import annotations
 from abc import abstractmethod
-from os import name
 from typing import *
-import re
+import inflection
 
 class Storable():
 
@@ -87,7 +86,7 @@ class Node(Searchable, Storable):
     @property
     def name(self) -> str:
         if not self._name:
-            self._name = re.sub(r'(?<!^)(?=[A-Z])', '_', type(self).__name__).lower()
+            self._name = inflection.underscore(type(self).__name__)
         return self._name
 
 
