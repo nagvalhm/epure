@@ -33,12 +33,15 @@ def test_filenode_dir_name_and_name_none(sysnode):
     assert not sysnode.contains(res)
 
 
-# @pytest.fixture
-# def filenode_put():
-#     res = FileNode('dir/', 'jsonfile_test')
-#     res.path
-#     res.put()
-#     super(res).put
-#     assert
 
-# def test_filenode_put(filenode_put):
+# def test_filenode_put(capsys):
+#     res = FileNode(dir_name='dir/', name='jsonfile_test')
+#     res.inner_node = Node()
+#     res.inner_node.greed = 'hi'
+#     res.put(res)
+#     captured = capsys.readouterr()
+#     assert '"_dir_name": "dir/", "_name": "jsonfile_test"' in captured.out
+
+
+    # {"_dir_name": "dir/", "_name": "jsonfile_test", 
+    # "inner_node": "<pyt.epure.node.node.Node object at 0x0000020609A89400>"}
