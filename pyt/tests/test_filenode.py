@@ -37,11 +37,14 @@ def test_filenode_dir_name_and_name_none(sysnode):
 # def test_filenode_put(capsys):
 #     res = FileNode(dir_name='dir/', name='jsonfile_test')
 #     res.inner_node = Node()
+#     res.tuple = ['ad', 'asd', 13]
+#     res.inner_node.typle.dict = ({},{})
 #     res.inner_node.greed = 'hi'
-#     res.put(res)
+#     res.to_json()
 #     captured = capsys.readouterr()
-#     assert '"_dir_name": "dir/", "_name": "jsonfile_test"' in captured.out
+#     assert ' ' in captured.out
 
 
     # {"_dir_name": "dir/", "_name": "jsonfile_test", 
     # "inner_node": "<pyt.epure.node.node.Node object at 0x0000020609A89400>"}
+    # '{"_dir_name": "\\"dir/\\"", "_name": "\\"jsonfile_test\\"", "inner_node": "{\\"_name\\": \\"null\\", \\"typle\\": \\"[\\\\\\"fast\\\\\\", \\\\\\"long\\\\\\"]\\", \\"greed\\": \\"\\\\\\"hi\\\\\\"\\"}", "tuple": "[\\"ad\\", \\"asd\\", 13]"}'

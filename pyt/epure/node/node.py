@@ -2,6 +2,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import *
 import inflection
+import json
 
 class Storable():
 
@@ -94,5 +95,16 @@ class Node(Searchable, Storable):
     @name.setter
     def name(self, name:str) -> None:
         self._name = name
+    
+
+
+    def to_json(self) -> str:
+        json_dict = {}
+        for key, val in vars(self).items():
+            if hasattr(val, 'to_json') and callable(val.to_json):
+                json_dict[key] = val.to_json()
+            else:
+                json_dict[key] = json.dumps(val)
+        return json.dumps(json_dict)
 
 Node.heap = Node()
