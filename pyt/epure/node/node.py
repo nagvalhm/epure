@@ -3,7 +3,9 @@ from abc import abstractmethod
 from typing import *
 import inflection
 import json
-
+import jsonpickle
+from deepdiff import DeepDiff
+ 
 class Storable():
 
     @abstractmethod
@@ -98,13 +100,29 @@ class Node(Searchable, Storable):
     
 
 
-    def to_json(self) -> str:
-        json_dict = {}
-        for key, val in vars(self).items():
-            if hasattr(val, 'to_json') and callable(val.to_json):
-                json_dict[key] = val.to_json()
-            else:
-                json_dict[key] = json.dumps(val)
-        return json.dumps(json_dict)
+    def to_json(self) -> Any:
+        return jsonpickle.encode(self)
 
+
+
+    @staticmethod
+    def from_json(json_str:str) -> Any:
+        return jsonpickle.decode(json_str)
+
+
+
+    def __eq__(self, o: object) -> bool:
+        if self is o:
+            return True
+        self_json = self.to_json()
+        if not isinstance(o, Node):
+            raise TypeError
+        o_json = o.to_json()
+        return bool(json.loads(self_json) == json.loads(o_json))
+
+        # return bool(DeepDiff(self, o) == {})
+
+        
+        
+       
 Node.heap = Node()

@@ -87,7 +87,7 @@ class SysNode(Node):
             path = node.path
 
         if not isinstance(path, str):
-            raise Exception('path must be string')
+            raise TypeError
 
         return path
 

@@ -3,3 +3,5 @@ pytest==6.2.5
 mypy==0.910
 pre-commit==2.15.0
 inflection==0.5.1
+jsonpickle==2.0.0
+deepdiff==5.6.0
