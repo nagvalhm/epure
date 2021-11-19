@@ -11,6 +11,8 @@ from pathlib import Path, WindowsPath
 import re
 import shutil
 
+__all__ = ['DirNode']
+
 class DirNode(Node):
     _instance = None
     _initialized = None
@@ -88,7 +90,7 @@ class DirNode(Node):
 
 
         if not isinstance(path, str):
-            raise TypeError
+            raise TypeError('path must be str')
 
         return path
 

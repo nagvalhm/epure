@@ -41,10 +41,9 @@ def test_filenode_put(capsys):
     res.innernode.greet = 'hello'
     res.tuple = ('abc','gg')
     res.innernode.set = (1,2,3)
-    res.put()
+    res.put(res)
     captured_json = capsys.readouterr()
     assert '"tuple": {"py/tuple": ["abc", "gg"]}' in captured_json.out
-    assert not '"tuple": {"py/tuple": ["not tuple", "ss"]}' in captured_json.out
     assert '"innernode": {"py/object": "pyt.epure.node.node.Node"' in captured_json.out
     assert '"set": {"py/tuple": [1, 2, 3]}' in captured_json.out
     assert dirnode.contains(res)

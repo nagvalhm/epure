@@ -4,6 +4,8 @@ pyt/env39
 __pycache__/
 *.py[cod]
 pyt/sandbox.py
+config_test/
+config/
 # *$py.class
 
 # # C extensions

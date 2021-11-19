@@ -38,7 +38,7 @@ class ProtoMeta(type):
             raise
         res = protos[0]
         if not isinstance(res, ProtoMeta):
-            raise TypeError
+            raise TypeError('res must be ProtoMeta')
 
         cls._proto_cls = res
         return res
@@ -54,7 +54,7 @@ class Proto(metaclass=ProtoMeta):
         print(f'{cls.__name__} new called')
         res = super(type, cls).__new__(cls)
         if not isinstance(res, Proto):
-            raise TypeError
+            raise TypeError('res must be Proto')
         proto_cls = cls.proto_cls
         if '__abstractclass__' not in vars(proto_cls).keys():
             res.__proto__ = proto_cls(*args, **kwargs)

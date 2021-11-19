@@ -4,8 +4,9 @@ from typing import *
 import inflection
 import json
 import jsonpickle
-from deepdiff import DeepDiff
- 
+# from deepdiff import DeepDiff
+
+
 class Storable():
 
     @abstractmethod
@@ -100,15 +101,17 @@ class Node(Searchable, Storable):
     
 
 
-    def to_json(self) -> Any:
-        return jsonpickle.encode(self)
+    def to_json(self) -> str:
+        return str(jsonpickle.encode(self))
 
 
 
     @staticmethod
-    def from_json(json_str:str) -> Any:
-        return jsonpickle.decode(json_str)
-
+    def from_json(json_str:str) -> Node:
+        res = jsonpickle.decode(json_str)
+        if not isinstance(res, Node):
+            raise TypeError('res must be Node')
+        return res
 
 
     def __eq__(self, o: object) -> bool:
@@ -116,7 +119,7 @@ class Node(Searchable, Storable):
             return True
         self_json = self.to_json()
         if not isinstance(o, Node):
-            raise TypeError
+            raise TypeError('o must be Node')
         o_json = o.to_json()
         return bool(json.loads(self_json) == json.loads(o_json))
 
