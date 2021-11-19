@@ -31,3 +31,21 @@ def test_filenode_dir_name_and_name_none(sysnode):
     # assert res.path == 'dir/file_node'
     node_sysnode_delete(res.path)
     assert not sysnode.contains(res)
+
+def test_filenode_put(capsys,sysnode):
+    res = FileNode()
+    res.innernode = Node()
+    res.innernode.greet = 'hello'
+    res.tuple = ('abc','gg')
+    res.innernode.set = (1,2,3)
+    res.put()
+    captured_json = capsys.readouterr()
+    assert '"tuple": {"py/tuple": ["abc", "gg"]}' in captured_json.out
+    assert not '"tuple": {"py/tuple": ["not tuple", "ss"]}' in captured_json.out
+    assert '"innernode": {"py/object": "pyt.epure.node.node.Node"' in captured_json.out
+    assert '"set": {"py/tuple": [1, 2, 3]}' in captured_json.out
+    assert sysnode.contains(res)
+    node_sysnode_delete(res.path)
+    assert not sysnode.contains(res)
+    
+

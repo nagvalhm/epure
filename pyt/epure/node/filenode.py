@@ -1,8 +1,6 @@
 from __future__ import annotations
 import os
 from typing import Any
-import json
-
 from pyt.epure.node.node import Node
 
 
@@ -53,12 +51,13 @@ class FileNode(Node):
         raise AttributeError(f'name of existing file cannot be set to {name}')
 
 
-    # def put(self, node:Node=None, **kwargs:Any) -> None:
-    #     node_json = json.dumps(self.__dict__, ensure_ascii=False, default=str)
-    #     print(node_json)
-    #     with open(self.path, "a+") as file_object:
-    #         file_object.seek(0)
-    #         data = file_object.read(100)
-    #         if len(data) > 0:
-    #             file_object.write("\n")
-    #         file_object.write(node_json)
+    def put(self, node:Node=None, **kwargs:Any) -> None:
+        node_json = self.to_json()
+        print(node_json)
+        with open(os.path.join('config_test/',self.name), "a+") as file_object:
+            file_object.seek(0)
+            data = file_object.read(100)
+            if len(data) > 0:
+                file_object.write("\n")
+            file_object.write(str(node_json))
+

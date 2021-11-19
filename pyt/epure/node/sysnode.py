@@ -84,7 +84,8 @@ class SysNode(Node):
             return str(os.path.join(path, node.name))
 
         if node and isinstance(node, FileNode):        
-            path = node.path
+            path = os.path.join(node.dir_name, node.name)
+
 
         if not isinstance(path, str):
             raise TypeError
@@ -100,3 +101,4 @@ class SysNode(Node):
         open(full_path,"w")
 
 FileNode.storage = SysNode()
+sysnode = SysNode()
