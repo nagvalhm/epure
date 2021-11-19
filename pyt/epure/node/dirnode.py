@@ -11,7 +11,7 @@ from pathlib import Path, WindowsPath
 import re
 import shutil
 
-class SysNode(Node):
+class DirNode(Node):
     _instance = None
     _initialized = None
     root = 'config'
@@ -99,6 +99,5 @@ class SysNode(Node):
         if not os.path.exists(parent_dir):
             Path(parent_dir).mkdir(parents=True, exist_ok=True)
         open(full_path,"w")
-
-FileNode.storage = SysNode()
-sysnode = SysNode()
+dirnode = DirNode(root='config_test')
+FileNode.storage = dirnode

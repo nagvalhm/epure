@@ -1,2 +1,0 @@
-{"py/object": "pyt.epure.node.filenode.FileNode", "_dir_name": null, "_name": "file_node", "innernode": {"py/object": "pyt.epure.node.node.Node", "_name": null, "greet": "hello", "set": {"py/tuple": [1, 2, 3]}}, "tuple": {"py/tuple": ["abc", "gg"]}}
-{"py/object": "pyt.epure.node.filenode.FileNode", "_dir_name": null, "_name": "file_node", "innernode": {"py/object": "pyt.epure.node.node.Node", "_name": null, "greet": "hello", "set": {"py/tuple": [1, 2, 3]}}, "tuple": {"py/tuple": ["abc", "gg"]}}

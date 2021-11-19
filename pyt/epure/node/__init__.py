@@ -1,3 +1,3 @@
 from .node import *
-from .sysnode import *
+from .dirnode import *
 from .filenode import *
