@@ -1,8 +1,8 @@
 # type: ignore
 from ..epure.node import *
 import pytest
-from .test_dirnode import node_dirnode_delete
-from ..epure.node.dirnode import dirnode 
+from .test_sysnode import node_sysnode_delete
+from ..epure.node.dirnode import sysnode
 
 # @pytest.fixture
 # def dirnode():
@@ -11,9 +11,9 @@ from ..epure.node.dirnode import dirnode
 
 def node_filenode_init(dirnode,**kwargs):
     res = FileNode(**kwargs)
-    assert dirnode.contains(res)
-    node_dirnode_delete(res.path)
-    assert not dirnode.contains(res)
+    assert sysnode.contains(res)
+    node_sysnode_delete(res.path)
+    assert not sysnode.contains(res)
 
 def test_node_filenode_init():
     node_filenode_init(dirnode)
@@ -31,8 +31,8 @@ def test_filenode_dir_name_and_name_none():
         res.dir_name = 'dir'
     # assert res.dir_name == 'dir/'
     # assert res.path == 'dir/file_node'
-    node_dirnode_delete(res.path)
-    assert not dirnode.contains(res)
+    node_sysnode_delete(res.path)
+    assert not sysnode.contains(res)
 
 def test_filenode_put(capsys):
 # def test_filenode_put(capsys,dirnode):
@@ -46,8 +46,8 @@ def test_filenode_put(capsys):
     assert '"tuple": {"py/tuple": ["abc", "gg"]}' in captured_json.out
     assert '"innernode": {"py/object": "pyt.epure.node.node.Node"' in captured_json.out
     assert '"set": {"py/tuple": [1, 2, 3]}' in captured_json.out
-    assert dirnode.contains(res)
-    node_dirnode_delete(res.path)
-    assert not dirnode.contains(res)
+    assert sysnode.contains(res)
+    node_sysnode_delete(res.path)
+    assert not sysnode.contains(res)
     
 

@@ -119,7 +119,7 @@ class Node(Searchable, Storable):
             return True
         self_json = self.to_json()
         if not isinstance(o, Node):
-            raise TypeError('o must be Node')
+            raise TypeError(f'{o} must be Node')
         o_json = o.to_json()
         return bool(json.loads(self_json) == json.loads(o_json))
 

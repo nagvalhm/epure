@@ -101,5 +101,5 @@ class DirNode(Node):
         if not os.path.exists(parent_dir):
             Path(parent_dir).mkdir(parents=True, exist_ok=True)
         open(full_path,"w")
-dirnode = DirNode(root='config_test')
-FileNode.storage = dirnode
+sysnode = DirNode(root='config_test')
+FileNode.storage = sysnode
