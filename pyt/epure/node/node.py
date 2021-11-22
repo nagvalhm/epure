@@ -38,6 +38,7 @@ class Node(Searchable, Storable):
     dict:Dict[object, object] = {}
     heap:Node
     _name:str
+    
 
     def __init__(self, storage:Any = None, name:str=None) -> None:
         if storage:
@@ -74,9 +75,13 @@ class Node(Searchable, Storable):
 
 
 
-    def contains(self, node:Node=None, **kwargs:Any) -> bool:
+    def contains(self, node:Node=None) -> bool:
         pass
 
+
+    @property
+    def path(self) -> str:
+        return ''
 
 
     def get_storage(self, storage:Any=None) -> Any:

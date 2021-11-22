@@ -3,7 +3,8 @@ from os import path, putenv
 import pytest
 from ..epure.node import *
 import sys
-from ..epure.node.dirnode import sysnode
+
+sysnode = DirNode.root
 
 def test_node_node_init():
     storage = None
@@ -11,40 +12,41 @@ def test_node_node_init():
     assert type(res) == Node
 
 
-def node_sysnode_put(path):
-    assert not sysnode.contains(path=path)
-    path = sysnode.put(path=path)
-    assert sysnode.contains(path=path)
+def node_sysnode_put(node):
+    assert not sysnode.contains(node)
+    path = sysnode.put(node)
+    assert sysnode.contains(node)
 
     return path
 
 
-def node_sysnode_delete(path):
-    while path != '.':
-        assert sysnode.contains(path=path)
-        parent = sysnode.delete(path=path)
-        assert parent        
-        assert ((not sysnode.contains(path=path)) 
-            and sysnode.contains(path=parent))
-        path = parent
+def node_sysnode_delete(node):
+    while node.path != '.':
+        assert sysnode.contains(node)
+        parent = sysnode.delete(node)
+        assert parent
+        assert ((not sysnode.contains(node))
+            and sysnode.contains(parent))
+        node = parent
        
     
 def test_node_sysnode_delete():
-    file_path = node_sysnode_put("dir1/dir2/file.txt")
-    dir_path = node_sysnode_put("dir3/dir4/coc/")
 
-    node_sysnode_delete(file_path)
-    node_sysnode_delete(dir_path)
+    file = node_sysnode_put(FileNode(name="dir1/dir2/file.txt"))
+    dir = node_sysnode_put(DirNode(name="dir3/dir4/coc/"))
 
-    file_path = node_sysnode_put("dir1/dir2/file.txt")
-    node_sysnode_delete("dir1")
-    file_path = node_sysnode_put("dir1/dir2/file.txt")
-    node_sysnode_delete("dir1/")
+    node_sysnode_delete(file)
+    node_sysnode_delete(dir)
+
+    node_sysnode_put(FileNode(name="dir1/dir2/file.txt"))
+    node_sysnode_delete(DirNode(name="dir1"))
+    node_sysnode_put(FileNode(name="dir1/dir2/file.txt"))
+    node_sysnode_delete(DirNode(name="dir1/"))
 
 
 @pytest.fixture
 def file_node():
-    node = FileNode(name = "file.txt", dir_name = "dir1/dir2/", save=False)
+    node = FileNode(DirNode("dir1/dir2/"), "file.txt")
     return node
 
 
@@ -55,18 +57,18 @@ def test_node_sysnode_filenode(file_node):
     assert sysnode.contains(file_node)
     sysnode.delete(file_node)
     assert not sysnode.contains(file_node)
-    node_sysnode_delete(file_node.dir_name)
+    node_sysnode_delete(file_node.storage.path)
     
 
 def test_node_sysnode_filenode_and_path(file_node):
 
-    another_parent = "dir3/dir4/coc/"
-    assert not sysnode.contains(file_node, path = another_parent)
-    sysnode.put(file_node, path = another_parent)
+    another_parent = DirNode(name="dir3/dir4/coc/")
+    assert not another_parent.contains(file_node)
+    another_parent.put(file_node)
     assert not sysnode.contains(file_node)
-    assert sysnode.contains(file_node, path = another_parent)
-    sysnode.delete(file_node, path = another_parent)
-    assert not sysnode.contains(file_node, path = another_parent)
+    assert another_parent.contains(file_node)
+    another_parent.delete(file_node)
+    assert not another_parent.contains(file_node)
     node_sysnode_delete(another_parent)    
 
 

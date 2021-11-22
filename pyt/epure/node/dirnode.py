@@ -11,29 +11,15 @@ from pathlib import Path, WindowsPath
 import re
 import shutil
 
-__all__ = ['DirNode']
 
 class DirNode(Node):
     _instance = None
     _initialized = None
-    root = 'config'
+    root:DirNode = None
+    
 
-    def __init__(self, storage: Any = None, name:str=None, *, root:str=None) -> None:
-        if(self._initialized): 
-            return        
-        self.storage = storage
-
-        if root:
-            self.root = root
-        self._initialized = True
+    def __init__(self, storage:Any = None, name:str=None) -> None:
         return super().__init__(storage, name)
-
-
-
-    def __new__(cls, storage:Any=None, root:str=None) -> Any:
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-        return cls._instance
 
 
 
@@ -70,29 +56,40 @@ class DirNode(Node):
 
 
 
-    def contains(self, node:Node=None, **kwargs:Any) -> bool:
-        path = self._path(node, **kwargs)
-        return os.path.exists(self._full_path(path))
+    def contains(self, node:Node=None) -> bool:
+        if not os.path.exists(node.path):
+            return False
+
+        self_path = os.path.split(self.path)
+        node_path = os.path.split(node.path)
+
+        return self_path < node_path
 
 
 
-    def _full_path(self, path:str) -> str: 
-        return os.path.join(self.root, path)
+    # def _full_path(self, path:str) -> str: 
+    #     return os.path.join(self.root, path)
+
+    @property
+    def path(self) -> str:
+        storage_path = os.path.abspath(os.curdir)
+        if self.storage:
+            storage_path = self.storage.path
+        return str(os.path.join(storage_path, self.name))
+            
+
+    # def _path(self, node:Node=None, path:str=None) -> str:
+    #     if node and path:            
+    #         return str(os.path.join(path, node.name))
+
+    #     if node and isinstance(node, FileNode):        
+    #         path = os.path.join(node.dir_name, node.name)
 
 
+    #     if not isinstance(path, str):
+    #         raise TypeError('path must be str')
 
-    def _path(self, node:Node=None, path:str=None) -> str:
-        if node and path:            
-            return str(os.path.join(path, node.name))
-
-        if node and isinstance(node, FileNode):        
-            path = os.path.join(node.dir_name, node.name)
-
-
-        if not isinstance(path, str):
-            raise TypeError('path must be str')
-
-        return path
+    #     return path
 
 
 
@@ -101,5 +98,7 @@ class DirNode(Node):
         if not os.path.exists(parent_dir):
             Path(parent_dir).mkdir(parents=True, exist_ok=True)
         open(full_path,"w")
-sysnode = DirNode(root='config_test')
-FileNode.storage = sysnode
+
+
+DirNode.root = DirNode(name='config_test')
+FileNode.storage = DirNode.root
