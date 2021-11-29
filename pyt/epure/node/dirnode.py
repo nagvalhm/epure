@@ -7,75 +7,83 @@ from typing import Optional
 import os
 from typing import Any
 from .node import Node
-from pathlib import Path, WindowsPath
-import re
+from pathlib import Path
 import shutil
 
 
-class DirNode(Node):
+class DirNode(FileNode):
     _instance = None
     _initialized = None
-    root:DirNode = None
-    
 
-    def __init__(self, storage:Any = None, name:str=None) -> None:
-        return super().__init__(storage, name)
+    # def __init__(self, storage:Any = None, name:str=None) -> None:
+    #     return super().__init__(storage, name)
 
 
 
-    def put(self, node:Node = None, **kwargs:Any) -> Any:
-        path = self._path(node, **kwargs)       
+    def put(self, node:Node = None) -> Any:
         
-        if self.contains(path=path):
-            return path
+        if self.contains(node):
+            return node
 
-        full_path = self._full_path(path)
-        is_dir = str(path).endswith("/")
+        node_path = str(Path(self.path).joinpath(node.name))
+
+        is_dir = isinstance(node, DirNode)
         if is_dir:
-            Path(full_path).mkdir(parents=True, exist_ok=True)
+            node = DirNode(name=node_path, name_has_root=True)
+            Path(node_path).mkdir(parents=True, exist_ok=True)
         else:
-            self._create_file(full_path)
+            node = FileNode(name=node_path, name_has_root=True)
+            self._create_file(node_path)
 
-        return path
+        return node
 
 
 
-    def delete(self, node:Node = None, **kwargs:Any) -> Any:
-        path = self._path(node, **kwargs)
+    def delete(self, node:Node = None) -> Any:
 
-        if not self.contains(path=path):
+        if node == self.root:
+            raise SystemError
+
+        if not self.contains(node):
             return False
-
-        full_path = self._full_path(path)        
-        if os.path.isfile(full_path):
-            os.remove(full_path)
+       
+        if Path(node.path).is_file():
+            os.remove(node.path)
         else:
-            shutil.rmtree(full_path)
+            shutil.rmtree(node.path)
         
-        return str(Path(path).parent)
+        # str(Path(path).parent)
+        
+        return node.storage
 
 
 
-    def contains(self, node:Node=None) -> bool:
-        if not os.path.exists(node.path):
+    def contains(self, node:Node=None, deep:bool=True) -> bool:
+        if not (node.path and Path(node.path).exists()):
             return False
 
-        self_path = os.path.split(self.path)
-        node_path = os.path.split(node.path)
+        parent_path = Path(self.path).parts
+        node_path = Path(node.path).parts
 
-        return self_path < node_path
+        if not deep:
+            return parent_path == node_path[:-1]
+
+        return parent_path <= node_path
 
 
 
     # def _full_path(self, path:str) -> str: 
     #     return os.path.join(self.root, path)
 
-    @property
-    def path(self) -> str:
-        storage_path = os.path.abspath(os.curdir)
-        if self.storage:
-            storage_path = self.storage.path
-        return str(os.path.join(storage_path, self.name))
+    # @property
+    # def path(self) -> str:
+    #     storage_path = os.curdir
+    #     if self.storage:
+    #         storage_path = self.storage.path
+        
+    #     res = os.path.join(storage_path, self.name)
+    #     # res = str(os.path.normpath(res))
+    #     return res       
             
 
     # def _path(self, node:Node=None, path:str=None) -> str:
@@ -93,12 +101,13 @@ class DirNode(Node):
 
 
 
-    def _create_file(self, full_path:str) -> None:
-        parent_dir = str(Path(full_path).parent)
-        if not os.path.exists(parent_dir):
-            Path(parent_dir).mkdir(parents=True, exist_ok=True)
-        open(full_path,"w")
+    def _create_file(self, path:str) -> None:
+        parent_dir = Path(path).parent
+        
+        if not parent_dir.exists():
+            parent_dir.mkdir(parents=True, exist_ok=True)
+        open(path,"w")
 
 
-DirNode.root = DirNode(name='config_test')
-FileNode.storage = DirNode.root
+FileNode.root = DirNode(name='config_test')
+# FileNode.storage = DirNode.root

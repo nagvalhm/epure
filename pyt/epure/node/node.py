@@ -20,7 +20,7 @@ class Storable():
 class Searchable():
 
     @abstractmethod
-    def put(self, node:Node=None, **kwargs:Any) -> Any:
+    def put(self, node:Node=None) -> Any:
         pass
 
     @abstractmethod
@@ -32,17 +32,18 @@ class StorageNotFound(Exception):
 
 
 class Node(Searchable, Storable):
-    storage = None
+    _storage = None
     parent = None
     __proto__ = None
     dict:Dict[object, object] = {}
-    heap:Node
-    _name:str
+    heap:Node = None
+    _name:str = None
+    # _storage = None
     
 
     def __init__(self, storage:Any = None, name:str=None) -> None:
         if storage:
-            self.storage = storage
+            self._storage = storage
         self._name = name
 
 
@@ -59,7 +60,7 @@ class Node(Searchable, Storable):
 
 
 
-    def put(self, node:Node=None, **kwargs:Any) -> Any:
+    def put(self, node:Node=None) -> Any:
         self.dict[id(node)] = node
         return id(node)
 
@@ -70,12 +71,12 @@ class Node(Searchable, Storable):
 
 
 
-    def delete(self, node:Node = None, **kwargs:Any) -> bool:
+    def delete(self, node:Node = None) -> bool:
         pass
 
 
 
-    def contains(self, node:Node=None) -> bool:
+    def contains(self, node:Node=None, deep:bool=True) -> bool:
         pass
 
 
@@ -129,6 +130,18 @@ class Node(Searchable, Storable):
         return bool(json.loads(self_json) == json.loads(o_json))
 
         # return bool(DeepDiff(self, o) == {})
+    
+
+
+    @property
+    def storage(self) -> Any:
+        return self._storage 
+
+
+
+    @storage.setter
+    def storage(self, storage:Any) -> None:
+        self._storage = storage
 
         
         
