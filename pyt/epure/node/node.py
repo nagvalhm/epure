@@ -41,6 +41,7 @@ class Node(Searchable, Storable):
     # _storage = None
     
 
+
     def __init__(self, storage:Any = None, name:str=None) -> None:
         if storage:
             self._storage = storage
@@ -80,9 +81,11 @@ class Node(Searchable, Storable):
         pass
 
 
+
     @property
     def path(self) -> str:
         return ''
+
 
 
     def get_storage(self, storage:Any=None) -> Any:
@@ -91,12 +94,18 @@ class Node(Searchable, Storable):
             raise StorageNotFound
         return storage
 
+
+
+    @classmethod
+    def class_name(cls) -> str:
+        return inflection.underscore(cls.__name__)
     
-    
+
+
     @property
     def name(self) -> str:
         if not self._name:
-            self._name = inflection.underscore(type(self).__name__)
+            self._name = type(self).class_name()
         return self._name
 
 
@@ -118,6 +127,7 @@ class Node(Searchable, Storable):
         if not isinstance(res, Node):
             raise TypeError('res must be Node')
         return res
+
 
 
     def __eq__(self, o: object) -> bool:
@@ -143,7 +153,6 @@ class Node(Searchable, Storable):
     def storage(self, storage:Any) -> None:
         self._storage = storage
 
-        
-        
-       
+
+
 Node.heap = Node()

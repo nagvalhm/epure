@@ -2,8 +2,6 @@ from __future__ import annotations
 # from typing import TYPE_CHECKING
 # if TYPE_CHECKING:
 from .filenode import FileNode
-
-from typing import Optional
 import os
 from typing import Any
 from .node import Node
@@ -14,9 +12,6 @@ import shutil
 class DirNode(FileNode):
     _instance = None
     _initialized = None
-
-    # def __init__(self, storage:Any = None, name:str=None) -> None:
-    #     return super().__init__(storage, name)
 
 
 
@@ -52,8 +47,6 @@ class DirNode(FileNode):
         else:
             shutil.rmtree(node.path)
         
-        # str(Path(path).parent)
-        
         return node.storage
 
 
@@ -72,35 +65,6 @@ class DirNode(FileNode):
 
 
 
-    # def _full_path(self, path:str) -> str: 
-    #     return os.path.join(self.root, path)
-
-    # @property
-    # def path(self) -> str:
-    #     storage_path = os.curdir
-    #     if self.storage:
-    #         storage_path = self.storage.path
-        
-    #     res = os.path.join(storage_path, self.name)
-    #     # res = str(os.path.normpath(res))
-    #     return res       
-            
-
-    # def _path(self, node:Node=None, path:str=None) -> str:
-    #     if node and path:            
-    #         return str(os.path.join(path, node.name))
-
-    #     if node and isinstance(node, FileNode):        
-    #         path = os.path.join(node.dir_name, node.name)
-
-
-    #     if not isinstance(path, str):
-    #         raise TypeError('path must be str')
-
-    #     return path
-
-
-
     def _create_file(self, path:str) -> None:
         parent_dir = Path(path).parent
         
@@ -109,5 +73,5 @@ class DirNode(FileNode):
         open(path,"w")
 
 
+
 FileNode.root = DirNode(name='config_test')
-# FileNode.storage = DirNode.root

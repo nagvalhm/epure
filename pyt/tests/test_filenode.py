@@ -4,10 +4,7 @@ import pytest
 from .test_sysnode import node_sysnode_delete
 
 sysnode = DirNode.root
-# @pytest.fixture
-# def dirnode():
-# def dirnode() -> dirnode:
-    # return dirnode
+
 
 def node_filenode_init(dir=None, name=None):
     res = FileNode(dir,name)
@@ -63,4 +60,7 @@ def test_filenode_put(capsys):
     node_sysnode_delete(res)
     assert not sysnode.contains(res)
 
-# def 
+def test_filenode_singleobj():
+    filenode1 = FileNode(name='dir1/dir2/dir3/node1')
+    filenode2 = FileNode(DirNode(name='dir1/dir2/dir3'), name='node1')
+    assert filenode2 is filenode1
