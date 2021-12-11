@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any, Dict
 from .node import Node
 from pathlib import Path
+import os
 
 class FileNode(Node):
     _dir_name:str
@@ -88,8 +89,21 @@ class FileNode(Node):
         if not self.root.contains(self):
             raise FileNotFoundError()
         print(node_json)
-        with open(self._path, "a") as file:
-            file.write(node_json)
+        with open(self._path, "a+") as file:
+            if(os.path.getsize(self._path) > 0):
+                file.write("\n" + node_json)
+            else:
+                file.write(node_json)
+
+
+
+    def search(self, keys:list[str]) -> Any:
+        res = []
+        with open(self.path, 'r', encoding='UTF-8') as file:
+            for line in file:
+                if all(key in line for key in keys):
+                    res.append(line)
+            return list(map(lambda item: Node.from_json(item), res))
 
 
 

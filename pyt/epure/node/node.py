@@ -24,7 +24,7 @@ class Searchable():
         pass
 
     @abstractmethod
-    def search(self, key:object) -> Any:
+    def search(self, keys:list[str]) -> Any:
         pass
 
 class StorageNotFound(Exception):
@@ -67,8 +67,8 @@ class Node(Searchable, Storable):
 
 
 
-    def search(self, key:object) -> Any:        
-        return self.dict[key]
+    def search(self, keys:list[str]) -> Any:        
+        return self.dict[keys]
 
 
 
