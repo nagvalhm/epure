@@ -7,28 +7,23 @@ from .node import Node # type: ignore
 class Epure(type):
 
 
-    def __new__(mcls, cls:type, protocol_cls:type=None, *, storage:Any=None) -> Epure:
+    def __new__(mcls, cls:type, node_cls:type=Node, *, storage:Any=None) -> Epure:
 
         if type(cls) is Epure:
             return cls
 
-
-        methods = ('save', 'find', 'put', 'search')
-        for foo_name in methods:
-            if not (hasattr(cls, foo_name) and callable(getattr(cls, foo_name))):
-                if not protocol_cls:
-                    raise NodeException(f'{foo_name} must be implemented')
-                else:
-                    val = getattr(protocol_cls, foo_name)
-                    setattr(cls, foo_name, val)
-                    
+        cls_bases = cls.__bases__
+        if not issubclass(cls, node_cls):
+            bases = list(cls_bases)
+            bases.append(node_cls)
+            cls_bases = tuple(bases)                    
 
         for atr_name in dir(cls):
             value = getattr(cls, atr_name, None)
             mcls.on_setattr(cls.__name__, atr_name, value)
 
 
-        res = super().__new__(mcls, cls.__name__, cls.__bases__, dict(cls.__dict__))
+        res = super().__new__(mcls, cls.__name__, cls_bases, dict(cls.__dict__))
         if storage:
             res._storage = storage
 
@@ -68,9 +63,9 @@ class Epure(type):
 class NodeException(Exception):
     pass
 
-def epure(storage_:Any=None) -> Any:
+def epure(node_cls:Any=Node, storage_:Any=None) -> Any:
     def epure_creator(cls:type) -> type:
-        return Epure(cls, Node, storage=storage_)
+        return Epure(cls, node_cls, storage=storage_)
     return epure_creator
 
 # Epure = Epure(Epure, Node)

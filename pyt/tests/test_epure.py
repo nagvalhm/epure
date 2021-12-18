@@ -9,7 +9,7 @@ class Cap:
     ___cap_field___ = '___cap_field_val'
     __cap_field__ = '__cap_field_val'
     field = 'asdf'
-    def search():
+    def search(self):
         pass
 
 
@@ -18,9 +18,9 @@ class Shaker(Cap):
     __shaker_field__ = '__shaker_field_val'
 
 
-def test_raise_NodeException():    
-    with pytest.raises(NodeException):
-        res = Epure(Shaker)
+# def test_raise_NodeException():    
+#     with pytest.raises(NodeException):
+#         res = Epure(Shaker)
 
 #epure_constructed
 @pytest.fixture
@@ -59,13 +59,21 @@ del Shaker
 class Shaker(Cap):
     ___shaker_field___ = '___shaker_field_val'
     __shaker_field__ = '__shaker_field_val'
+    def search(self):
+        print('Shaker search method')
 
 @pytest.fixture
-def epure_decorated(capsys):    
-    res = epure('storage')(Shaker)
+def epure_decorated(capsys):
+    node_cls = Node
+    res = epure(node_cls, 'storage')(Shaker)
     captured = capsys.readouterr()
     assert_epure_msg(captured.out)
     assert type(res) == Epure
+    assert issubclass(res, node_cls)
+    entity = res()
+    entity.search()
+    captured = capsys.readouterr()
+    assert 'Shaker search method' in captured.out
     return res
 
 def test_setattr_decorated(epure_decorated, capsys):
