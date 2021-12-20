@@ -5,16 +5,19 @@ from ..epure import *
 import subprocess
 
 @pytest.fixture
-def shaker_cls():
+def cap_cls():
     class Cap:    
         ___cap_field___ = '___cap_field_val'
         __cap_field__ = '__cap_field_val'
         field = 'asdf'
         def search(self):
             pass
+    return Cap
 
+@pytest.fixture
+def shaker_cls(cap_cls):
 
-    class Shaker(Cap):
+    class Shaker(cap_cls):
         ___shaker_field___ = '___shaker_field_val'
         __shaker_field__ = '__shaker_field_val'
 
@@ -23,18 +26,32 @@ def shaker_cls():
 
     return Shaker
 
+def test_raises_second_inherit_error():
+    @epure()
+    class Cap:
+        pass
 
-# def test_raise_NodeException():    
-#     with pytest.raises(NodeException):
-#         res = Epure(Shaker)
+    with pytest.raises(TypeError):
+        @epure()
+        class Shaker(Cap):
+            pass
+
+
 
 #epure_constructed
 @pytest.fixture
-def epure_constructed(capsys, shaker_cls):    
-    res = Epure(shaker_cls, Node)
+def epure_constructed(capsys, shaker_cls, cap_cls):
+
+    # res = Epure(cap_cls, Node)
+    res = Epure(cap_cls.__name__, cap_cls.__bases__, cap_cls.__dict__, cls=cap_cls, node_cls=Node)
+    assert type(res) == Epure
+
+    res = Epure(shaker_cls.__name__, shaker_cls.__bases__, shaker_cls.__dict__, cls=shaker_cls, node_cls=Node)
     captured = capsys.readouterr()
     assert_epure_msg(captured.out, shaker_cls)
     assert type(res) == Epure
+    class EpureInhirit(res):
+        pass
     return res
 
 
@@ -84,11 +101,6 @@ def test_setattr_decorated(epure_decorated, capsys):
     assert_setattr_msg(epure_decorated, capsys)
 
 
-
-# @epure(FileNode, 'stror')
-# class Shaker(Cap):
-#     ___shaker_field___ = '___shaker_field_val'
-#     __shaker_field__ = '__shaker_field_val'
 
 
 def examine_shell_cmd(cmd):

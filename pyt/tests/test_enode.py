@@ -6,9 +6,10 @@ car_storage = FileNode(name='car.txt').save()
 wheel_storage = FileNode(name='wheel.txt').save()
 door_storage = FileNode(name='door.txt').save()
 
-# @epure(ENode, FileNode(name='car_storage.txt'))
+# @epure(ENode, car_storage)
 class Car:
     pass
+
 
 class ElectroCar(Car):
     pass
