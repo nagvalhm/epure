@@ -4,18 +4,24 @@ import pytest
 from ..epure import *
 import subprocess
 
+@pytest.fixture
+def shaker_cls():
+    class Cap:    
+        ___cap_field___ = '___cap_field_val'
+        __cap_field__ = '__cap_field_val'
+        field = 'asdf'
+        def search(self):
+            pass
 
-class Cap:    
-    ___cap_field___ = '___cap_field_val'
-    __cap_field__ = '__cap_field_val'
-    field = 'asdf'
-    def search(self):
-        pass
 
+    class Shaker(Cap):
+        ___shaker_field___ = '___shaker_field_val'
+        __shaker_field__ = '__shaker_field_val'
 
-class Shaker(Cap):
-    ___shaker_field___ = '___shaker_field_val'
-    __shaker_field__ = '__shaker_field_val'
+        def search(self):
+            print('Shaker search method')
+
+    return Shaker
 
 
 # def test_raise_NodeException():    
@@ -24,15 +30,15 @@ class Shaker(Cap):
 
 #epure_constructed
 @pytest.fixture
-def epure_constructed(capsys):    
-    res = Epure(Shaker, Node)
+def epure_constructed(capsys, shaker_cls):    
+    res = Epure(shaker_cls, Node)
     captured = capsys.readouterr()
-    assert_epure_msg(captured.out)
+    assert_epure_msg(captured.out, shaker_cls)
     assert type(res) == Epure
     return res
 
 
-def assert_epure_msg(captured_out):
+def assert_epure_msg(captured_out, Shaker):
     instrs = [f'on_setattr Shaker, ___cap_field___, {Shaker.___cap_field___}',        
         f'on_setattr Shaker, ___shaker_field___, {Shaker.___shaker_field___}',]
 
@@ -54,30 +60,36 @@ def assert_setattr_msg(test_epure, capsys):
     assert instr in captured.out
 
 #epure_decorated
-del Shaker
 
-class Shaker(Cap):
-    ___shaker_field___ = '___shaker_field_val'
-    __shaker_field__ = '__shaker_field_val'
-    def search(self):
-        print('Shaker search method')
+
 
 @pytest.fixture
-def epure_decorated(capsys):
+def epure_decorated(capsys, shaker_cls):
+
     node_cls = Node
-    res = epure(node_cls, 'storage')(Shaker)
+
+    Shaker = epure(node_cls, 'storage')(shaker_cls)    
+    
     captured = capsys.readouterr()
-    assert_epure_msg(captured.out)
-    assert type(res) == Epure
-    assert issubclass(res, node_cls)
-    entity = res()
+    assert_epure_msg(captured.out, shaker_cls)
+    assert type(Shaker) == Epure
+    assert issubclass(Shaker, node_cls)
+    entity = Shaker()
     entity.search()
     captured = capsys.readouterr()
     assert 'Shaker search method' in captured.out
-    return res
+    return Shaker
 
 def test_setattr_decorated(epure_decorated, capsys):
     assert_setattr_msg(epure_decorated, capsys)
+
+
+
+# @epure(FileNode, 'stror')
+# class Shaker(Cap):
+#     ___shaker_field___ = '___shaker_field_val'
+#     __shaker_field__ = '__shaker_field_val'
+
 
 def examine_shell_cmd(cmd):
     return not subprocess.call(cmd.split())

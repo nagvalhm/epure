@@ -1,5 +1,7 @@
 from __future__ import annotations
 from typing import Any
+
+from .node.filenode import FileNode
 from .query import Query
 from .node import Node # type: ignore
 
@@ -16,7 +18,7 @@ class Epure(type):
         if not issubclass(cls, node_cls):
             bases = list(cls_bases)
             bases.append(node_cls)
-            cls_bases = tuple(bases)                    
+            cls_bases = tuple(bases)
 
         for atr_name in dir(cls):
             value = getattr(cls, atr_name, None)
@@ -35,14 +37,6 @@ class Epure(type):
 
     def __init__(*args:Any, **kwargs:Any):
         pass
-        # cls, cls_name, bases, attrs
-        # execute = getattr(cls, 'exec')
-        # setattr(cls, 'exec', staticmethod(execute))
-        # for foo_name in ('save', 'take'):
-        #     foo = getattr(cls, foo_name)            
-        #     setattr(cls, foo_name, Query(foo, execute))
-
-        # return super().__init__(*args, **kwargs)
 
 
 
@@ -67,5 +61,10 @@ def epure(node_cls:Any=Node, storage_:Any=None) -> Any:
     def epure_creator(cls:type) -> type:
         return Epure(cls, node_cls, storage=storage_)
     return epure_creator
+
+# def file_epure(storage_:Any=None) -> Any:
+#     def epure_creator(cls:type) -> type:
+#         return Epure(cls, FileNode, storage=storage_)
+#     return epure_creator
 
 # Epure = Epure(Epure, Node)

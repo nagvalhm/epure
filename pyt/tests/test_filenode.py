@@ -3,7 +3,7 @@ from ..epure.node import *
 import pytest
 from .test_sysnode import node_sysnode_delete
 
-sysnode = DirNode.root
+sysnode = FileNode.root
 
 
 def node_filenode_init(dir=None, name=None):
