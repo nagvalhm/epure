@@ -26,16 +26,6 @@ def shaker_cls(cap_cls):
 
     return Shaker
 
-def test_raises_second_inherit_error():
-    @epure()
-    class Cap:
-        pass
-
-    with pytest.raises(TypeError):
-        @epure()
-        class Shaker(Cap):
-            pass
-
 
 
 #epure_constructed
@@ -85,7 +75,7 @@ def epure_decorated(capsys, shaker_cls):
 
     node_cls = Node
 
-    Shaker = epure(node_cls, 'storage')(shaker_cls)    
+    Shaker = epure('storage', node_cls)(shaker_cls)
     
     captured = capsys.readouterr()
     assert_epure_msg(captured.out, shaker_cls)

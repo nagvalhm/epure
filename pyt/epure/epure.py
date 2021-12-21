@@ -16,12 +16,20 @@ class Epure(type):
         storage = kwds.get('storage', None)
 
         if type(cls) is Epure:
-            raise TypeError(f'{cls} is Epure')
+            if storage:
+                cls._storage = storage
+            return cls
 
         if node_cls:
             cls_bases = mcls._add_node_cls(node_cls, cls, cls_bases)
+
+        namespace = dict(namespace)
+        if '__dict__' in namespace:
+            del namespace['__dict__']
+        if '__weakref__' in namespace:
+            del namespace['__weakref__']
         
-        res = super().__new__(mcls, name, cls_bases, dict(namespace))
+        res = super().__new__(mcls, name, cls_bases, namespace)
         if storage:
             res._storage = storage
 
@@ -46,6 +54,9 @@ class Epure(type):
             for base in cls_bases:
                 mro.union(base.mro())
             is_node_child = node_cls in mro
+
+        if is_node_child and node_cls:
+            raise TypeError('multiple Inhiritance prohibited for nodes')
 
         if not is_node_child:
             bases = list(cls_bases)
@@ -80,7 +91,7 @@ class Epure(type):
 class NodeException(Exception):
     pass
 
-def epure(_node_cls:Any=Node, _storage:Any=None) -> Any:
+def epure(_storage:Any=None, _node_cls:Any=Node) -> Any:
     def epure_creator(_cls:type) -> type:
         return Epure(_cls.__name__, _cls.__bases__, _cls.__dict__, cls=_cls, node_cls=_node_cls, storage=_storage)
     return epure_creator
