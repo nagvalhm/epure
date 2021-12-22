@@ -77,7 +77,7 @@ class Node(Searchable, Storable):
 
 
 
-    def contains(self, node:Node=None, deep:bool=True) -> bool:
+    def contains(self, node:Node, deep:bool=True) -> bool:
         pass
 
 

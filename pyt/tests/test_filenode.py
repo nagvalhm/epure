@@ -43,9 +43,8 @@ def test_filenode_setter_name_path():
 
 def test_filenode_put(capsys):
 # def test_filenode_put(capsys,dirnode):
+
     res = FileNode()
-    with pytest.raises(FileNotFoundError):
-        res.put(res)
     res.save()
     res.innernode = Node()
     res.innernode.greet = 'hello'
@@ -53,16 +52,21 @@ def test_filenode_put(capsys):
     res.innernode.set = (1,2,3)
     res.put(res)
     captured_json = capsys.readouterr()
+
     another_res = FileNode(name='file_node')
     another_res.save()
     another_res.job = 'javadeveloper'
     another_res.put(another_res)
+
     assert '"tuple": {"py/tuple": ["abc", "gg"]}' in captured_json.out
     assert '"innernode": {"py/object": "pyt.epure.node.node.Node"' in captured_json.out
     assert '"set": {"py/tuple": [1, 2, 3]}' in captured_json.out
+
     assert sysnode.contains(res)
-    new_res = res.search(['"tuple": {"py/tuple": ["abc", "gg"]}',''])
-    assert res == new_res[0]
+    # new_res = res.search(['"tuple": {"py/tuple": ["abc", "gg"]}','"tuple": {"py/tuple": ["abc", "gg"]}'])
+    # new_res = res.search(['"job": "javadeveloper"'])
+    assert res.contains(res)
+    # assert res == new_res[0]
     node_sysnode_delete(res)
     assert not sysnode.contains(res)
 

@@ -3,6 +3,8 @@ from typing import Any, Dict
 from .node import Node
 from pathlib import Path
 import os
+import random
+import re
 
 class FileNode(Node):
     _dir_name:str
@@ -63,7 +65,12 @@ class FileNode(Node):
         self._path = path
         self._name = Path(path).name
         return
-            
+
+
+
+    def get_id(self, json_str:str)->int:
+        return random.randrange(1,int(1e+9))
+     
 
 
     @property
@@ -85,25 +92,42 @@ class FileNode(Node):
 
 
     def put(self, node:Node=None) -> Any:
-        node_json = node.to_json()
         if not self.root.contains(self):
-            raise FileNotFoundError()
+            self.save()
+        node_json = node.to_json()
+        node_json = f'___{self.get_id(node_json)}___: {node_json}'
         print(node_json)
         with open(self._path, "a+") as file:
-            if(os.path.getsize(self._path) > 0):
+            file_is_empty = os.path.getsize(self._path) == 0
+            if(not file_is_empty):
                 file.write("\n" + node_json)
             else:
                 file.write(node_json)
 
 
 
-    def search(self, keys:list[str]) -> Any:
+    def search(self, keys:Any) -> Any:
         res = []
         with open(self.path, 'r', encoding='UTF-8') as file:
+            
+            json_pattern = re.compile(r'(\{.*?\}$)')
             for line in file:
                 if all(key in line for key in keys):
+
+                    # json_pattern: Any = r'(\{.*?\}$)'
+                    # line = re.findall(json_pattern, line)[0]                    
+                    line = json_pattern.search(line).group()
+
                     res.append(line)
             return list(map(lambda item: Node.from_json(item), res))
+
+
+
+    def contains(self, node: Node, deep: bool = True) -> bool:
+        return bool(self.search([node.to_json()]))
+
+       
+
 
 
 

@@ -51,7 +51,7 @@ class DirNode(FileNode):
 
 
 
-    def contains(self, node:Node=None, deep:bool=True) -> bool:
+    def contains(self, node:Node, deep:bool=True) -> bool:
         if not (node.path and Path(node.path).exists()):
             return False
 
