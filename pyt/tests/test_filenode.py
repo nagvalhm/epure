@@ -44,33 +44,37 @@ def test_filenode_setter_name_path():
 def test_filenode_put(capsys):
 # def test_filenode_put(capsys,dirnode):
 
-    res = FileNode()
-    res.save()
-    res.innernode = Node()
-    res.innernode.greet = 'hello'
-    res.tuple = ('abc','gg')
-    res.innernode.set = (1,2,3)
-    res.put(res)
+    file1 = FileNode().save()
+    
+    node1 = Node()
+    node1.innernode = Node()
+    node1.innernode.greet = 'hello'
+    node1.tuple = ('abc','gg')
+    node1.innernode.set = (1,2,3)
+    file1.put(node1)
+
     captured_json = capsys.readouterr()
 
-    another_res = FileNode(name='file_node')
-    another_res.save()
-    another_res.job = 'javadeveloper'
-    another_res.put(another_res)
+    file2 = FileNode(name='file_node2').save()
+    another_node = Node()
+    another_node.save()
+    another_node.job = 'javadeveloper'
+    file2.put(another_node)
 
     assert '"tuple": {"py/tuple": ["abc", "gg"]}' in captured_json.out
     assert '"innernode": {"py/object": "pyt.epure.node.node.Node"' in captured_json.out
     assert '"set": {"py/tuple": [1, 2, 3]}' in captured_json.out
 
-    assert sysnode.contains(res)
+    assert sysnode.contains(file1)
     # new_res = res.search(['"tuple": {"py/tuple": ["abc", "gg"]}','"tuple": {"py/tuple": ["abc", "gg"]}'])
     # new_res = res.search(['"job": "javadeveloper"'])
-    assert res.contains(res)
+    assert file1.contains(node1)
     # assert res == new_res[0]
-    node_sysnode_delete(res)
-    assert not sysnode.contains(res)
+    node_sysnode_delete(file1)
+    node_sysnode_delete(file2)
+    assert not sysnode.contains(file1)
 
-def test_filenode_singleobj():
-    filenode1 = FileNode(name='dir1/dir2/dir3/node1')
-    filenode2 = FileNode(DirNode(name='dir1/dir2/dir3'), name='node1')
-    assert filenode2 is filenode1
+# def test_filenode_singleobj():
+#     filenode1 = FileNode(name='dir1/dir2/dir3/node1')
+#     filenode2 = FileNode(DirNode(name='dir1/dir2/dir3'), name='node1')
+#     assert filenode2 is filenode1

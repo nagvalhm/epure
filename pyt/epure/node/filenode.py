@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 import random
 import re
+import copy
 
 class FileNode(Node):
     _dir_name:str
@@ -16,36 +17,58 @@ class FileNode(Node):
 
 
     def __init__(self, storage:Any=None, name:str=None, name_has_root:bool=False) -> None:
-        pass
+        name = name or self.class_name()
+        name_head = Path(name).name      
 
-
-
-    def __new__(cls, storage:Any=None, name:str=None, name_has_root:bool=False) -> Any:
-        name = name or cls.class_name()
-
+        node_path = self._get_node_path(storage, name, name_has_root, name_head)
         
+        self._name = name_head
+        self._path = node_path
+
+        if not node_path in self.registry:
+            self.registry[node_path] = self
+
+    @classmethod
+    def _get_node_path(cls, storage:Any, name:str, name_has_root:bool, name_head:str) -> str:
         storage_path = '' if not cls.root or name_has_root else cls.root.path
         if storage and storage.path:
             storage_path = storage.path
 
         name_tail = str(Path(name).parent)
         if name_tail != '.':
-            storage_path = str(Path(storage_path).joinpath(name_tail))
-
-        name_head = Path(name).name
+            storage_path = str(Path(storage_path).joinpath(name_tail))        
 
         node_path = str(Path(storage_path).joinpath(name_head))
 
-        if node_path in cls.registry:
-            return cls.registry[node_path]
-        
-        self = super(FileNode, cls).__new__(cls)
-        # self = super(FileNode, cls).__new__(cls)
-        self._name = name_head
-        self._path = node_path
-        self.registry[self._path] = self
+        return node_path
 
-        return self
+
+    # def __new__(cls, storage:Any=None, name:str=None, name_has_root:bool=False) -> Any:
+    #     name = name or cls.class_name()
+
+        
+    #     storage_path = '' if not cls.root or name_has_root else cls.root.path
+    #     if storage and storage.path:
+    #         storage_path = storage.path
+
+    #     name_tail = str(Path(name).parent)
+    #     if name_tail != '.':
+    #         storage_path = str(Path(storage_path).joinpath(name_tail))
+
+    #     name_head = Path(name).name
+
+    #     node_path = str(Path(storage_path).joinpath(name_head))
+
+    #     # if node_path in cls.registry:
+    #     #     return cls.registry[node_path]
+        
+    #     self = super(FileNode, cls).__new__(cls)
+        
+    #     self._name = name_head
+    #     self._path = node_path
+    #     self.registry[self._path] = self
+
+    #     return self
 
 
 
@@ -71,6 +94,14 @@ class FileNode(Node):
     def get_id(self, json_str:str)->int:
         return random.randrange(1,int(1e+9))
      
+    def get_link(self, node:Node, node_id:int) -> str:
+        node_type = type(node)
+        temp_node = object.__new__(node_type)
+        vars(temp_node)['___id___'] = node_id
+
+        res: str = temp_node.to_json()
+        del temp_node
+        return res
 
 
     @property
@@ -95,7 +126,8 @@ class FileNode(Node):
         if not self.root.contains(self):
             self.save()
         node_json = node.to_json()
-        node_json = f'___{self.get_id(node_json)}___: {node_json}'
+        id = self.get_id(node_json)
+        node_json = f'___{id}___: {node_json}'
         print(node_json)
         with open(self._path, "a+") as file:
             file_is_empty = os.path.getsize(self._path) == 0
@@ -103,6 +135,8 @@ class FileNode(Node):
                 file.write("\n" + node_json)
             else:
                 file.write(node_json)
+        res = self.get_link(node, id)
+        return res
 
 
 
