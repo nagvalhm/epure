@@ -16,11 +16,11 @@ class FileNode(Node):
 
 
 
-    def __init__(self, storage:Any=None, name:str=None, name_has_root:bool=False) -> None:
+    def __init__(self, name:str=None, storage:Node=None, name_has_root:bool=False) -> None:
         name = name or self.class_name()
         name_head = Path(name).name      
 
-        node_path = self._get_node_path(storage, name, name_has_root, name_head)
+        node_path = self._get_node_path(name, storage, name_has_root, name_head)
         
         self._name = name_head
         self._path = node_path
@@ -29,7 +29,7 @@ class FileNode(Node):
             self.registry[node_path] = self
 
     @classmethod
-    def _get_node_path(cls, storage:Any, name:str, name_has_root:bool, name_head:str) -> str:
+    def _get_node_path(cls, name:str, storage:Node, name_has_root:bool, name_head:str) -> str:
         storage_path = '' if not cls.root or name_has_root else cls.root.path
         if storage and storage.path:
             storage_path = storage.path
@@ -43,7 +43,7 @@ class FileNode(Node):
         return node_path
 
 
-    # def __new__(cls, storage:Any=None, name:str=None, name_has_root:bool=False) -> Any:
+    # def __new__(cls, name:str=None, storage:Node=None, name_has_root:bool=False) -> Any:
     #     name = name or cls.class_name()
 
         
@@ -173,7 +173,7 @@ class FileNode(Node):
         from .dirnode import DirNode
         storage_path = str(Path(self.path).parent)
         storage = self.registry[storage_path] if storage_path in self.registry\
-            else DirNode(name=str(storage_path), name_has_root=True)
+            else DirNode(str(storage_path), name_has_root=True)
 
         self._storage = storage
         return self._storage
@@ -181,6 +181,6 @@ class FileNode(Node):
 
     
     @storage.setter
-    def storage(self,storage:Any) -> None:
+    def storage(self,storage:Node) -> None:
         raise AttributeError(f'to set {storage} as storage for {self} use save()')
 

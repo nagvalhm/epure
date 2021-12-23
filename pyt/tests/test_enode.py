@@ -3,11 +3,11 @@ from ..epure.node import *
 from ..epure import *
 import pytest
 
-car_storage = FileNode(name='car.txt')
-electrocar_storage = FileNode(name='electrocar.txt')
-wheel_storage = FileNode(name='wheel.txt')
-door_storage = FileNode(name='door.txt')
-handle_storage = FileNode(name='handle.txt')
+car_storage = FileNode('car.txt')
+electrocar_storage = FileNode('electrocar.txt')
+wheel_storage = FileNode('wheel.txt')
+door_storage = FileNode('door.txt')
+handle_storage = FileNode('handle.txt')
 
 
 

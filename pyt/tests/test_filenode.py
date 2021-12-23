@@ -7,7 +7,7 @@ sysnode = FileNode.root
 
 
 def node_filenode_init(dir=None, name=None):
-    res = FileNode(dir,name)
+    res = FileNode(name, dir)
     if not dir:
         assert not sysnode.contains(res)
         return
@@ -21,16 +21,16 @@ def test_node_filenode_init():
     node_filenode_init()
     #only dir
     node_filenode_init(sysnode)
-    node_filenode_init(DirNode(name='folder1/folder2/folder3'))
+    node_filenode_init(DirNode('folder1/folder2/folder3'))
     #only name
     node_filenode_init(name='file2')
     #both
-    node_filenode_init(DirNode(name='folder1/folder2/folder3'), name='folder4/folder5/file2')    
+    node_filenode_init(DirNode('folder1/folder2/folder3'), name='folder4/folder5/file2')    
     node_filenode_init(sysnode, name='file2')
 
 
 def test_filenode_setter_name_path():
-    res = FileNode(sysnode).save()
+    res = FileNode(storage=sysnode).save()
     
     with pytest.raises(AttributeError):
         res.name = 'file'
@@ -55,7 +55,7 @@ def test_filenode_put(capsys):
 
     captured_json = capsys.readouterr()
 
-    file2 = FileNode(name='file_node2').save()
+    file2 = FileNode('file_node2').save()
     another_node = Node()
     another_node.save()
     another_node.job = 'javadeveloper'
@@ -75,6 +75,6 @@ def test_filenode_put(capsys):
     assert not sysnode.contains(file1)
 
 # def test_filenode_singleobj():
-#     filenode1 = FileNode(name='dir1/dir2/dir3/node1')
-#     filenode2 = FileNode(DirNode(name='dir1/dir2/dir3'), name='node1')
+#     filenode1 = FileNode('dir1/dir2/dir3/node1')
+#     filenode2 = FileNode('node1', DirNode('dir1/dir2/dir3'))
 #     assert filenode2 is filenode1

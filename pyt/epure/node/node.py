@@ -42,7 +42,7 @@ class Node(Searchable, Storable):
     
 
 
-    def __init__(self, storage:Any = None, name:str=None) -> None:
+    def __init__(self, name:str=None, storage:Node = None) -> None:
         if storage:
             self._storage = storage
         if name:
@@ -50,15 +50,15 @@ class Node(Searchable, Storable):
 
 
 
-    def save(self, storage:Any=None) -> Any:
+    def save(self, storage:Node=None) -> Any:
         storage = self.get_storage(storage)
         return storage.put(self)
 
 
 
-    def find(self, storage:Any=None) -> Any:
+    def find(self, storage:Node=None) -> Any:
         storage = self.get_storage(storage)
-        return storage.search()
+        return storage.search([])
 
 
 
@@ -89,7 +89,7 @@ class Node(Searchable, Storable):
 
 
 
-    def get_storage(self, storage:Any=None) -> Any:
+    def get_storage(self, storage:Node=None) -> Node:
         storage = storage or self.storage or type(self).heap
         if not storage:
             raise StorageNotFound
@@ -145,13 +145,13 @@ class Node(Searchable, Storable):
 
 
     @property
-    def storage(self) -> Any:
+    def storage(self) -> Node:
         return self._storage 
 
 
 
     @storage.setter
-    def storage(self, storage:Any) -> None:
+    def storage(self, storage:Node) -> None:
         self._storage = storage
 
 

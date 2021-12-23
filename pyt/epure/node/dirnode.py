@@ -24,10 +24,10 @@ class DirNode(FileNode):
 
         is_dir = isinstance(node, DirNode)
         if is_dir:
-            node = DirNode(name=node_path, name_has_root=True)
+            node = DirNode(node_path, name_has_root=True)
             Path(node_path).mkdir(parents=True, exist_ok=True)
         else:
-            node = FileNode(name=node_path, name_has_root=True)
+            node = FileNode(node_path, name_has_root=True)
             self._create_file(node_path)
 
         return node
@@ -74,4 +74,4 @@ class DirNode(FileNode):
 
 
 
-FileNode.root = DirNode(name='config_test')
+FileNode.root = DirNode('config_test')

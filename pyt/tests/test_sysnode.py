@@ -32,8 +32,8 @@ def node_sysnode_delete(node):
     
 def test_node_sysnode_delete():
 
-    file = node_sysnode_put(FileNode(name="dir1/dir2/file.txt"))
-    dir = node_sysnode_put(DirNode(name="dir3/dir4/coc/"))
+    file = node_sysnode_put(FileNode("dir1/dir2/file.txt"))
+    dir = node_sysnode_put(DirNode("dir3/dir4/coc/"))
 
     node_sysnode_delete(file)
     node_sysnode_delete(dir)
@@ -42,7 +42,7 @@ def test_node_sysnode_delete():
 
 @pytest.fixture
 def file_node():
-    node = FileNode(DirNode(name="dir1/dir2/"), "file.txt")
+    node = FileNode("file.txt", DirNode("dir1/dir2/"))
     return node
 
 
@@ -58,7 +58,7 @@ def test_node_sysnode_filenode(file_node):
 
 def test_node_sysnode_filenode_and_path(file_node):
 
-    another_parent = DirNode(name="dir3/dir4/coc/")
+    another_parent = DirNode("dir3/dir4/coc/")
     assert not another_parent.contains(file_node)
     file_node = another_parent.put(file_node)
 
