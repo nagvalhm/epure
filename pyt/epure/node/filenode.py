@@ -91,19 +91,6 @@ class FileNode(Node):
 
 
 
-    def get_id(self, json_str:str)->int:
-        return random.randrange(1,int(1e+9))
-     
-    def get_link(self, node:Node, node_id:int) -> str:
-        node_type = type(node)
-        temp_node = object.__new__(node_type)
-        vars(temp_node)['___id___'] = node_id
-
-        res: str = temp_node.to_json()
-        del temp_node
-        return res
-
-
     @property
     def name(self) -> str:
         return super().name
@@ -125,8 +112,9 @@ class FileNode(Node):
     def put(self, node:Node=None) -> Any:
         if not self.root.contains(self):
             self.save()
+        
+        id = node.get_id()
         node_json = node.to_json()
-        id = self.get_id(node_json)
         node_json = f'___{id}___: {node_json}'
         print(node_json)
         with open(self._path, "a+") as file:
@@ -135,8 +123,8 @@ class FileNode(Node):
                 file.write("\n" + node_json)
             else:
                 file.write(node_json)
-        res = self.get_link(node, id)
-        return res
+        # res = self.get_link(node, id)
+        return id
 
 
 

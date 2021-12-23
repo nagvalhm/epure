@@ -41,10 +41,14 @@ def test_filenode_setter_name_path():
     node_sysnode_delete(res)
     assert not sysnode.contains(res)
 
+
+file1 = FileNode()
+file2 = FileNode('file_node2')
+
 def test_filenode_put(capsys):
 # def test_filenode_put(capsys,dirnode):
 
-    file1 = FileNode().save()
+    
     
     node1 = Node()
     node1.innernode = Node()
@@ -53,9 +57,12 @@ def test_filenode_put(capsys):
     node1.innernode.set = (1,2,3)
     file1.put(node1)
 
+    # file1.put('str1')
+    # file1.put(6)
+
     captured_json = capsys.readouterr()
 
-    file2 = FileNode('file_node2').save()
+    
     another_node = Node()
     another_node.save()
     another_node.job = 'javadeveloper'
@@ -70,9 +77,13 @@ def test_filenode_put(capsys):
     # new_res = res.search(['"job": "javadeveloper"'])
     assert file1.contains(node1)
     # assert res == new_res[0]
+
+
+def test_del_storages():
     node_sysnode_delete(file1)
     node_sysnode_delete(file2)
     assert not sysnode.contains(file1)
+
 
 # def test_filenode_singleobj():
 #     filenode1 = FileNode('dir1/dir2/dir3/node1')

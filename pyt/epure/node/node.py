@@ -4,6 +4,7 @@ from typing import *
 import inflection
 import json
 import jsonpickle
+import uuid
 # from deepdiff import DeepDiff
 
 
@@ -38,6 +39,7 @@ class Node(Searchable, Storable):
     dict:Dict[object, object] = {}
     heap:Node = None
     _name:str = None
+    node_id:str = None
     # _storage = None
     
 
@@ -153,6 +155,24 @@ class Node(Searchable, Storable):
     @storage.setter
     def storage(self, storage:Node) -> None:
         self._storage = storage
+
+
+
+    def link(self) -> Node:        
+        node_type = type(self)
+        link = object.__new__(node_type)
+        if not isinstance(link, Node):
+            raise TypeError
+            
+        vars(link)['___id___'] = self.get_id()
+
+        return link
+
+
+    def get_id(self) -> str:
+        if not self.node_id:
+            self.node_id = str(uuid.uuid4())
+        return self.node_id
 
 
 

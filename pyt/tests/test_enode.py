@@ -57,6 +57,10 @@ def test_save():
     handle2 = Handle()
     handle3 = Handle()
 
+    handle1.name = 'handle1'
+    handle2.name = 'handle2'
+    handle3.name = 'handle3'
+
     #doors
     door1 = Door()
     door1.handle = handle1
@@ -72,6 +76,8 @@ def test_save():
     car.wheel2 = wheel2
     car.wheel3 = wheel3
     car.wheel4 = wheel4
+    car.str1 = 'str1'
+    car.num1 = 5
 
     
     car.door1 = door1
