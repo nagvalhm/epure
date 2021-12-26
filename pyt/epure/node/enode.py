@@ -2,6 +2,7 @@ from typing import Any, Sequence
 from .node import Node
 import copy
 
+
 class ENode(Node):
     __exclude__:Sequence[Any] = []
 
@@ -12,6 +13,7 @@ class ENode(Node):
         self_type = type(self)
         class_fields = dir(self_type)
         copy_fields = vars(self_copy)
+        
         for name in class_fields:
             if not self.is_savable(name, copy_fields):
                 continue

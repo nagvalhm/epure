@@ -63,8 +63,7 @@ def test_filenode_put(capsys):
     captured_json = capsys.readouterr()
 
     
-    another_node = Node()
-    another_node.save()
+    another_node = Node()    
     another_node.job = 'javadeveloper'
     file2.put(another_node)
 

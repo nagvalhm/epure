@@ -28,6 +28,10 @@ class Searchable():
     def search(self, keys:list[str]) -> Any:
         pass
 
+
+class ScriptType:
+    sql = 'postgress'
+
 class StorageNotFound(Exception):
     pass
 
@@ -40,6 +44,7 @@ class Node(Searchable, Storable):
     heap:Node = None
     _name:str = None
     node_id:str = None
+    script_type:str = None
     # _storage = None
     
 
@@ -65,8 +70,9 @@ class Node(Searchable, Storable):
 
 
     def put(self, node:Node=None) -> Any:
-        self.dict[id(node)] = node
-        return id(node)
+        raise AttributeError('storage not defined')
+        # self.dict[id(node)] = node
+        # return id(node)
 
 
 
