@@ -32,7 +32,8 @@
             "justMyCode": true,
             "module": "pytest",
             "args": ["-s"],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "pythonPath": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
         },
 
         {
