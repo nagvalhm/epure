@@ -21,7 +21,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/pyt/requirements.py",            
             "args": [],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
         },
 
         {
@@ -33,7 +34,7 @@
             "module": "pytest",
             "args": ["-s"],
             "console": "integratedTerminal",
-            "pythonPath": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
+            "python": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
         },
 
         {
@@ -43,7 +44,8 @@
             "justMyCode": true,
             "module": "mypy",
             "args": ["pyt/epure"],
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
         }
     ]
 }
