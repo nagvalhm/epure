@@ -5,7 +5,7 @@ from ..node.node import *
 import inspect
 import ast
 from ast import Attribute, Constant
-from dill.source import getsource
+# from dill.source import getsource
 
 class FileCommand(ECommand):
     arr: List[str] = None

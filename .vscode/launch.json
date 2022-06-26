@@ -46,7 +46,21 @@
             "args": ["pyt/epure"],
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
-        }
+        },
+
+        {
+            "name": "Launch via npm",
+            "type": "node",
+            // "program": "${file}",
+            "request": "launch",
+            // "cwd": "${workspaceFolder}",
+            // "runtimeExecutable": "npm",
+            // "runtimeArgs": ["run-script", "debug"],
+            "program": "${file}",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+          }
     ]
 }
 

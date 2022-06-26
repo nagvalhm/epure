@@ -45,6 +45,7 @@ class Node(Searchable, Storable):
     _name:str = None
     node_id:str = None
     script_type:str = None
+    __exclude__:Sequence[Any]
     # _storage = None
     
 
@@ -53,7 +54,7 @@ class Node(Searchable, Storable):
         if storage:
             self._storage = storage
         if name:
-            self._name = name
+            self._name = name        
 
 
 
@@ -180,6 +181,9 @@ class Node(Searchable, Storable):
             self.node_id = str(uuid.uuid4())
         return self.node_id
 
+
+    # def is_savable(self, atr_name: str, node_fields: dict[str, Any]) -> bool:
+        
 
 
 Node.heap = Node()

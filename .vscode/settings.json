@@ -11,3 +11,4 @@
 //pip install virtualenv
 //python -m virtualenv pyt/env39 -p D:\python\python39\python.exe
 //set-executionpolicy remotesigned
+//python -m pip install --upgrade pip

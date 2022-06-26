@@ -42,4 +42,3 @@ class ENode(Node):
         return atr_name in node_fields and atr_name not in self.__exclude__
         # if atr_name[:2] == "__" and atr_name[-2:] == "__":
         #     return True
-        
