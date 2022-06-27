@@ -1,0 +1,53 @@
+class Storage{    
+    put(Savable storage)
+    search(Object)
+    execute(str script='')
+    name
+}
+
+class Db{
+    init(str connect_str)
+}
+
+class GresDb{}
+class LiteDb{}
+
+class Savable{    
+    storage
+    save(int level=0)
+    serialize()
+    deserialize()    
+}
+
+class Table{}
+
+class GresTable{}
+class LiteTable{}
+
+class FileStorage{
+    init(str path)
+}
+
+class IniFile{}
+class JsonFile{}
+
+class Node{
+    table
+    db
+    exclude
+    save(int level)
+    is_excluded(str atr_name)
+}
+
+
+Storage <-- Db
+    Db <-- GresDb
+    Db <-- LiteDb
+Storage <-- Savable
+    Savable <-- FileStorage
+        FileStorage <-- IniFile
+        FileStorage <-- JsonFile
+    Savable <-- Table
+        Table <-- GresTable
+        Table <-- LiteTable
+    Savable <-- Node

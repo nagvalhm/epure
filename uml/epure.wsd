@@ -18,7 +18,7 @@ class Epure{
     unpack(row)
 }
 
-class Make{
+class Node{
     add()
     get()
     mask
@@ -27,16 +27,16 @@ class Make{
 ' Storage <|-- EpureStorage
 ' EpureBox *--> Epure
 ' Model --> container
-Epure --> Make
-' Make <|-up- Primitive
+Epure --> Node
+' Node <|-up- Primitive
 
 
-Make *--> Make
-Make <|-left- Storage
+Node *--> Node
+Node <|-left- Storage
 Storage <|-left- Table
 ' Storage <|-- NoSql
 
-Epure --|> Make
+Epure --|> Node
 Epure <|-left- DBEpure
 Field -up-|> Epure
 DBEpure -left-> DB
@@ -46,8 +46,8 @@ Table --> Header
 Table *--> Row
 
 Category *-right-> Ref
-Make <|-right- Category
-Make --> Mask
+Node <|-right- Category
+Node --> Mask
 
 
 ' Model --> View
@@ -58,7 +58,7 @@ Category <|-- Role
 ' Access -up-> Node
     Access -right-> Role
     Access -left-> Mask
-    Access -up-> Make
+    Access -up-> Node
     ' Access -down-> Predicate
 
 ' Migration --> BD
