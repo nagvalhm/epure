@@ -19,10 +19,10 @@
             "name": "requirements",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/pyt/requirements.py",            
+            "program": "${workspaceFolder}/pyt1/requirements.py",            
             "args": [],
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
+            "python": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
         },
 
         {
@@ -32,9 +32,9 @@
             // "justMyCode": false,          
             "justMyCode": true,
             "module": "pytest",
-            "args": ["-s"],
+            "args": ["pyt1/tests/"],
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
+            "python": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
         },
 
         {
@@ -43,9 +43,9 @@
             "request": "launch",            
             "justMyCode": true,
             "module": "mypy",
-            "args": ["pyt/epure"],
+            "args": ["pyt1/epure"],
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/pyt/env39/Scripts/python.exe",
+            "python": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
         },
 
         {
