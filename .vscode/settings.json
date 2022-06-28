@@ -9,6 +9,7 @@
 }
 
 //pip install virtualenv
-//python -m virtualenv pyt/env39 -p D:\python\python39\python.exe
+//python -m virtualenv pyt1/env310 -p D:\python\python310\python.exe
 //set-executionpolicy remotesigned
 //python -m pip install --upgrade pip
+//needed to select enviroment in vscode, when it asks while starting vscode
