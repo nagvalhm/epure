@@ -1,4 +1,3 @@
-# type: ignore
 import subprocess
 
 def exec_shell_cmd(cmd):
