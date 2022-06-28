@@ -25,13 +25,12 @@ def test_read_nested_section(config):
     assert strict_eq(asshole, True)
 
 
-# def test_read_not_exist_property(config):
-#     # with pytest.raises(AttributeError?keyerror):
-#     db_host = config.not_exist_prop
-#     assert db_host == None
+def test_read_not_exist_property(config):
+    db_host = config.not_exist_prop
+    assert db_host == None
 
-# def test_read_not_exist_config():
-#     # with pytest.raises(AttributeError):
-#     config = IniFile('not_exist_config.ini')
-#     db_host = config.db_host
-#     assert db_host == None
+def test_read_not_exist_config():
+    with pytest.raises(FileNotFoundError):
+        config = IniFile('not_exist_config.ini')
+        db_host = config.db_host
+        assert db_host == None

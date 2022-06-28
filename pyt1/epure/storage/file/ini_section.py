@@ -12,6 +12,11 @@ class NoneIniSection:
         self.parser = parser
         self.path = path
 
+    def __eq__(self, obj: Any) -> bool:
+        if obj == None:
+            return True
+        return super().__eq__(obj)
+
     def __getattr__(self, attr_name: str) -> Any:
         return self.get_next(attr_name)
 
