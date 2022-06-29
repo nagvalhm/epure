@@ -1,5 +1,5 @@
 from typing import Any
-from ..epure.storage.node.node import Node
+from ..epure.resource.node.node import Node
 
 def epure(storage:Any=None) -> Any:
     def epure_creator(cls:type) -> Node:

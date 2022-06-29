@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ..epure.epure import epure, connect
-from ..epure.storage.db.table import NotNull
+from ..epure.resource.db.table import NotNull
 from typing import List, Dict
 from datetime import datetime
 import pytest
