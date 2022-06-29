@@ -1,119 +1,79 @@
-from __future__ import annotations
-from ..epure.epure import epure, connect
-from typing import List, Dict
-from datetime import datetime
-import pytest
+# from __future__ import annotations
+# from ..epure.epure import epure, connect
+# from typing import List, Dict
+# from datetime import datetime
+# import pytest
+# import types
+# from .test_epure_classes import *
+
+# def get_epure(cls):
+#     epure = cls()
+#     id = epure.save()
+#     res = epure.table.read(id=id)
+#     assert res == epure
+#     return res
+
+# def table_exists():
+#     pass
 
 
-@epure()
-class User:
-    pass
+# @pytest.fixture
+# def default_epure():
+#     return get_epure(DefaultEpure)
+
+# def test_default_epure_fields(default_epure):
+#     pass
+
+# def test_default_epure_table(default_epure):
+#     assert default_epure.table.name == 'default_epure'
+#     assert default_epure.db.name == 'GresDb'
+#     assert table_exists('default_epure')
+
+# def test_default_epure_fields_in_correct_tables():
+#     pass
+
+# @pytest.fixture
+# def aliased_epure():
+#     return get_epure(AliasedEpure)
+
+# def test_aliased_epure_fields(aliased_epure):
+#     pass
+
+# def test_aliased_epure_table(aliased_epure):
+#     assert aliased_epure.table.name == 'prefix.aliasedtable'
+#     assert default_epure.db.name == 'GresDb'
+#     assert table_exists('prefix.aliasedtable')
+
+# def test_aliased_epure_fields_in_correct_tables():
+#     pass
+
+# @pytest.fixture
+# def custom_save_epure():
+#     epure = CustomSaveEpure()
+#     id = epure.save()
+#     assert id == 65
+#     res = epure.table.read(id=id)   
+#     return res
+
+# def test_custom_save_fields(custom_save_epure):
+#     pass
+
+# def test_custom_save_table(custom_save_epure):
+#     assert custom_save_epure.table.name == 'prefix.aliasedtable'
+#     assert default_epure.db.name == 'GresDb'
+#     assert table_exists('prefix.aliasedtable')
+
+# def test_custom_save_fields_in_correct_tables():
+#     pass
 
 
-class Note:
-    count = 7
-    note_name:str = 'note'
-    parent:Note
-    owner:User
-    students:List[User]
-    access:Dict[User,int]
 
-@epure()
-class Result:
-    student:User
-    course:Course
-    datetime:datetime
-    score:int
+# #test exceptions
+# def test_not_null_column_not_accept_null():
+#     pass
 
-    def save(self):
-        res = self.db.execute('select 65')
-        return res
+# def test_not_typed_fields_not_saved():
+#     pass
 
-@epure()
-class Card(Note):
-    passed:bool
-    color:str
-
-@epure('dbt.akkl.cris')
-class Course:
-    notes:List[Note]
-    results:List[Result]
-
-    def __uniq__(self):
-        return [(), ()]
-
-#parent
-class ParentClass1:
-    pass
-
-class ParentClass2(ParentClass1):
-    pass
-
-class ParentClass3(ParentClass1):
-    pass
-
-#inner
-@epure()
-class InnerNested1:
-    pass
-
-class InnerNested2:
-    inner_class:InnerNested1
-
-class InnerNested3:
-    inner_class:InnerNested2
-
-#outer
-@epure()
-class OuterNested1:
-    pass
-
-@epure()
-class OuterNested2:
-    outer_epure:OuterNested1
-
-@epure()
-class OuterNested3:
-    outer_epure:OuterNested2
-
-#epures
-@epure()
-class DefaultEpure:
-    pass
-
-@epure('CustomTable')
-class NamedEpure:
-    pass
-
-@epure()
-class CustomSaveEpure:
-    pass
-
-@pytest.fixture
-def default_epure():
-    card = Card()
-    id = card.save()
-    retrieved_course = card.table.search(id=id)
-    assert retrieved_course == card
-    assert card.note_name == 'note'
-    assert card.table.name == 'card'
-
-@pytest.fixture
-def named_epure():
-    course = Course()
-    course.count = 15
-    id = course.save()
-    retrieved_course = course.table.search(id=id)
-    assert retrieved_course == course
-    assert retrieved_course.count == 15
-    assert course.table.name == 'dbt.akkl.cris'
-
-@pytest.fixture
-def custom_save_epure():
-    result = Result()
-    id = result.save()
-    assert result.db.name == 'GresDb'
-    assert id == 65
-
-# def test_hirahical_save_is_correct():
+# def test_excluded_fields_not_saved():
 #     pass

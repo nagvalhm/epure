@@ -10,7 +10,9 @@ class Resource{
     
     "execute"(str script='')
     res_id
+    name
 }
+
 
 class Db{
     init(str connect_str)
@@ -26,7 +28,9 @@ class Savable{
     deserialize()    
 }
 
-class Table{}
+class Table{
+    name = res_id
+}
 
 class GresTable{}
 class JsonbTable{}
@@ -34,6 +38,7 @@ class LiteTable{}
 
 class TableHeader{}
 class TableColumn{}
+class NotNull{}
 
 class FileResource{
     init(str path)
@@ -45,8 +50,8 @@ class NoneIniSection{}
 class JsonFile{}
 
 class Node{
-    table?
-    db
+    table = resource
+    db = resource.resource
     "__exclude__"
     save(int level)
     is_excluded(str atr_name)
