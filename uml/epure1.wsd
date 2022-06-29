@@ -1,0 +1,34 @@
+class Epure{}
+
+class Epurium{}
+
+class Resource{
+    ...
+}
+class Savable{
+    ...
+}
+class Node{
+    save()
+}
+
+class Composition{
+    "__proto__"
+}
+
+class Translator{
+    translate_to_sql(string expression)
+}
+
+class PredicateTranslator{
+    translate_to_sql(string predicate)
+}
+
+class NodeList{}
+
+
+Translator <|-- PredicateTranslator
+
+Resource <|-- Savable
+Savable <|-- Node
+Node <|-- NodeList

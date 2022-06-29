@@ -1,10 +1,15 @@
-class Storage{    
-    put(Savable storage)
-    put_all(List[Savable])
-    search(Object)
-    delete(Objest)
-    execute(str script='')
-    name
+class Resource{    
+    create(Savable resource, res_id=None)
+    read(Object)
+    update(Savable resource, res_id=None)
+    delete(Savable resource, res_id=None ? Object)
+
+    create_all(List[Savable])
+    update_all(List[Savable])
+    delete_all(?)
+    
+    "execute"(str script='')
+    res_id
 }
 
 class Db{
@@ -15,7 +20,7 @@ class GresDb{}
 class LiteDb{}
 
 class Savable{    
-    storage
+    resource
     save(int level=0)
     serialize()
     deserialize()    
@@ -24,12 +29,13 @@ class Savable{
 class Table{}
 
 class GresTable{}
+class JsonbTable{}
 class LiteTable{}
 
 class TableHeader{}
 class TableColumn{}
 
-class FileStorage{
+class FileResource{
     init(str path)
 }
 
@@ -39,27 +45,30 @@ class NoneIniSection{}
 class JsonFile{}
 
 class Node{
-    table
+    table?
     db
-    exclude
+    "__exclude__"
     save(int level)
     is_excluded(str atr_name)
 }
 
 
-Storage <|-left- Db
+
+
+Resource <|-left- Db
     Db <|-up- GresDb
     Db <|-left- LiteDb
     Db o-down-> Table
-Storage <|-- Savable
-Storage o--> Savable
-    Savable <|-right- FileStorage
-        FileStorage <|-up- IniFile
+Resource <|-- Savable
+Resource o--> Savable
+    Savable <|-right- FileResource
+        FileResource <|-up- IniFile
             IniFile o--> NoneIniSection
                 NoneIniSection <|-- IniSection
-        FileStorage <|-- JsonFile
+        FileResource <|-- JsonFile
     Savable <|-left- Table
         Table <|-left- GresTable
+            GresTable <|-- JsonbTable
         Table <|-- LiteTable
         Table --> TableHeader
     Savable <|-right- Node
