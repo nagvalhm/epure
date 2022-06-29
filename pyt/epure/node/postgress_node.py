@@ -8,7 +8,7 @@ from .postgress_table_node import PostgressTableNode
 class PostgressNode(DBNode):
 
     dbtypes:Dict[type, str] = {
-        int: 'int4',
+        int: 'bigint',
         str: 'text',
         type(None): 'json'
     }
