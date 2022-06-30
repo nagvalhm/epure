@@ -50,13 +50,15 @@ class NoneIniSection{}
 class JsonFile{}
 
 class Node{
-    table = resource
-    db = resource.resource
     "__exclude__"
     save(int level)
     is_excluded(str atr_name)
 }
 
+class TableNode{
+    table = resource
+    db = resource.resource
+}
 
 
 
@@ -77,6 +79,7 @@ Resource o--> Savable
         Table <|-- LiteTable
         Table --> TableHeader
     Savable <|-right- Node
+        Node <|-- TableNode
     Savable <|-- TableHeader
         TableHeader o-right-> TableColumn
     Savable <|-- TableColumn
