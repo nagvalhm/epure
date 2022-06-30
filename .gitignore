@@ -6,6 +6,10 @@ __pycache__/
 pyt/sandbox.py
 config_test/
 config/
+
+pyt1/env310
+pyt1/dist
+pyt1/__pycache__
 # *$py.class
 
 # # C extensions

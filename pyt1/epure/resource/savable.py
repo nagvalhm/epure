@@ -1,6 +1,6 @@
-from .storage import Storage
+from .resource import Resource
 
-class Savable(Storage):
+class Savable(Resource):
     
 
     def __init__(self) -> None:
