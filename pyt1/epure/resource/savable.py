@@ -2,11 +2,10 @@ from .resource import Resource
 
 class Savable(Resource):
     
+    resource: Resource
 
-    def __init__(self) -> None:
-        pass
 
-    def save(self, level:int=0):
+    def save(self, level:int=0, resource:Resource=None):
         pass
 
     def serialize(self):

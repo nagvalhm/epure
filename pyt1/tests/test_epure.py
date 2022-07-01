@@ -1,33 +1,34 @@
-# from __future__ import annotations
-# from ..epure.epure import epure, connect
-# from typing import List, Dict
-# from datetime import datetime
-# import pytest
-# import types
-# from .test_epure_classes import *
+from __future__ import annotations
+from ..epure.epure import epure, connect
+from typing import List, Dict
+from datetime import datetime
+import pytest
+import types
+# from .epure_classes import *
 
-# def get_epure(cls):
-#     epure = cls()
-#     id = epure.save()
-#     res = epure.table.read(id=id)
-#     assert res == epure
-#     return res
+def get_epure(cls):
+    epure = cls()
+    id = epure.save()
+    res = epure.table.read(id=id)
+    assert res == epure
+    return res
 
-# def table_exists():
-#     pass
+def table_exists():
+    pass
 
 
 # @pytest.fixture
 # def default_epure():
 #     return get_epure(DefaultEpure)
 
-# def test_default_epure_fields(default_epure):
-#     pass
-
 # def test_default_epure_table(default_epure):
 #     assert default_epure.table.name == 'default_epure'
 #     assert default_epure.db.name == 'GresDb'
 #     assert table_exists('default_epure')
+
+# def test_default_epure_fields(default_epure):
+#     pass
+
 
 # def test_default_epure_fields_in_correct_tables():
 #     pass

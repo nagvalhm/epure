@@ -1,10 +1,25 @@
 from __future__ import annotations
 from ..epure.epure import epure, connect
+from ..epure.resource.db.gres_db import GresDb
 from ..epure.resource.db.table import NotNull
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from datetime import datetime
 import pytest
 import types
+
+try:
+    connect(GresDb('postgres://user_name:pass@host:5432'))
+except Exception as ex:
+    print(ex)
+
+connect(GresDb('postgres://postgres:postgres@localhost:5432'))
+
+connect(GresDb('postgres://postgres:postgres@localhost:32', 
+    # host="localhost", 
+    port="5432", 
+    # database="postgres", 
+    # user="postgres", 
+    password="postgres"))
 
 #parent
 class ParentClass1:
@@ -31,6 +46,7 @@ class ParentClass3(ParentClass1):
     none:None
     generic_dict:Dict[int, str]
     generic_list:List[int]
+    generic_tuple:Tuple[int]
     lambda_field:types.LambdaType
 
 
