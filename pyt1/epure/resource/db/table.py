@@ -38,14 +38,13 @@ class Table(Savable):
         super().__init__(name, res_id)
 
 
-
-class NotNullMeta(type):
+T = TypeVar('T')
+class NotNullMeta(type, Generic[T]):
     def __getitem__(cls, param:Any):
         cls.__param__ = param
         return cls
 
-T = TypeVar('T')
-class NotNull(Generic[T], metaclass=NotNullMeta):
+class NotNull(metaclass=NotNullMeta):
     __param__:type
 
     # def __class_getitem__(cls, param:Any):
