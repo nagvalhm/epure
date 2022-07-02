@@ -19,7 +19,8 @@ connect(GresDb('postgres://postgres:postgres@localhost:32',
     port="5432", 
     # database="postgres", 
     # user="postgres", 
-    password="postgres"))
+    password="postgres",
+    log_level=3))
 
 #parent
 class ParentClass1:

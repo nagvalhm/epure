@@ -1,5 +1,5 @@
 from types import NoneType
-from typing import Generic, TypeVar, Dict
+from typing import *
 from .db import Db
 from ..savable import Savable
 from ...helpers.type_helper import check_type
@@ -38,6 +38,16 @@ class Table(Savable):
         super().__init__(name, res_id)
 
 
-_T = TypeVar('_T')
-class NotNull(Generic[_T]):
-    pass
+
+class NotNullMeta(type):
+    def __getitem__(cls, param:Any):
+        cls.__param__ = param
+        return cls
+
+T = TypeVar('T')
+class NotNull(Generic[T], metaclass=NotNullMeta):
+    __param__:type
+
+    # def __class_getitem__(cls, param:Any):
+    #     cls.__param__ = param
+    #     return cls

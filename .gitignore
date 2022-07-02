@@ -139,3 +139,4 @@ pyt1/__pycache__
 # .pyre/
 sql/.project
 sql/.dbeaver
+epure_db.log

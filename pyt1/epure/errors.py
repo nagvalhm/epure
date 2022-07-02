@@ -1,0 +1,2 @@
+class EpureError(Exception):
+    pass

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import *
 if TYPE_CHECKING:
     from .savable import Savable
 
@@ -16,7 +16,7 @@ class Resource():
 
     def create(self, resource:Savable, res_id:object=None):
         pass
-    def read(self, selector:object, **kwargs):
+    def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
         pass
     def update(self, resource:Savable, res_id:object=None):
         pass

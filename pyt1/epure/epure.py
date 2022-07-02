@@ -8,12 +8,14 @@ from ..epure.resource.node.node import TableNode
 from .resource.savable import Savable
 from .resource.db.db import Db
 
-EDb:Db
+
 
 def connect(edb:Db) -> None:
-    EDb = edb
+    Epure.EDb = edb
 
 class Epure(type, Savable):
+
+    EDb:Db
     
     # def __new__(mcls, name: str, cls_bases: Tuple[type, ...], namespace: dict[str, Any]) -> Epure:
     #     return super().__new__(mcls, name, cls_bases, namespace)
@@ -32,11 +34,11 @@ class Epure(type, Savable):
 
         cls.resource = resource
 
-    def _create_or_update(cls, table_name:str) -> Table:
-        if table_name in EDb:
-            return EDb.update(cls, table_name)
+    def _create_or_update(cls, table_name:str) -> Table:        
+        if table_name in cls.EDb:
+            return cls.EDb.update(cls, table_name)
         else:
-            return EDb.create(cls, table_name)
+            return cls.EDb.create(cls, table_name)
 
 
 def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) -> Callable:

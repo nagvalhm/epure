@@ -1,33 +1,70 @@
 from .db import Db
 import psycopg2
-from typing import Any, Dict
+from typing import *
 from itertools import groupby
 from .gres_table import GresTable
 from ...helpers.type_helper import check_type
+from datetime import timedelta, datetime
+from ipaddress import _IPAddressBase
+from ..resource import Resource
+import logging
 
 class GresDb(Db):
+
+    def _execute(self, script: str = '') -> list:
+        result = []
+        with psycopg2.connect(**self.params) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(script)
+                if cursor.rowcount != 0:
+                    result = cursor.fetchall()
+
+        return result
+
+    def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
+    
+        table_id = self._get_table_id(selector, **kwargs)
+
+        collumns = self.execute(f'''select table_schema, table_name,
+                    column_name, is_nullable, data_type
+                    from information_schema.columns where
+                    table_schema = \'{table_id[0]}\' and table_name = \'{table_id[1]}\' ''')
+        if len(collumns) > 0:
+            return self._add_table(collumns)
+        return []
+
+        
+    def _get_table_id(self, selector:object=None, **kwargs) -> List[str]:
+        table_name = ''
+        if  selector:    
+            table_name = str(selector)
+
+        if not table_name:
+            table_name = kwargs.get('table_name', '')    
+
+        if not table_name:
+            raise ValueError('method read of bd need table_name as argument')
+
+        table_id = table_name.split('.')
+        if len(table_id) > 2:
+            raise NameError('table name must have no more then one dot')
+        if len(table_id) == 1:
+            table_id.insert(0, self.default_namespace)
+        return table_id
 
 
 
     def __init__(self, connect_str:str='', database:str='', user:str='', password:str='',
-             host:str='', port:str=''):
+             host:str='', port:str='', default_namespace='public', log_level:int = logging.NOTSET):
 
         super().__init__(connect_str, 
             database=database, 
             user=user, 
             password=password, 
             host=host, 
-            port=port)
-
-        
-        need_set_tables = True
-        if hasattr(self, 'tables') and self.tables:
-            need_set_tables = False
-
-            for key in self.params:
-                if self.params[key] != getattr(self, key, ''):
-                    need_set_tables = True
-
+            port=port,
+            default_namespace=default_namespace,
+            log_level=log_level)
 
         self.params = {
             'database': self.database, 
@@ -39,8 +76,8 @@ class GresDb(Db):
 
         print(self.execute("select 'test request'"))
 
-        if need_set_tables:
-            self.set_tables()
+        
+        self.set_tables()        
 
 
     def set_tables(self):
@@ -57,7 +94,7 @@ class GresDb(Db):
     def _add_table(self, table_info):
         first_row = table_info[0]
         table_name = first_row[1] \
-            if first_row[0] == 'public' \
+            if first_row[0] == self.default_namespace \
             else first_row[0] + '.' + first_row[1]
         table = GresTable(table_name)
         table.resource = self
@@ -66,6 +103,8 @@ class GresDb(Db):
             column = table.create_column(column_info)
             table.header[column.name] = column
 
+        self.tables[table_name] = table
+        return table
         
     py_db_types:Dict[type, str] = {
         int: 'bigint',
@@ -74,30 +113,70 @@ class GresDb(Db):
     }
 
     db_py_types:Dict[str, type] = {
-        'bigint': int,
+        'bigint': int, #-9223372036854775808 to +9223372036854775807
         'text': str,
-        'json': type(None),
+        'json': object,
         'name': str,
         'ARRAY': list,
-        'oid': int
+        'oid': int, #0 to 4294967295
+        'interval': timedelta,
+        'smallint': int, #-32768 to +32767
+        'inet': _IPAddressBase, #IPv4Address or IPv6Address ipaddress.ip_address        
+        'pg_node_tree': str, #representation of parsed sql query
+        'boolean': bool,
+        'numeric': float, #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point
+        'decimal': float, #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point        
+        'anyarray': list,
+        'regproc': str, #sql procidure name
+        'regtype': str, #sql type name
+        'timestamp' : datetime,
+        'timestamp with time zone': datetime,
+        'time' : datetime,
+        'time with time zone' : datetime,
+        'double precision': float,
+        'real': float,
+        '"char"': str,
+        'character varying': str,
+        'character': str,
+
+        'pg_ndistinct': int,
+        'pg_mcv_list': int,
+        'pg_dependencies': int,
+        'jsonb': int,
+        'xid': int,
+        'bytea': int,
+        'integer': int,
+        'pg_lsn': int,        
+        'date': int,
+        'smallserial':int,
+        'serial': int,
+        'bigserial': int,
+        'bit': int,
+        'bit varying': int,
+        'box': int,
+        'cidr': int,
+        'circle': int,
+        'line' : int,
+        'lseg' : int,
+        'macaddr' : int,
+        'macaddr8' : int,
+        'money' : int,
+        'path' : int,
+        'pg_snapshot' : int,
+        'point' : int,
+        'polygon' : int,
+        'tsquery' : int,
+        'tsvector' : int,
+        'txid_snapshot' : int,
+        'uuid' : int,
+        'xml' : int
     }
 
 
-        # for row in rows:
-        #     table_name = row[0] + '.' + row[1] if \
-        #                  row[0] != 'public' \
-        #                  else row[1]
-        #     pass
 
 
-    def execute(self, script: str = '') -> list:
-        result = []
-        with psycopg2.connect(**self.params) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(script)
-                if cursor.rowcount != 0:
-                    result = cursor.fetchall()
-        return result
+
+
 
 
 # from __future__ import annotations

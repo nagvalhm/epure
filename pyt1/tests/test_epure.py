@@ -4,7 +4,7 @@ from typing import List, Dict
 from datetime import datetime
 import pytest
 import types
-# from .epure_classes import *
+from .epure_classes import *
 
 def get_epure(cls):
     epure = cls()
@@ -17,9 +17,9 @@ def table_exists():
     pass
 
 
-# @pytest.fixture
-# def default_epure():
-#     return get_epure(DefaultEpure)
+@pytest.fixture
+def default_epure():
+    return get_epure(DefaultEpure)
 
 # def test_default_epure_table(default_epure):
 #     assert default_epure.table.name == 'default_epure'
