@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Callable, Tuple
+from typing import *
 from .resource.resource import Resource
 
 from .resource.db.table import Table
@@ -26,6 +26,7 @@ class Epure(type, Savable):
             raise TypeError('epure resource type must be table name (str) or Savable')
 
         if type(resource) == Savable:
+            resource = cast(Savable, resource)
             grandpa = resource.resource
             grandpa.update(cls, resource.res_id)
         else:
@@ -34,7 +35,7 @@ class Epure(type, Savable):
 
         cls.resource = resource
 
-    def _create_or_update(cls, table_name:str) -> Table:        
+    def _create_or_update(cls, table_name:str) -> Table:
         if table_name in cls.EDb:
             return cls.EDb.update(cls, table_name)
         else:

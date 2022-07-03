@@ -3,27 +3,8 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+
     "configurations": [
-        
-
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "justMyCode": false,
-            "console": "integratedTerminal"
-        },
-
-        {
-            "name": "requirements",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/pyt1/requirements.py",            
-            "args": [],
-            "console": "integratedTerminal",
-            "python": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
-        },
 
         {
             "name": "pytest",
@@ -34,18 +15,56 @@
             "module": "pytest",
             "args": ["pyt1/tests/"],
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
+            "python": "${config:python_path}",
+            // "cwd": "${config:cwd}" not used because test.ini shared with js project
         },
 
         {
-            "name": "mypy",
+            "name": "pyright",
             "type": "python",
             "request": "launch",            
             "justMyCode": true,
-            "module": "mypy",
-            "args": ["pyt1/epure"],
+            "module": "pyright",
+            "args": ["epure"],
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
+            "python": "${config:python_path}",
+            "cwd": "${config:cwd}"
+        },
+
+        {
+            "name": "install dependencies",
+            "type": "python",
+            "request": "launch",            
+            "justMyCode": true,
+            "module": "poetry",
+            "args": ["install"],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+            "cwd": "${config:cwd}"
+        },
+
+        {
+            "name": "build",
+            "type": "python",
+            "request": "launch",            
+            "justMyCode": true,
+            "module": "poetry",
+            "args": ["build"],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+            "cwd": "${config:cwd}"
+        },
+
+        {
+            "name": "pypi publish",
+            "type": "python",
+            "request": "launch",            
+            "justMyCode": true,
+            "module": "poetry",
+            "args": ["publish"],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+            "cwd": "${config:cwd}"
         },
 
         {
@@ -60,11 +79,63 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
-          }
+          },
+
+          {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "justMyCode": false,
+            "console": "integratedTerminal"
+        },
+
+        {
+            "name": "old_command_mypy_use_pyright",
+            "type": "python",
+            "request": "launch",            
+            "justMyCode": true,
+            "module": "mypy",
+            "args": ["pyt1/epure"],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+        },
+
+        {
+            "name": "old_command_requirements_use_install dependencies",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pyt1/requirements.py",            
+            "args": [],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+        },
+
+        {
+            "name": "install pre-commit",
+            "type": "python",
+            "request": "launch",            
+            "module": "pre_commit",
+            "args": ["install"],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+        },
+
+        {
+            "name": "uninstall pre-commit",
+            "type": "python",
+            "request": "launch",            
+            "module": "pre_commit",
+            "args": ["uninstall"],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+        }
     ]
 }
 
 
+//*
+// ${config:python_path} - point to settings.json file's option
 // ${workspaceFolder} - the path of the folder opened in VS Code
 // ${workspaceFolderBasename} - the name of the folder opened in VS Code without any slashes (/)
 // ${file} - the current opened file

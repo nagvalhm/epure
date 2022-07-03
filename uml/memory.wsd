@@ -1,0 +1,49 @@
+class Memory{}
+
+class PersistentMemory{}
+
+class Resource{}
+
+class SavableResource{
+    ie PersistentWritableReadableMemory
+}
+
+class PersistentWritable{
+    ie "Savable"
+}
+
+class WritableMemory{}
+
+class ReadableMemory{}
+
+class TemporaryMemory{}
+
+
+
+class DistributedSavableResource{
+    ie Node
+}
+
+
+Memory <|--|> TemporaryMemory
+TemporaryMemory <|-- PersistentMemory
+TemporaryMemory <|-- WritableMemory
+TemporaryMemory <|-- ReadableMemory
+
+WritableMemory <|-- Resource
+ReadableMemory <|-- Resource
+
+PersistentWritable *--> SavableResource
+PersistentWritable <|-- SavableResource
+
+
+PersistentMemory <|-- PersistentWritable
+WritableMemory <|-- PersistentWritable
+
+Resource <|-- SavableResource
+
+
+
+
+SavableResource <|-- SolidSavableResource
+SavableResource <|-- DistributedSavableResource

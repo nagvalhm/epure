@@ -3,13 +3,18 @@ import psycopg2
 from typing import *
 from itertools import groupby
 from .gres_table import GresTable
+from .table import *
 from ...helpers.type_helper import check_type
 from datetime import timedelta, datetime
 from ipaddress import _IPAddressBase
 from ..resource import Resource
+from ..savable import Savable
 import logging
 
 class GresDb(Db):
+
+    test:NotNull[str]
+    # test2:Check[int, lambda x: 7]
 
     def _execute(self, script: str = '') -> list:
         result = []
@@ -20,6 +25,28 @@ class GresDb(Db):
                     result = cursor.fetchall()
 
         return result
+
+    def create(self, resource: Savable, res_id: object = None):
+        pass
+    #     scheme = self.get_table_scheme(resource)
+    #     column_defenitions = []
+    #     for column in scheme[:-1]:
+    #         column_defenitions.append(
+    #             column['name'] + " " + column['column_type'] + ","
+    #         )
+    #     last_column = scheme[len(scheme)-1]
+    #     column_defenitions.append(
+    #         last_column['name'] + " " + last_column['column_type']
+    #     )
+
+    #     scheme_script = " \n ".join(column_defenitions)
+
+    #     script = f'''
+    #     CREATE TABLE IF NOT EXISTS {resource.name} (
+    #         {scheme_script}
+    #     );'''
+
+    #     return script
 
     def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
     

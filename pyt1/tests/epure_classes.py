@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ..epure.epure import epure, connect
 from ..epure.resource.db.gres_db import GresDb
-from ..epure.resource.db.table import NotNull
+from ..epure.resource.db.table import *
 from typing import List, Dict, Tuple
 from datetime import datetime
 import pytest
@@ -25,7 +25,7 @@ connect(GresDb('postgres://postgres:postgres@localhost:32',
 #parent
 class ParentClass1:
     str:NotNull[str]
-    int:int = 5
+    int:Check[int, 6] = 5
     float:float
     complex:complex
     list:list

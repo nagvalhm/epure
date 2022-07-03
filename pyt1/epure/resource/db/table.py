@@ -1,4 +1,4 @@
-from types import NoneType
+from types import LambdaType, NoneType
 from typing import *
 from .db import Db
 from ..savable import Savable
@@ -15,7 +15,10 @@ class TableColumn(Savable):
 class TableHeader(Savable):
     columns:Dict[str,TableColumn]
 
-    def __init__(self, columns:Dict[str,TableColumn]=None, name: str = '', res_id: object = None) -> None:
+    def __init__(self, 
+            columns:Dict[str,TableColumn]=None, 
+            name: str = '', res_id: object = None) -> None:
+
         self.columns = columns if columns else {}
         super().__init__(name, res_id)
 
@@ -26,6 +29,9 @@ class TableHeader(Savable):
 
     def __getitem__(self, key:str):
         return self.columns[key]
+
+    def keys(self):
+        return self.columns.keys()
 
 
 class Table(Savable):
@@ -39,14 +45,25 @@ class Table(Savable):
 
 
 T = TypeVar('T')
-class NotNullMeta(type, Generic[T]):
-    def __getitem__(cls, param:Any):
+K = TypeVar('K')
+class IndexedTypeMeta(type):
+    def __getitem__(cls:Type, param:Any):
         cls.__param__ = param
         return cls
 
-class NotNull(metaclass=NotNullMeta):
+class NotNull(metaclass=IndexedTypeMeta):
     __param__:type
 
-    # def __class_getitem__(cls, param:Any):
-    #     cls.__param__ = param
-    #     return cls
+class Id(metaclass=IndexedTypeMeta):
+    __param__:type
+
+class Uniq(metaclass=IndexedTypeMeta):
+    __param__:type
+
+class Check(metaclass=IndexedTypeMeta):
+    __param__:type
+    __condition__:Callable
+    def __class_getitem__(cls, param:Any, condition:Callable):
+        cls.__param__ = param
+        cls.__condition__ = condition
+        return cls

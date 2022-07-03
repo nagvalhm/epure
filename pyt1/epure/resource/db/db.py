@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import *
 import logging
+
+from ..savable import Savable
 if TYPE_CHECKING:
     from .table import Table
 from ...resource.resource import Resource
@@ -105,16 +107,23 @@ class Db(Resource):
     def get_py_type(self, db_type:str):
         return self.db_py_types[db_type]
 
-    # def get_table_scheme(self, node:Node) -> List[Dict[str, str]]:
-    #     res: List[Dict[str, str]] = list()
+    def get_table_scheme(self, resource:Savable) -> List[Dict[str, str]]:
+        res: List[Dict[str, str]] = list()
 
-    #     for name, val in vars(node).items():
-    #         if not self.is_savable(name):
-    #             continue
-    #         column_type = val if isinstance(val, type) else type(val)
-    #         res.append({
-    #             "name": name,
-    #             "column_type": self.dbtypes.get(column_type, 'bytea')
-    #         })
+        dict_items:ItemsView[str, Any]
+        if isinstance(resource, Table):
+            dict_items = dict(resource.header).items()
+        else:
+            dict_items = resource.__annotations__.items()
+        
 
-    #     return res
+        for column_name, column_type in dict_items:
+            if not resource.is_excluded(column_name):
+                continue
+            
+            res.append({
+                "column_name": column_name,
+                "column_type": self.get_db_type(column_type)
+            })
+
+        return res

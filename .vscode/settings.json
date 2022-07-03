@@ -1,9 +1,11 @@
 {
-    "python.pythonPath": "${workspaceFolder}\\pyt\\env39\\Scripts\\python.exe",
+    // "python.pythonPath": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
+    "python_path": "${workspaceFolder}/pyt1/env310/Scripts/python.exe",
+    "cwd": "${workspaceFolder}/pyt1",
     "files.watcherExclude": {
         "**/target": true
     },
-    "python.linting.mypyEnabled": true,
+    // "python.linting.mypyEnabled": true,
     "python.linting.enabled": true
     
 }
@@ -13,3 +15,9 @@
 //set-executionpolicy remotesigned
 //python -m pip install --upgrade pip
 //needed to select enviroment in vscode, when it asks while starting vscode
+//"terminal.integrated.cwd": "${workspaceFolder}/pyt1"
+
+//pip install poetry=1.1.13
+//poetry install
+//poetry add module_name=version -D
+

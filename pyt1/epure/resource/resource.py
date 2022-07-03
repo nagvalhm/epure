@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import abstractmethod
 from typing import *
 if TYPE_CHECKING:
     from .savable import Savable
@@ -10,16 +11,19 @@ class Resource():
     res_id:object
     name:str
     
+    @abstractmethod
     def __init__(self, name:str='', res_id:object=None) -> None:
         self.name = name if name else self.__class__.__name__
         self.res_id = res_id if res_id else self.name
 
-    def create(self, resource:Savable, res_id:object=None):
-        pass
+    def create(self, resource:Savable, res_id:object=None) -> Any:
+        raise NotImplementedError
+
     def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
-        pass
-    def update(self, resource:Savable, res_id:object=None):
-        pass
+        raise NotImplementedError
+
+    def update(self, resource:Savable, res_id:object=None) -> Any:
+        raise NotImplementedError
 
     # def delete(resource:Savable, res_id=None ? Object):
     #     pass
