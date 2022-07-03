@@ -36,7 +36,7 @@ class TableHeader(Savable):
 
 class Table(Savable):
     header:TableHeader
-    resource:Db
+    resource:Db    
 
     def __init__(self, name: str = '', header:TableHeader=None, res_id: object = None) -> None:
         self.header = header if header else TableHeader()
@@ -44,8 +44,7 @@ class Table(Savable):
         super().__init__(name, res_id)
 
 
-T = TypeVar('T')
-K = TypeVar('K')
+
 class IndexedTypeMeta(type):
     def __getitem__(cls:Type, param:Any):
         cls.__param__ = param

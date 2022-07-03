@@ -13,9 +13,6 @@ import logging
 
 class GresDb(Db):
 
-    test:NotNull[str]
-    # test2:Check[int, lambda x: 7]
-
     def _execute(self, script: str = '') -> list:
         result = []
         with psycopg2.connect(**self.params) as connection:

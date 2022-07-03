@@ -46,7 +46,9 @@ def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) 
     
     def epure_creator(cls:type) -> Epure:
         epure_cls = _create_epure(cls, saver, epure_metaclass)
-        epure_cls.save_epure(0, resource)
+        epure_cls.save_epure(0, resource)        
+
+        del cls
         return epure_cls
 
     return epure_creator
