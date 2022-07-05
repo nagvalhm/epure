@@ -8,8 +8,6 @@ class Node(Savable):
     def save(self, level:int=0, resource:Resource=None):
         pass
 
-    def is_excluded(self, atr_name:str):
-        pass
 
 class TableNode(Node):
     table:Savable

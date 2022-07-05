@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ..epure.epure import epure, connect
 from ..epure.resource.db.gres_db import GresDb
-from ..epure.resource.db.table import *
+from ..epure.resource.db.table import NotNull, Check
 from typing import List, Dict, Tuple
 from datetime import datetime
 import pytest
@@ -61,6 +61,7 @@ class SeparatedEpure1:
     complex1:complex
     list1:list
     tuple1:tuple
+    no_type = None
 
 class RegularClass2:
     separated_epure1:SeparatedEpure1

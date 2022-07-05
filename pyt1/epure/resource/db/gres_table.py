@@ -1,11 +1,11 @@
-from .table import Table, TableColumn, TableHeader, NotNull
+from .table import *
 from typing import *
 from collections.abc import Sequence
 from ...helpers.type_helper import check_type
 
 class GresTable(Table):
     def create_column(self, column_info: Sequence) -> TableColumn:
-        check_type('column_info', column_info, Sequence)
+        check_type('column_info', column_info, [Sequence])
 
         column_name = column_info[2]
         is_nullable = column_info[3] == 'YES'

@@ -16,9 +16,10 @@ class Savable(Resource):
     def deserialize(self):
         pass
 
-    def is_excluded(self, atr_name:str) -> bool:
-        if hasattr(self, '__exclude__') and atr_name in self.__exclude__:
-            return False
+    @classmethod
+    def is_excluded(cls, atr_name:str) -> bool:
+        if hasattr(cls, '__exclude__') and atr_name in cls.__exclude__:
+            return True
         if atr_name[:2] == "__" and atr_name[-2:] == "__":
-            return False
-        return True
+            return True
+        return False

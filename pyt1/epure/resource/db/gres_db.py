@@ -4,50 +4,74 @@ from typing import *
 from itertools import groupby
 from .gres_table import GresTable
 from .table import *
-from ...helpers.type_helper import check_type
 from datetime import timedelta, datetime
 from ipaddress import _IPAddressBase
 from ..resource import Resource
 from ..savable import Savable
 import logging
+from inflection import underscore
 
 class GresDb(Db):
+
+    default_table_type: type = GresTable
 
     def _execute(self, script: str = '') -> list:
         result = []
         with psycopg2.connect(**self.params) as connection:
             with connection.cursor() as cursor:
                 cursor.execute(script)
-                if cursor.rowcount != 0:
+                if cursor.rowcount > 0:
                     result = cursor.fetchall()
 
         return result
 
     def create(self, resource: Savable, res_id: object = None):
-        pass
-    #     scheme = self.get_table_scheme(resource)
-    #     column_defenitions = []
-    #     for column in scheme[:-1]:
-    #         column_defenitions.append(
-    #             column['name'] + " " + column['column_type'] + ","
-    #         )
-    #     last_column = scheme[len(scheme)-1]
-    #     column_defenitions.append(
-    #         last_column['name'] + " " + last_column['column_type']
-    #     )
 
-    #     scheme_script = " \n ".join(column_defenitions)
+        table_name = cast(str, res_id)
+        table:Table
+        if isinstance(resource, Table):
+            table = resource
+        else:
+            TableCls = self.default_table_type
+            columns = resource.__annotations__
+            columns = {name: val
+                for name, val in columns.items() if
+                not resource.is_excluded(name)}            
+            table = TableCls(table_name, columns)
 
-    #     script = f'''
-    #     CREATE TABLE IF NOT EXISTS {resource.name} (
-    #         {scheme_script}
-    #     );'''
 
-    #     return script
+        scheme = table.get_scheme(self)
+        column_defenitions = []
+        for column in scheme[:-1]:
+            column_defenitions.append(
+                column['column_name'] + " " + column['column_type'] + ","
+            )
+        last_column = scheme[len(scheme)-1]
+        column_defenitions.append(
+            last_column['column_name'] + " " + last_column['column_type']
+        )
+
+        scheme_script = " \n ".join(column_defenitions)
+
+        
+        table_id = self.get_table_id(table_name)
+        table_name = '.'.join(table_id)
+        script = f'''
+        CREATE TABLE IF NOT EXISTS {underscore(table_name)} (
+            {scheme_script}
+        );'''
+
+        self.execute(script)
+        self.tables[table_name] = table
+        table.resource = self
+
+        return table
+
 
     def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
-    
-        table_id = self._get_table_id(selector, **kwargs)
+        
+        selector = str(selector)
+        table_id = self.get_table_id(selector, **kwargs)
 
         collumns = self.execute(f'''select table_schema, table_name,
                     column_name, is_nullable, data_type
@@ -58,16 +82,13 @@ class GresDb(Db):
         return []
 
         
-    def _get_table_id(self, selector:object=None, **kwargs) -> List[str]:
-        table_name = ''
-        if  selector:    
-            table_name = str(selector)
+    def get_table_id(self, table_name:str='', **kwargs) -> List[str]:
 
         if not table_name:
             table_name = kwargs.get('table_name', '')    
 
         if not table_name:
-            raise ValueError('method read of bd need table_name as argument')
+            raise ValueError('table_name is needed for retrieving table id')
 
         table_id = table_name.split('.')
         if len(table_id) > 2:
@@ -131,69 +152,74 @@ class GresDb(Db):
         return table
         
     py_db_types:Dict[type, str] = {
-        int: 'bigint',
-        str: 'text',
-        type(None): 'json'
+        'int': 'bigint',
+        'float': 'numeric',
+        'str': 'text',
+        'complex': 'numeric[]',
+        'list': 'jsonb',
+        'tuple': 'jsonb',
+        'object': 'jsonb',
+        'NoneType': 'json'
     }
 
     db_py_types:Dict[str, type] = {
-        'bigint': int, #-9223372036854775808 to +9223372036854775807
-        'text': str,
-        'json': object,
-        'name': str,
-        'ARRAY': list,
-        'oid': int, #0 to 4294967295
-        'interval': timedelta,
-        'smallint': int, #-32768 to +32767
-        'inet': _IPAddressBase, #IPv4Address or IPv6Address ipaddress.ip_address        
-        'pg_node_tree': str, #representation of parsed sql query
-        'boolean': bool,
-        'numeric': float, #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point
-        'decimal': float, #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point        
-        'anyarray': list,
-        'regproc': str, #sql procidure name
-        'regtype': str, #sql type name
-        'timestamp' : datetime,
-        'timestamp with time zone': datetime,
-        'time' : datetime,
-        'time with time zone' : datetime,
-        'double precision': float,
-        'real': float,
-        '"char"': str,
-        'character varying': str,
-        'character': str,
+        'bigint': 'int', #-9223372036854775808 to +9223372036854775807
+        'text': 'str',
+        'json': 'object',
+        'name': 'str',
+        'ARRAY': 'list',
+        'oid': 'int', #0 to 4294967295
+        'interval': 'timedelta',
+        'smallint': 'int', #-32768 to +32767
+        'inet': '_IPAddressBase', #IPv4Address or IPv6Address ipaddress.ip_address        
+        'pg_node_tree': 'str', #representation of parsed sql query
+        'boolean': 'bool',
+        'numeric': 'float', #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point
+        'decimal': 'float', #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point        
+        'anyarray': 'list',
+        'regproc': 'str', #sql procidure name
+        'regtype': 'str', #sql type name
+        'timestamp' : 'datetime',
+        'timestamp with time zone': 'datetime',
+        'time' : 'datetime',
+        'time with time zone' : 'datetime',
+        'double precision': 'float',
+        'real': 'float',
+        '"char"': 'str',
+        'character varying': 'str',
+        'character': 'str',
 
-        'pg_ndistinct': int,
-        'pg_mcv_list': int,
-        'pg_dependencies': int,
-        'jsonb': int,
-        'xid': int,
-        'bytea': int,
-        'integer': int,
-        'pg_lsn': int,        
-        'date': int,
-        'smallserial':int,
-        'serial': int,
-        'bigserial': int,
-        'bit': int,
-        'bit varying': int,
-        'box': int,
-        'cidr': int,
-        'circle': int,
-        'line' : int,
-        'lseg' : int,
-        'macaddr' : int,
-        'macaddr8' : int,
-        'money' : int,
-        'path' : int,
-        'pg_snapshot' : int,
-        'point' : int,
-        'polygon' : int,
-        'tsquery' : int,
-        'tsvector' : int,
-        'txid_snapshot' : int,
-        'uuid' : int,
-        'xml' : int
+        'pg_ndistinct': 'int',
+        'pg_mcv_list': 'int',
+        'pg_dependencies': 'int',
+        'jsonb': 'int',
+        'xid': 'int',
+        'bytea': 'int',
+        'integer': 'int',
+        'pg_lsn': 'int',        
+        'date': 'int',
+        'smallserial':'int',
+        'serial': 'int',
+        'bigserial': 'int',
+        'bit': 'int',
+        'bit varying': 'int',
+        'box': 'int',
+        'cidr': 'int',
+        'circle': 'int',
+        'line' : 'int',
+        'lseg' : 'int',
+        'macaddr' : 'int',
+        'macaddr8' : 'int',
+        'money' : 'int',
+        'path' : 'int',
+        'pg_snapshot' : 'int',
+        'point' : 'int',
+        'polygon' : 'int',
+        'tsquery' : 'int',
+        'tsvector' : 'int',
+        'txid_snapshot' : 'int',
+        'uuid' : 'int',
+        'xml' : 'int'
     }
 
 

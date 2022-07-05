@@ -1,6 +1,8 @@
 from __future__ import annotations
-from typing import *
+from types import NoneType
+from typing import cast, Callable
 from .resource.resource import Resource
+from .helpers.type_helper import check_type
 
 from .resource.db.table import Table
 # from types import FunctionType
@@ -18,12 +20,11 @@ class Epure(type, Savable):
     EDb:Db
     
     # def __new__(mcls, name: str, cls_bases: Tuple[type, ...], namespace: dict[str, Any]) -> Epure:
-    #     return super().__new__(mcls, name, cls_bases, namespace)
+    #     return super().__new__(mcls, name, cls_bases, namespace)    
     
     def save_epure(cls, level:int=0, resource:Resource=None):
 
-        if not (isinstance(resource, str) or isinstance(resource, Savable)):
-            raise TypeError('epure resource type must be table name (str) or Savable')
+        check_type('resource', resource, [str, Savable, NoneType])
 
         if type(resource) == Savable:
             resource = cast(Savable, resource)
@@ -46,7 +47,7 @@ def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) 
     
     def epure_creator(cls:type) -> Epure:
         epure_cls = _create_epure(cls, saver, epure_metaclass)
-        epure_cls.save_epure(0, resource)        
+        epure_cls.save_epure(resource=resource)
 
         del cls
         return epure_cls

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from types import NoneType
 from typing import Any
 from configparser import SectionProxy, RawConfigParser
 from ...helpers.string_helper import is_float, is_int, is_bool

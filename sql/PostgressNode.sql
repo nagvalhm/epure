@@ -33,7 +33,7 @@ left join information_schema.columns
 SELECT table_schema, table_name as table_name, column_name, is_nullable, data_type 
   FROM information_schema.columns order by table_schema, table_name
   
-  
+  select * from separated_epure1
   
   
   
@@ -59,3 +59,40 @@ SELECT table_schema, table_name as table_name, column_name, is_nullable, data_ty
   
   WHERE table_schema = 'oraculs_domain'
    AND table_name   = 'your_table'
+   
+   select * from rak_occurrence
+   
+   CREATE TABLE public.rak_occurrence (
+	id serial NOT NULL,
+	"name" varchar NOT NULL,
+	email_text text NULL,
+	"language" int4 NULL,
+	"comment" text NULL,
+	state int4 NULL,
+	insurance_type int4 NULL,
+	supervisors int4 NULL,
+	executers int4 NULL,
+	executer int4 NULL,
+	"operator" int4 NULL,
+	claimant_state int4 NULL,
+	create_uid int4 NULL,
+	create_date timestamp NULL,
+	write_uid int4 NULL,
+	write_date timestamp NULL,
+	is_valid bool NULL,
+	assignment_time timestamp NULL,
+	CONSTRAINT rak_occurrence_pkey PRIMARY KEY (id)
+);
+
+
+-- public.rak_occurrence foreign keys
+
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_claimant_state_fkey FOREIGN KEY (claimant_state) REFERENCES rak_claimant_state(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_create_uid_fkey FOREIGN KEY (create_uid) REFERENCES res_users(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_executer_fkey FOREIGN KEY (executer) REFERENCES res_users(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_executers_fkey FOREIGN KEY (executers) REFERENCES res_groups(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_language_fkey FOREIGN KEY (language) REFERENCES res_lang(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_operator_fkey FOREIGN KEY (operator) REFERENCES res_users(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_state_fkey FOREIGN KEY (state) REFERENCES rak_occurrence_state(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_supervisors_fkey FOREIGN KEY (supervisors) REFERENCES res_groups(id) ON DELETE SET NULL;
+ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_write_uid_fkey FOREIGN KEY (write_uid) REFERENCES res_users(id) ON DELETE SET NULL;
