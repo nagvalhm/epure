@@ -62,6 +62,40 @@ SELECT table_schema, table_name as table_name, column_name, is_nullable, data_ty
    
    select * from rak_occurrence
    
+   
+   INSERT INTO public.separated_epure1
+(str1, int1, float1, complex1)
+VALUES('val', 6, 4.8, array[34.5, 103.4]);
+
+ALTER TABLE public.separated_epure1 ALTER COLUMN str1 TYPE integer;
+
+epure_deleted_columns
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+create sequence if not exists temp_seq;
+
+
+execute format('ALTER TABLE public.separated_epure1  RENAME COLUMN str2 to %s (select 'str2_deleted' || nextval(temp_seq));
+
+select gen_random_uuid()
+
+ALTER TABLE public.separated_epure1 ALTER COLUMN str2 SET NOT NULL;
+
+UPDATE public.separated_epure1 SET str2 = str5;
+
+
+select gen_random_uuid ()
+
+
+CREATE TABLE public.separated_epure1 (
+	str1 text NULL,
+	int1 int8 NULL,
+	float1 numeric NULL,
+	complex1 _numeric NULL,
+	list1 jsonb NULL,
+	tuple1 jsonb NULL
+);
+   
    CREATE TABLE public.rak_occurrence (
 	id serial NOT NULL,
 	"name" varchar NOT NULL,

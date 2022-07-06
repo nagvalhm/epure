@@ -10,10 +10,7 @@ class Savable(Resource):
     def save(self, level:int=0, resource:Optional[Resource]=None):
         pass
 
-    def serialize(self):
-        pass
-
-    def deserialize(self):
+    def to_json(self):
         pass
 
     @classmethod
@@ -23,3 +20,6 @@ class Savable(Resource):
         if atr_name[:2] == "__" and atr_name[-2:] == "__":
             return True
         return False
+
+    def execute(self, script: str = '') -> object:
+        return self.resource.execute(script)

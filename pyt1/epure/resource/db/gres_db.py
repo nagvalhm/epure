@@ -1,101 +1,83 @@
 from .db import Db
 import psycopg2
+import psycopg2.extras
 from typing import *
 from itertools import groupby
 from .gres_table import GresTable
 from .table import *
 from datetime import timedelta, datetime
 from ipaddress import _IPAddressBase
-from ..resource import Resource
+from ..resource import Resource, FullName
 from ..savable import Savable
 import logging
 from inflection import underscore
 
 class GresDb(Db):
 
-    default_table_type: type = GresTable
+    default_table_type: Type[Table] = GresTable
 
     def _execute(self, script: str = '') -> list:
         result = []
         with psycopg2.connect(**self.params) as connection:
-            with connection.cursor() as cursor:
+            with connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute(script)
                 if cursor.rowcount > 0:
                     result = cursor.fetchall()
 
         return result
 
-    def create(self, resource: Savable, res_id: object = None):
-
-        table_name = cast(str, res_id)
-        table:Table
-        if isinstance(resource, Table):
-            table = resource
-        else:
-            TableCls = self.default_table_type
-            columns = resource.__annotations__
-            columns = {name: val
-                for name, val in columns.items() if
-                not resource.is_excluded(name)}            
-            table = TableCls(table_name, columns)
 
 
-        scheme = table.get_scheme(self)
+
+    def serialize(self, table: Savable, method:str='', **kwargs) -> object:
+        check_type('table', table, self.default_table_type)
+        table = cast(Table, table)
+
+        header = table.serialize_header(self)
         column_defenitions = []
-        for column in scheme[:-1]:
+        for column in header[:-1]:
             column_defenitions.append(
                 column['column_name'] + " " + column['column_type'] + ","
             )
-        last_column = scheme[len(scheme)-1]
+
+        last_column = header[len(header)-1]
         column_defenitions.append(
             last_column['column_name'] + " " + last_column['column_type']
         )
 
-        scheme_script = " \n ".join(column_defenitions)
-
+        script = " \n ".join(column_defenitions)
         
-        table_id = self.get_table_id(table_name)
-        table_name = '.'.join(table_id)
         script = f'''
-        CREATE TABLE IF NOT EXISTS {underscore(table_name)} (
-            {scheme_script}
+        CREATE TABLE {underscore(table.full_name)} (
+            {script}
         );'''
 
-        self.execute(script)
-        self.tables[table_name] = table
-        table.resource = self
+        return script
 
-        return table
+    def _deserialize_table_name(self, table_columns:list) -> FullName:
+        first_columns = table_columns[0]
+
+        table_name = first_columns['table_name']
+        namespace = first_columns['table_schema']
+        return FullName(name=table_name, namespace=namespace)
 
 
     def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
         
-        selector = str(selector)
-        table_id = self.get_table_id(selector, **kwargs)
+        table_name = str(selector)
+        full_table_name = self.get_full_table_name(table_name)
 
-        collumns = self.execute(f'''select table_schema, table_name,
+        collumns = self.execute(f'''SELECT table_schema, table_name,
                     column_name, is_nullable, data_type
-                    from information_schema.columns where
-                    table_schema = \'{table_id[0]}\' and table_name = \'{table_id[1]}\' ''')
+                    FROM information_schema.columns WHERE
+                    table_schema = \'{full_table_name.namespace}\' AND
+                    table_name = \'{full_table_name.name}\' ''')
         if len(collumns) > 0:
-            return self._add_table(collumns)
-        return []
+            table = self.deserialize(collumns)
+            self._set_table(table)
+            return table
+        return []        
 
-        
-    def get_table_id(self, table_name:str='', **kwargs) -> List[str]:
-
-        if not table_name:
-            table_name = kwargs.get('table_name', '')    
-
-        if not table_name:
-            raise ValueError('table_name is needed for retrieving table id')
-
-        table_id = table_name.split('.')
-        if len(table_id) > 2:
-            raise NameError('table name must have no more then one dot')
-        if len(table_id) == 1:
-            table_id.insert(0, self.default_namespace)
-        return table_id
 
 
 
@@ -119,37 +101,24 @@ class GresDb(Db):
             'port': self.port
         }
 
-        print(self.execute("select 'test request'"))
+        print(self.execute("SELECT 'test request'"))
 
         
-        self.set_tables()        
+        self._set_tables()        
 
 
-    def set_tables(self):
+    def _set_tables(self):
         script = '''SELECT table_schema, table_name, 
                     column_name, is_nullable, data_type 
                     FROM information_schema.columns 
-                    order by table_schema, table_name'''
-        all_collumns = self.execute(script)
-
+                    ORDER BY table_schema, table_name'''
+        all_collumns = self.execute(script)    
         
-        for key, group in groupby(all_collumns,  lambda row: row[0] + '.' + row[1]):
-            self._add_table(list(group))
+        for key, group in groupby(all_collumns,  lambda row: row['table_schema'] + '.' + row['table_name']):
+            table = self.deserialize(list(group))
+            self._set_table(table)
     
-    def _add_table(self, table_info):
-        first_row = table_info[0]
-        table_name = first_row[1] \
-            if first_row[0] == self.default_namespace \
-            else first_row[0] + '.' + first_row[1]
-        table = GresTable(table_name)
-        table.resource = self
-        
-        for column_info in table_info:
-            column = table.create_column(column_info)
-            table.header[column.name] = column
 
-        self.tables[table_name] = table
-        return table
         
     py_db_types:Dict[type, str] = {
         'int': 'bigint',

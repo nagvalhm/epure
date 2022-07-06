@@ -1,109 +1,64 @@
 from __future__ import annotations
 from types import LambdaType, NoneType
 from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Callable, cast
+
+from tomlkit import table
 if TYPE_CHECKING:
     from .db import Db
 from ..savable import Savable
 from ...helpers.type_helper import check_type
+from ...errors import EpureError
 from ..resource import Resource
 from inflection import underscore
-
-
-class TableColumn(Savable):
-    column_type:str
-    
-    def __init__(self, name:str, column_type:str='') -> None:
-        self.column_type = column_type
-        super().__init__(name)
-
-class TableHeader(Savable):
-    columns:Dict[str,TableColumn]
-
-    def __init__(self, 
-            columns:Dict[str, Any]=None,
-            name: str = '', res_id: object = None) -> None:
-        check_type('columns', columns, [dict, NoneType])
-
-        self.columns = {}
-        super().__init__(name, res_id)
-        if not columns:
-            return
-
-        for name, val in columns.items():
-            if isinstance(val, str):
-                val = TableColumn(name, val)
-            val = cast(TableColumn, val)
-            self.columns[name] = val
-
-        
-
-    def __setitem__(self, key:str, column:TableColumn):
-        check_type('column', column, [TableColumn])
-        self.columns[key] = column
-
-    def __getitem__(self, key:str):
-        return self.columns[key]
-
-    def keys(self):
-        return self.columns.keys()
+from .table_header import TableHeader
 
 
 class Table(Savable):
     header:TableHeader
     resource:Db
 
-    def __init__(self, name: str = '', 
-            header:Union[TableHeader, Dict[str, Any]]=None, res_id: object = None) -> None:        
+    def __init__(self, name: str,
+            header:Union[TableHeader, Dict[str, Any]]=None, namespace:str = '') -> None:        
         check_type('header', header, [TableHeader, dict, NoneType])
 
+        self._set_header(header)
+
+        super().__init__(name, namespace=namespace)
+
+
+
+    def _set_header(self, header):
         if header == None:
-            header = TableHeader()
+            header = TableHeader(table=self)
         
         if isinstance(header, Dict):
-            header = TableHeader(columns=header)
-
-
+            header = TableHeader(columns=header, table=self)
+        
         self.header = header
         self.header.resource = self
-        super().__init__(name, res_id)
+       
 
     @property
     def db(self):
         return self.resource
 
     
-    def get_scheme(self, db: Db) -> List[Dict[str, str]]:
+    def serialize_header(self, db: Db=None, **kwargs) -> List[Dict[str, str]]:
         res: List[Dict[str, str]] = list()
+
+        if not db:
+            db = self.db
+
+        if not db:
+            raise EpureError('undefined db for header serialization')
         
-        columns_items = self.header.columns.items()
-        for column_name, column in columns_items:
-            res.append({
-                "column_name": underscore(column_name),
+        header = self.header
+        for column_name in header:
+            column = header[column_name]
+            # serialized = header.serialize(column, db=db)
+            serialized = {
+                "column_name": underscore(column.name),
                 "column_type": db.get_db_type(column.column_type)
-            })
-
+            }
+            res.append(serialized)
         return res
-
-
-
-class IndexedTypeMeta(type):
-    def __getitem__(cls:Type, param:Any):
-        cls.__param__ = param
-        return cls
-
-class NotNull(metaclass=IndexedTypeMeta):
-    __param__:type
-
-class Id(metaclass=IndexedTypeMeta):
-    __param__:type
-
-class Uniq(metaclass=IndexedTypeMeta):
-    __param__:type
-
-class Check(metaclass=IndexedTypeMeta):
-    __param__:type
-    __condition__:Callable
-    def __class_getitem__(cls, param:Any, condition:Callable):
-        cls.__param__ = param
-        cls.__condition__ = condition
-        return cls

@@ -1,25 +1,40 @@
-from .table import *
-from typing import *
+from .table import Table, NotNull
+from .table_header import TableHeader, TableColumn
+from typing import Dict
 from collections.abc import Sequence
 from ...helpers.type_helper import check_type
+from ..savable import Savable
+from ..resource import UPDATE
+
+
+class GresHeader(TableHeader):
+    
+    def _deserialize(self, column_dict: dict) -> dict:
+        res = {'column_name': column_dict['column_name'],
+                'is_nullable': (column_dict['is_nullable'] == 'YES'),
+                'db_type': column_dict['data_type']}
+        return res
+
+    def serialize(self, column: Savable, method:str='', **kwargs) -> object:
+        check_type('column', column, TableColumn)
+        script = ''
+
+        table_name = self.table.full_name
+        if method == UPDATE:
+            script = script + f'''
+                ALTER TABLE {table_name} rename column str1 to str2;
+            '''
 
 class GresTable(Table):
-    def create_column(self, column_info: Sequence) -> TableColumn:
-        check_type('column_info', column_info, [Sequence])
-
-        column_name = column_info[2]
-        is_nullable = column_info[3] == 'YES'
-        db_type = column_info[4]
-        try:
-            column_type = self.resource.get_py_type(db_type)
-        except KeyError as ex:
-            raise TypeError(f'{db_type} is unknown for {self.resource.name} '
-                            'set db_py_types attribute properly') from ex
-        # colum_type = TypeVar('colum_type', bound=colum_type)
-        if not is_nullable:
-            column_type = NotNull[column_type]
+    def _set_header(self, header):
+        if header == None:
+            header = GresHeader(table=self)
         
-        return TableColumn(column_name, column_type)
+        if isinstance(header, Dict):
+            header = GresHeader(columns=header, table=self)
+        
+        self.header = header
+        self.header.resource = self
 
 class JsonbTable(GresTable):
     pass

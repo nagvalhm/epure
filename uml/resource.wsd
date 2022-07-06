@@ -7,29 +7,36 @@ class Resource{
     create_all(List[Savable])
     update_all(List[Savable])
     delete_all(?)
+
+    serialize(Savable resource)
+    deserialize(str)
     
     "execute"(str script='')
     res_id
     name
+    namespace
 }
 
 
 class Db{
     init(str connect_str)
+    table_for_resource(Savable resource)
 }
 
 class GresDb{}
 class LiteDb{}
 
-class Savable{    
+class Savable{
+    "__exclude__"
     resource
     save(int level=0)
-    serialize()
-    deserialize()    
+    to_json()
+    is_excluded(str atr_name)
 }
 
 class Table{
     name = res_id
+    bd
 }
 
 class GresTable{}
@@ -47,12 +54,13 @@ class FileResource{
 class IniFile{}
 class IniSection{}
 class NoneIniSection{}
-class JsonFile{}
+class JsonFile{
+    serialize(Savable resource)
+    deserialize(object)
+}
 
-class Node{
-    "__exclude__"
-    save(int level)
-    is_excluded(str atr_name)
+class Node{    
+    save(int level)    
 }
 
 class TableNode{
