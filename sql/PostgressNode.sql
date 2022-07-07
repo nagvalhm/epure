@@ -69,15 +69,15 @@ VALUES('val', 6, 4.8, array[34.5, 103.4]);
 
 ALTER TABLE public.separated_epure1 ALTER COLUMN str1 TYPE integer;
 
-epure_deleted_columns
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+--epure_deleted_columns
+--CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+--
+--create sequence if not exists temp_seq;
 
-create sequence if not exists temp_seq;
 
+ALTER TABLE public.separated_epure1  RENAME COLUMN str2 to sdfsdf;
 
-execute format('ALTER TABLE public.separated_epure1  RENAME COLUMN str2 to %s (select 'str2_deleted' || nextval(temp_seq));
-
-select gen_random_uuid()
+--select gen_random_uuid()
 
 ALTER TABLE public.separated_epure1 ALTER COLUMN str2 SET NOT NULL;
 

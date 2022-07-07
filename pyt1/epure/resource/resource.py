@@ -3,6 +3,7 @@ from abc import abstractmethod
 from typing import *
 if TYPE_CHECKING:
     from .savable import Savable
+from inflection import underscore
 
 CREATE = 'CREATE'
 READ = 'READ'
@@ -61,3 +62,20 @@ class Resource():
 
 class FullName(Resource):
     pass
+
+class SnakeCaseNamed(FullName):
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, val):
+        self._name = underscore(val)
+
+    @property
+    def namespace(self):
+        return self._namespace
+
+    @namespace.setter
+    def namespace(self, val):
+        self._namespace = underscore(val)

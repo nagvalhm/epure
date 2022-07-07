@@ -7,14 +7,15 @@ from .gres_table import GresTable
 from .table import *
 from datetime import timedelta, datetime
 from ipaddress import _IPAddressBase
-from ..resource import Resource, FullName
+from ..resource import Resource, FullName, SnakeCaseNamed
 from ..savable import Savable
 import logging
-from inflection import underscore
 
 class GresDb(Db):
 
     default_table_type: Type[Table] = GresTable
+    default_namespace:str='Public'
+    log_level:int = logging.NOTSET
 
     def _execute(self, script: str = '') -> list:
         result = []
@@ -48,7 +49,7 @@ class GresDb(Db):
         script = " \n ".join(column_defenitions)
         
         script = f'''
-        CREATE TABLE {underscore(table.full_name)} (
+        CREATE TABLE {table.full_name} (
             {script}
         );'''
 
@@ -59,13 +60,13 @@ class GresDb(Db):
 
         table_name = first_columns['table_name']
         namespace = first_columns['table_schema']
-        return FullName(name=table_name, namespace=namespace)
+        return SnakeCaseNamed(name=table_name, namespace=namespace)
 
 
     def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
         
         table_name = str(selector)
-        full_table_name = self.get_full_table_name(table_name)
+        full_table_name = self._get_full_table_name(table_name)
 
         collumns = self.execute(f'''SELECT table_schema, table_name,
                     column_name, is_nullable, data_type
@@ -82,7 +83,8 @@ class GresDb(Db):
 
 
     def __init__(self, connect_str:str='', database:str='', user:str='', password:str='',
-             host:str='', port:str='', default_namespace='public', log_level:int = logging.NOTSET):
+             host:str='', port:str='', default_namespace='', log_level:int = logging.NOTSET,
+             migrate_on_delete:bool=False):
 
         super().__init__(connect_str, 
             database=database, 
@@ -115,7 +117,8 @@ class GresDb(Db):
         all_collumns = self.execute(script)    
         
         for key, group in groupby(all_collumns,  lambda row: row['table_schema'] + '.' + row['table_name']):
-            table = self.deserialize(list(group))
+            group = list(group)
+            table = self.deserialize(group)
             self._set_table(table)
     
 
@@ -124,11 +127,13 @@ class GresDb(Db):
         'int': 'bigint',
         'float': 'numeric',
         'str': 'text',
-        'complex': 'numeric[]',
+        'complex': 'point',
+
         'list': 'jsonb',
         'tuple': 'jsonb',
         'object': 'jsonb',
-        'NoneType': 'json'
+        'NoneType': 'jsonb',
+        'Any': 'jsonb'
     }
 
     db_py_types:Dict[str, type] = {
@@ -157,11 +162,12 @@ class GresDb(Db):
         '"char"': 'str',
         'character varying': 'str',
         'character': 'str',
+        'point' : 'complex',
+        'jsonb': 'Any',
 
         'pg_ndistinct': 'int',
         'pg_mcv_list': 'int',
-        'pg_dependencies': 'int',
-        'jsonb': 'int',
+        'pg_dependencies': 'int',        
         'xid': 'int',
         'bytea': 'int',
         'integer': 'int',
@@ -181,8 +187,7 @@ class GresDb(Db):
         'macaddr8' : 'int',
         'money' : 'int',
         'path' : 'int',
-        'pg_snapshot' : 'int',
-        'point' : 'int',
+        'pg_snapshot' : 'int',        
         'polygon' : 'int',
         'tsquery' : 'int',
         'tsvector' : 'int',

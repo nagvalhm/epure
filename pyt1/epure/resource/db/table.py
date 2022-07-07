@@ -9,13 +9,12 @@ from ..savable import Savable
 from ...helpers.type_helper import check_type
 from ...errors import EpureError
 from ..resource import Resource
-from inflection import underscore
 from .table_header import TableHeader
 
 
 class Table(Savable):
     header:TableHeader
-    resource:Db
+    resource:Db = None
 
     def __init__(self, name: str,
             header:Union[TableHeader, Dict[str, Any]]=None, namespace:str = '') -> None:        
@@ -57,7 +56,7 @@ class Table(Savable):
             column = header[column_name]
             # serialized = header.serialize(column, db=db)
             serialized = {
-                "column_name": underscore(column.name),
+                "column_name": column.name,
                 "column_type": db.get_db_type(column.column_type)
             }
             res.append(serialized)

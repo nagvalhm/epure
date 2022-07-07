@@ -7,6 +7,11 @@ class IndexedTypeMeta(type):
 
 class NotNull(metaclass=IndexedTypeMeta):
     __param__:type
+    __default__:Callable
+    def __class_getitem__(cls, param:Any, default:Any):
+        cls.__param__ = param
+        cls.__default__ = default
+        return cls
 
 class Id(metaclass=IndexedTypeMeta):
     __param__:type

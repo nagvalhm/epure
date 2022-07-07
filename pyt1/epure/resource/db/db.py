@@ -1,14 +1,15 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import *
+from typing import Dict, Any, Type, cast
 import logging
 
 from ..savable import Savable
 from .table import Table
-from ...resource.resource import Resource, FullName
+from ...resource.resource import Resource, FullName, SnakeCaseNamed
 from urllib.parse import urlparse
 from ...errors import EpureError
 from ...helpers.type_helper import check_subclass, check_type
+from inflection import underscore
 
 
 class Db(Resource):
@@ -21,24 +22,41 @@ class Db(Resource):
     params:Dict[str,str]
 
     log_level:int = logging.NOTSET
-    logger:Optional[logging.Logger] = None
+    logger:logging.Logger = None
     connection:Any
     default_namespace:str
     py_db_types:Dict[str, str]
     db_py_types:Dict[str, str]
     tables:Dict[str,Table]
-    default_table_type:Type[Table]
+    default_table_type:Type[Table] = Table
+    migrate_on_delete:bool = False
 
 
     def __getitem__(self, key:str):
         return self.tables[key]
 
-    def keys(self):
-        return self.tables.keys()
+    def __iter__(self):
+        return self.tables.__iter__()
+
+    def __len__(self):
+        return self.tables.__len__()
+
+    @property
+    def any_types(self):
+        if hasattr(self, '_any_types'):
+            return self._any_types
+        res = []
+        any_db_type = self.get_db_type('Any')
+        for py_type, db_type in self.py_db_types.items():
+            if db_type == any_db_type:
+                res.append(py_type)
+        self._any_types = res
+        return res
+
 
     def _set_table(self, table:Table):
         self.tables[table.full_name] = table
-        if table.namespace == self.default_namespace:
+        if table.namespace == self.get_default_namespace():
             self.tables[table.name] = table
         table.resource = self
 
@@ -74,7 +92,8 @@ class Db(Resource):
             else:
                 old_header.create(column)
 
-        return old_table
+        self._set_table(new_table)
+        return new_table
 
     
     @abstractmethod
@@ -88,7 +107,8 @@ class Db(Resource):
                 default_namespace='', 
                 log_level:int = logging.NOTSET,
                 name:str='', res_id:object=None,
-                default_table_type:type=Table):
+                default_table_type:type=None,
+                migrate_on_delete:bool=False):
         
 
 
@@ -98,13 +118,17 @@ class Db(Resource):
         self.user = user or str(connect_params.username)
         self.password = password or str(connect_params.password)
         self.host = host or str(connect_params.hostname)
-        self.port = port or str(connect_params.port)
+        self.port = port or str(connect_params.port)        
+
+        if default_namespace:
+            self.default_namespace = default_namespace
+
+        if log_level:
+            self.log_level = log_level
+        if default_table_type:
+            self.default_table_type = default_table_type
 
         self.tables = {}
-        self.default_namespace = default_namespace
-        self.log_level = log_level
-        self.default_table_type = default_table_type
-
         self.set_logger()
 
         return super().__init__(name, res_id)
@@ -124,9 +148,9 @@ class Db(Resource):
             self.logger.addHandler(fileHandler)
             
 
-    def __contains__(self, object) -> bool:
-        table_name = str(object)
-        if table_name in self.tables:
+    def __contains__(self, table_name:str) -> bool:
+        full_name = self._get_full_table_name(table_name)
+        if full_name.full_name in self.tables:
             return True
         table = self.read(table_name)
         return bool(table)
@@ -159,7 +183,7 @@ class Db(Resource):
     def get_table_for_resource(self, resource: Savable, table_name: str = '') -> Table:
         table:Table
 
-        full_name = self.get_full_table_name(table_name)        
+        full_name = self._get_full_table_name(table_name)        
         columns = resource.__annotations__
         columns = {name: val
             for name, val in columns.items() if
@@ -171,22 +195,25 @@ class Db(Resource):
 
 
     
-    def get_full_table_name(self, table_name:str) -> FullName:
-
+    def _get_full_table_name(self, table_name:str) -> FullName:
+        table_name = table_name
         full_name = table_name.split('.')
         if len(full_name) > 2:
-            raise NameError('table name must have no more then one dot')
+            raise NameError('table_name name must have no more then one dot')
         if len(full_name) == 1:
-            full_name.insert(0, self.default_namespace)
+            default_namespace = self.get_default_namespace()
+            full_name.insert(0, default_namespace)
 
-        res = FullName(namespace=full_name[0], name=full_name[1])
+        res = SnakeCaseNamed(namespace=full_name[0], name=full_name[1])
         return res
 
+    def get_default_namespace(self):
+        return underscore(self.default_namespace)
 
 
-
-    def deserialize(self, resource: object) -> Savable:
-        table_columns = cast(resource, list)
+    def deserialize(self, table_columns: object) -> Savable:
+        check_type('table_columns', table_columns, list)
+        table_columns = cast(list, table_columns)
 
         full_name = self._deserialize_table_name(table_columns)
 

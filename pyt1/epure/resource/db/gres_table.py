@@ -1,10 +1,12 @@
-from .table import Table, NotNull
+from .table import Table
 from .table_header import TableHeader, TableColumn
+from .constraints import NotNull
 from typing import Dict
 from collections.abc import Sequence
 from ...helpers.type_helper import check_type
 from ..savable import Savable
-from ..resource import UPDATE
+from ..resource import UPDATE, SnakeCaseNamed
+from uuid import uuid4
 
 
 class GresHeader(TableHeader):
@@ -15,17 +17,31 @@ class GresHeader(TableHeader):
                 'db_type': column_dict['data_type']}
         return res
 
-    def serialize(self, column: Savable, method:str='', **kwargs) -> object:
-        check_type('column', column, TableColumn)
-        script = ''
+    
+    def _rename_column_script(self, table_name:str, old_name:str, new_name:str) -> str:
+        return f'''
+            ALTER TABLE {table_name} RENAME {old_name} TO {new_name};
+        '''
+        
+    
+    def _set_not_null_script(self, table_name:str, column_name:str) -> str:
+        return f'''
+            ALTER TABLE {table_name} ALTER COLUMN {column_name} SET NOT NULL;
+        '''
 
-        table_name = self.table.full_name
-        if method == UPDATE:
-            script = script + f'''
-                ALTER TABLE {table_name} rename column str1 to str2;
-            '''
+    def _create_column_script(self, table_name:str, column:TableColumn):
+        db = self.table.db
+        db_type = db.get_db_type(column.column_type)
+        
+        create_script = f'ALTER TABLE {table_name} ADD COLUMN {column.name} {db_type};'
+        return create_script
 
-class GresTable(Table):
+    def _migrate_columns_script(self, table_name:str, from_column:str, to_column:str):
+        return f'''
+            UPDATE TABLE {table_name} SET {to_column} = {from_column};
+        '''
+
+class GresTable(Table, SnakeCaseNamed):
     def _set_header(self, header):
         if header == None:
             header = GresHeader(table=self)

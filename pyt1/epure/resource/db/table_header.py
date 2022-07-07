@@ -11,7 +11,7 @@ from ..savable import Savable
 from ...helpers.type_helper import check_type
 from ...errors import EpureError
 from ..resource import UPDATE, CREATE
-from inflection import underscore
+from uuid import uuid4
 
 class TableColumn(Savable):
     column_type:str
@@ -20,21 +20,62 @@ class TableColumn(Savable):
         self.column_type = column_type
         super().__init__(name)
 
+    
     def __eq__(self, other:TableColumn) -> bool:
-        return self.name == other.name and\
-            self.column_type == other.column_type
+        if self.name != other.name:
+            return False            
+        return self.column_type == other.column_type
 
 class TableHeader(Savable):
     columns:Dict[str,TableColumn]
     table:Table
 
+    @property
+    def db(self):
+        return self.table.db
+
     def __sub__(self, other: TableHeader) -> List[TableColumn]:
         res = []
         for column_name in self:
-            in_other = (column_name in other) and self[column_name] == other[column_name]
-            if not in_other:
-                res.append(self[column_name])
+            self_column = self[column_name]
+
+            if self_column not in other:
+                res.append(self_column)
         return res
+
+    def __contains__(self, other:Any) -> bool:
+        if not isinstance(other, TableColumn):
+            return other in self.columns
+        column = cast(TableColumn, other)
+
+        if column.name not in self:
+            return False
+
+        self_column = self[column.name]
+        if self_column.column_type == 'Any' and \
+            column.column_type in self.db.any_types:
+            return True
+        
+        return column == self_column
+
+    def serialize(self, column: Savable, method:str='', **kwargs) -> object:
+        check_type('column', column, TableColumn)
+        script = ''
+
+        table_name = self.table.full_name
+        if method == UPDATE:
+            random_id = str(uuid4()).replace('-', '')
+            del_column = f'{column.name}_deleted_{random_id}'
+            script = script + self._rename_column_script(table_name, column.name, del_column)\
+                    + self._set_not_null_script(table_name, del_column)
+
+        script = script + self._create_column_script(table_name, column)
+
+        if self.table.db.migrate_on_delete:
+            script = script + self._migrate_columns_script(table_name, column)
+
+        return script
+
 
     def update(self, new_column: Savable) -> Any:
         check_type('new_column', new_column, TableColumn)
@@ -42,7 +83,7 @@ class TableHeader(Savable):
         new_column = cast(TableColumn, new_column)
         old_column = self.columns[new_column.name]
 
-        if new_column.column_type == old_column.column_type:
+        if new_column in self:
             return old_column
 
         script = self.serialize(new_column, method=UPDATE)
@@ -62,7 +103,7 @@ class TableHeader(Savable):
 
 
     def deserialize(self, column_dict: object, **kwargs) -> Savable:
-        check_type('column_dict', column_dict, dict)
+        check_type('column_dict', column_dict, [dict, list])
         column_dict = cast(dict, column_dict)
 
         column_dict = self._deserialize(column_dict)
@@ -87,11 +128,16 @@ class TableHeader(Savable):
         return column_dict
 
     def _get_db(self, **kwargs) -> Db:
-        db = kwargs['db']
 
-        if not db:
+        db = None
+        if 'db' in kwargs:
+            db = kwargs['db']
+            return db
+        
+        if hasattr(self, table) and hasattr(self.table, db):
             db = self.table.db
-        if not db:
+
+        if db is None:
             raise EpureError('undefined db for column serialization')
         return db
 
@@ -118,8 +164,12 @@ class TableHeader(Savable):
     def __getitem__(self, key:str):
         return self.columns[key]
 
-    def keys(self):
-        return self.columns.keys()
+    def __iter__(self):
+        res = self.columns.__iter__()
+        return res
+
+    def __len__(self):
+        return self.columns.__len__()
 
     def _set_column(self, column:TableColumn):
         check_type('column', column, TableColumn)
