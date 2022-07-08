@@ -7,11 +7,10 @@ from .db_entity import DbEntity
 
 from ..savable import Savable
 from .table import Table
-from ...resource.resource import Resource, FullName, SnakeCaseNamed
 from .table_storage import TableStorage
 from urllib.parse import urlparse
 from ...errors import EpureError
-from ...helpers.type_helper import check_subclass, check_type
+from ...helpers.type_helper import check_type
 
 
 
@@ -80,13 +79,13 @@ class Db(TableStorage):
         check_type('db_entity', db_entity, DbEntity)
         if isinstance(db_entity, Table):
             return self.update_table(db_entity)
-        raise NotImplementedError(f'createion not implemented for type {type(db_entity)}')
+        raise NotImplementedError(f'update not implemented for type {type(db_entity)}')
 
 
     def execute(self, script: str = '') -> list:
         result = []
         
-        if self.logger:
+        if hasattr(self, 'logger') and self.logger:
             self.logger.debug(script)
         try:
             script = script.replace("\n", "")

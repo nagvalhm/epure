@@ -7,8 +7,6 @@ from ..resource import FullName, SnakeCaseNamed
 from ..savable import Savable
 from .table import Table
 from .db_entity_resource import DbEntityResource
-from urllib.parse import urlparse
-from ...errors import EpureError
 from ...helpers.type_helper import check_subclass, check_type
 
 class TableStorage(DbEntityResource):

@@ -1,16 +1,17 @@
 from ..db.db import Db
 import psycopg2
 import psycopg2.extras
-from typing import Sequence
+from typing import Sequence, Union, cast, Type, Dict
 from itertools import groupby
 from .gres_table import GresTable
-from ..db.table import *
-from datetime import timedelta, datetime
-from ipaddress import _IPAddressBase
+from ..db.table import Table
+# from datetime import timedelta, datetime
+# from ipaddress import _IPAddressBase
 from ..resource import Resource, FullName, SnakeCaseNamed
 from ..savable import Savable
 import logging
 from inflection import underscore
+from ...helpers.type_helper import check_type
 
 class GresDb(Db):
 

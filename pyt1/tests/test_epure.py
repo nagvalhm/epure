@@ -73,6 +73,9 @@ def default_epure():
 # def test_not_null_column_not_accept_null():
 #     pass
 
+# def test_not_null_column_must_have_default():
+#     pass
+
 # def test_not_typed_fields_not_saved():
 #     pass
 

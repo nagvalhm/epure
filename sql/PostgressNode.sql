@@ -23,6 +23,22 @@ test_field5 text
 	
 );
 
+select * from information_schema.columns
+SELECT con.*
+       FROM pg_catalog.pg_constraint con
+       
+       
+alter table separated_epure1 add column temp_col3 integer UNIQUE
+ALTER TABLE public.separated_epure1 DROP COLUMN temp_col;
+
+INSERT INTO public.separated_epure1
+(str2, int1, float1_deleted155375a36f4b42c896c08735b4bdcdb6, complex1_deleted0df13057ba7c496e819bf08bf5f01410, list1, tuple1, str1, float1, complex1)
+VALUES('val', 6, 5, '{34.5,103.4}', NULL, NULL, NULL, NULL, NULL);
+
+
+
+
+
 select * from information_schema.tables where table_name like '%test%'
 
 SELECT * FROM pg_catalog.pg_tables as tbl

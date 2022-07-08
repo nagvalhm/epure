@@ -2,13 +2,12 @@ from __future__ import annotations
 from types import LambdaType, NoneType
 from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Callable, cast, Optional
 
-from .table_storage import TableStorage
-from .constraints import NotNull
 
-from tomlkit import table
+from .constraint import NotNull
+
 if TYPE_CHECKING:
     from .table import Table
-    from .db import Db
+    from .table_storage import TableStorage
 from ..savable import Savable
 from ...helpers.type_helper import check_type
 from ...errors import EpureError
@@ -19,7 +18,8 @@ from .table_column import TableColumn
 
 class TableHeader(Savable):
     columns:Dict[str,TableColumn]
-    table:Table
+    if TYPE_CHECKING:
+        table:Table
 
     def __init__(self, 
             columns:Dict[str, Any]=None, table:Table=None,

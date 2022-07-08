@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ..epure.epure import epure, connect
 from ..epure.resource.gres.gres_db import GresDb
-from ..epure.resource.db.constraints import NotNull, Check
+from ..epure.resource.db.constraint import NotNull, Check, Id, Uniq, Default
 from typing import List, Dict, Tuple
 from datetime import datetime
 import pytest
@@ -25,7 +25,7 @@ connect(GresDb('postgres://postgres:postgres@localhost:32',
 #parent
 class ParentClass1:
     str:NotNull[str]
-    int:Check[int, 6] = 5
+    int:int = 5
     float:float
     complex:complex
     list:list
@@ -56,12 +56,13 @@ class ParentClass3(ParentClass1):
 @epure()
 class SeparatedEpure1:
     str1:str
-    int1:int
-    float1:float
-    complex1:complex
+    int1:Default[int]
+    float1:NotNull[float]
+    complex1:Uniq[complex]
     list1:list
     tuple1:tuple
     no_type = None
+    
 
 class RegularClass2:
     separated_epure1:SeparatedEpure1
