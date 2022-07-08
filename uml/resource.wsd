@@ -23,6 +23,9 @@ class Db{
     table_for_resource(Savable resource)
 }
 
+class DbEntity{}
+class GresEntity{}
+
 class GresDb{}
 class LiteDb{}
 
@@ -70,24 +73,30 @@ class TableNode{
 
 
 
-Resource <|-left- Db
-    Db <|-up- GresDb
-    Db <|-left- LiteDb
-    Db o-down-> Table
+Resource <|-left- DbEntityResource
+    DbEntityResource <|-left- TableStorage
+        TableStorage <|-left- Db
+            Db <|-up- GresDb
+            Db <|-left- LiteDb
+            Db *-down-> DbEntity
+                DbEntity <|-left- GresEntity
+    
 Resource <|-- Savable
-Resource o--> Savable
+Resource *--> Savable
     Savable <|-right- FileResource
         FileResource <|-up- IniFile
             IniFile o--> NoneIniSection
                 NoneIniSection <|-- IniSection
         FileResource <|-- JsonFile
-    Savable <|-left- Table
-        Table <|-left- GresTable
-            GresTable <|-- JsonbTable
-        Table <|-- LiteTable
-        Table --> TableHeader
-    Savable <|-right- Node
-        Node <|-- TableNode
-    Savable <|-- TableHeader
-        TableHeader o-right-> TableColumn
-    Savable <|-- TableColumn
+    Savable <|-left- DbEntity
+        DbEntity <|-- Table
+            GresEntity <|-- GresTable
+            Table <|-left- GresTable
+                GresTable <|-- JsonbTable
+            Table <|-- LiteTable
+            Table --> TableHeader
+        Savable <|-right- Node
+            Node <|-- TableNode
+        Savable <|-- TableHeader
+            TableHeader o-right-> TableColumn
+        Savable <|-- TableColumn

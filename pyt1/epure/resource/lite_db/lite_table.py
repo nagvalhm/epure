@@ -1,4 +1,4 @@
-from .table import Table
+from ..db.table import Table
 
 class LiteTable(Table):
     pass

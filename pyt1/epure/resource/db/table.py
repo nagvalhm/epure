@@ -5,16 +5,17 @@ from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Calla
 from tomlkit import table
 if TYPE_CHECKING:
     from .db import Db
-from ..savable import Savable
+    from .table_storage import TableStorage
+from .db_entity import DbEntity
 from ...helpers.type_helper import check_type
 from ...errors import EpureError
 from ..resource import Resource
 from .table_header import TableHeader
 
 
-class Table(Savable):
+class Table(DbEntity):
     header:TableHeader
-    resource:Db = None
+    resource:TableStorage
 
     def __init__(self, name: str,
             header:Union[TableHeader, Dict[str, Any]]=None, namespace:str = '') -> None:        
@@ -38,11 +39,11 @@ class Table(Savable):
        
 
     @property
-    def db(self):
+    def db(self) -> TableStorage:
         return self.resource
 
     
-    def serialize_header(self, db: Db=None, **kwargs) -> List[Dict[str, str]]:
+    def serialize_header(self, db: TableStorage=None, **kwargs) -> List[Dict[str, str]]:
         res: List[Dict[str, str]] = list()
 
         if not db:

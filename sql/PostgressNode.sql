@@ -31,7 +31,8 @@ left join information_schema.columns
 
 
 SELECT table_schema, table_name as table_name, column_name, is_nullable, data_type 
-  FROM information_schema.columns order by table_schema, table_name
+  FROM information_schema.columns where table_name = 'separated_epure1'
+  order by table_schema, table_name
   
   select * from separated_epure1
   

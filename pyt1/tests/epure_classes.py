@@ -1,6 +1,6 @@
 from __future__ import annotations
 from ..epure.epure import epure, connect
-from ..epure.resource.db.gres_db import GresDb
+from ..epure.resource.gres.gres_db import GresDb
 from ..epure.resource.db.constraints import NotNull, Check
 from typing import List, Dict, Tuple
 from datetime import datetime

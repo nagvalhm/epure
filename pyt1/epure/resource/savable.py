@@ -1,5 +1,4 @@
 from .resource import Resource
-from typing import *
 
 class Savable(Resource):
     
@@ -7,7 +6,7 @@ class Savable(Resource):
     resource: Resource
 
 
-    def save(self, level:int=0, resource:Optional[Resource]=None):
+    def save(self, level:int=0, resource:Resource=None):
         pass
 
     def to_json(self):

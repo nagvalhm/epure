@@ -1,4 +1,4 @@
-from .db import Db
+from ..db.db import Db
 
 class LiteDb(Db):
     pass

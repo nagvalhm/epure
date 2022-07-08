@@ -10,6 +10,7 @@ from .resource.db.table import Table
 from ..epure.resource.node.node import TableNode
 from .resource.savable import Savable
 from .resource.db.db import Db
+from .resource.db.db_entity import DbEntity
 
 
 
@@ -32,7 +33,7 @@ class Epure(type, Savable):
             if not hasattr(resource, 'resource'):
                 raise EpureError('For using savable as resource for epure, savable must have own resource')
             grandpa = resource.resource
-            grandpa.update(cls, resource.res_id)
+            grandpa.update(cls)
         else:
             table_name = resource if resource else cls.__name__            
             resource = cls._create_or_update(str(table_name))
@@ -40,12 +41,15 @@ class Epure(type, Savable):
         cls.resource = resource
 
     def _create_or_update(cls, table_name:str) -> Table:
-        table = cls.EDb.get_table_for_resource(cls, table_name)
+        table:Table = cls.EDb.get_table_for_resource(cls, table_name)
+        res:DbEntity
         if table_name in cls.EDb:
-            return cls.EDb.update(table)
+            res = cls.EDb.update(table)
         else:
-            return cls.EDb.create(table)
-
+            res = cls.EDb.create(table)
+        res = cast(Table, res)
+        return res
+        
 
 def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) -> Callable:
     

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import *
+from typing import TYPE_CHECKING, Any, Union, Sequence, List
 if TYPE_CHECKING:
     from .savable import Savable
 from inflection import underscore
@@ -25,38 +25,44 @@ class Resource():
 
     @property
     def full_name(self):
-        if self.namespace:
+        if hasattr(self, 'namespace') and self.namespace:
             return self.namespace + '.' + self.name
+        if not (hasattr(self, 'name') and self.name):
+            if isinstance(self, type):
+                self.name = self.__name__
+            else:
+                self.name = self.__class__.__name__
         return self.name
+        
 
-    def create(self, resource:Savable) -> Any:
+    def create(self, resource:Savable) -> object:
         raise NotImplementedError
 
     def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
         raise NotImplementedError
 
-    def update(self, resource:Savable) -> Any:
+    def update(self, resource:Savable) -> object:
         raise NotImplementedError
 
     # def delete(resource:Savable, res_id=None ? Object):
     #     pass
 
     def create_all(self, savables:List[Savable]):
-        pass
+        raise NotImplementedError
     def update_all(self, savables:List[Savable]):
-        pass
+        raise NotImplementedError
 
     def serialize(self, resource:Savable, method:str='', **kwargs) -> object:
-        pass
+        raise NotImplementedError
 
     def deserialize(self, resource:object, **kwargs) -> Savable:
-        pass
+        raise NotImplementedError
 
     # def delete_all(?):
     #     pass
 
     def execute(self, script:str='') -> object:
-        pass
+        raise NotImplementedError
 
 
 
