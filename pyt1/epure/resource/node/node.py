@@ -13,6 +13,7 @@ class Node(Savable):
 class TableNode(Node):
     db:Resource
     res_id: UUID
+    resource:Savable
 
     @property
     def table(self) -> Savable:

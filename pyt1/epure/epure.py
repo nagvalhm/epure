@@ -73,6 +73,7 @@ class Epure(type, Savable):
     def _get_table_name(self, cls, resource: object) -> str:
         
         if not isinstance(resource, str):
+            resource = cast(Savable, resource)
             return resource.full_name
 
         if resource:
@@ -101,15 +102,18 @@ class Epure(type, Savable):
         return table
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
+        _py_type = NoneType
         if py_type in self.epures:
-            py_type = self.get_foreign_type(py_type)
+            _py_type = self.get_foreign_type(py_type)
             return py_type
             
         if isinstance(py_type, Constraint) and issubclass(py_type.__origin__, Default):
-            py_type = self.get_default_type(field_name, py_type)
+            _py_type = self.get_default_type(field_name, py_type)
+            
+        py_type = cast(type, _py_type)
         return py_type
 
-    def get_default_type(self, field_name:str, py_type:Default) -> type:
+    def get_default_type(self, field_name:str, py_type:Default) -> Default:
         default = getattr(self, field_name, None)
         if not (default or py_type.default):
             raise DefaultConstraintError(self.full_name, field_name)
@@ -123,7 +127,7 @@ class Epure(type, Savable):
         return py_type
 
 
-    def get_foreign_type(self, foreign:Epure):
+    def get_foreign_type(self, foreign:Epure) -> Foreign:
         foreign_id_type = foreign.annotations['res_id']
 
         foreign_table = self._get_table_name(foreign, foreign.prepared_resource)

@@ -13,8 +13,8 @@ DELETE = 'DELETE'
 class Resource():
 
     res_id:object
-    name:None
-    namespace:None
+    name = ''
+    namespace = ''
     
     @abstractmethod
     def __init__(self, name:str='', res_id:object=None, namespace:str='') -> None:

@@ -20,6 +20,7 @@ class Constraint(type):
 
 
 class Default(metaclass=Constraint):
+    py_type:type = NoneType
     default:Any = None
 
     @classmethod
@@ -52,10 +53,10 @@ class Foreign(metaclass=Constraint):
 
 
 class Check(metaclass=Constraint):    
-    condition:Callable = None    
+    condition:Any = None
     
     @classmethod
-    def set_params(cls, condition:Callable):
+    def set_params(cls, condition:Any):
         cls.condition = condition
         return cls
 

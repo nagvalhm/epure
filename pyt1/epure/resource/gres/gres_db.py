@@ -23,6 +23,7 @@ class GresDb(Db):
     default_table_type: Type[Table] = GresTable
     default_namespace:str='Public'
     log_level:int = logging.NOTSET
+    json_serializer:Savable
 
     def __init__(self, connect_str:str='', database:str='', user:str='', password:str='',
              host:str='', port:str='', default_namespace='', log_level:int = logging.NOTSET,
@@ -49,6 +50,8 @@ class GresDb(Db):
 
         
         self._set_tables()
+
+        self.json_serializer = JsonFile('')
 
 
     def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
@@ -142,17 +145,17 @@ class GresDb(Db):
         if _default:
             default = self.cast_py_db_type(constraint.py_type, _default)
         
-        constraint = constraint.__origin__
+        origin = constraint.__origin__
         
-        if constraint == Default:
+        if origin == Default:
             return f"{db_type} DEFAULT {default}"
-        elif constraint == NotNull:
+        elif origin == NotNull:
             return f"{db_type} NOT NULL DEFAULT {default}"
-        elif constraint == Uniq:
+        elif origin == Uniq:
             return f"{db_type} UNIQUE"
-        elif constraint == Id:
+        elif origin == Id:
             return f"{db_type} PRIMARY KEY DEFAULT {default}"
-        elif constraint == Foreign:
+        elif origin == Foreign:
             return f"{db_type}" #Foreign not realy implemented yet, because of ciclyc cases
                 
         raise DbError('unknown constraint')
@@ -165,7 +168,7 @@ class GresDb(Db):
         if py_type == complex:            
             return f"point({val.real}, {val.imag})"
 
-        json = JsonFile.serialize(val)
+        json = self.json_serializer.serialize(val)
         return f"'{json}'"
         
     py_db_types:Dict[type, str] = {
