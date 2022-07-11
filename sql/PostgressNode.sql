@@ -27,6 +27,7 @@ select * from information_schema.columns
 SELECT con.*
        FROM pg_catalog.pg_constraint con
        
+       select * from default_epure
        
 alter table separated_epure1 add column temp_col3 integer UNIQUE
 ALTER TABLE public.separated_epure1 DROP COLUMN temp_col;

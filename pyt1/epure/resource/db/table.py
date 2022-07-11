@@ -57,7 +57,7 @@ class Table(DbEntity):
             # serialized = header.serialize(column, db=db)
             serialized = {
                 "column_name": column.name,
-                "column_type": db.get_db_type(column.column_type)
+                "column_type": column.serialize_type(db) #db.get_db_type(column.column_type)
             }
             res.append(serialized)
         return res

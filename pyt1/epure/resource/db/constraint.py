@@ -1,37 +1,62 @@
+from types import NoneType
 from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Callable, cast
+from ...helpers.type_helper import check_subclass
+
+__all__ = ['Constraint', 'Default', 'NotNull', 'Uniq', 'Id', 'Foreign', 'Check']
 
 class Constraint(type):
-    def __getitem__(cls:Type, param:Any):
-        cls.__param__ = param
-        return cls
+    py_type:type = NoneType
+    __origin__:type = NoneType
+    
+    def __getitem__(self:Type, params:Any):
+        res = self.__class__(self.__name__, self.__bases__, dict(self.__dict__))
+        res.__origin__ = self
+        if isinstance(params, type):
+            res.py_type = params
+        if isinstance(params, tuple):
+            res.py_type = params[0]
+            res.set_params(*params[1:])
+        return res
 
-    def is_constraint():
-        pass
 
 class Default(metaclass=Constraint):
-    pass
+    default:Any = None
+
+    @classmethod
+    def set_params(cls, default:Any):
+        cls.default = default
 
 class NotNull(Default):
-    __param__:type
-    __default__:Callable
-    def __class_getitem__(cls, param:Any, default:Any):
-        cls.__param__ = param
-        cls.__default__ = default
-        return cls
-
-class Id(metaclass=Constraint):
-    __param__:type
+    pass
+    # py_type:type
+    # default:Any
+    # def __class_getitem__(cls, py_type:type, default:Any=None):
+    #     cls.py_type = py_type
+    #     cls.default = default
+    #     return cls
 
 class Uniq(metaclass=Constraint):
-    __param__:type
+    pass
+
+class Id(NotNull, Uniq):
+    pass
+
+class Foreign(metaclass=Constraint):
+    table:str = ''
+    column:str = ''
+    
+    @classmethod
+    def set_params(cls, table:str, column:str):        
+        cls.table = table
+        cls.column = column
 
 
-class Check(metaclass=Constraint):
-    __param__:type
-    __condition__:Callable
-    def __class_getitem__(cls, param:Any, condition:Callable):
-        cls.__param__ = param
-        cls.__condition__ = condition
+class Check(metaclass=Constraint):    
+    condition:Callable = None    
+    
+    @classmethod
+    def set_params(cls, condition:Callable):
+        cls.condition = condition
         return cls
 
 
@@ -57,6 +82,7 @@ class Check(metaclass=Constraint):
 #Default = DEFAULT
 #NotNull = NOT NULL, need default
 #Uniq = UNIQUE, can be nullable
+#Foreign = REFERENCES, must refer to Id or Uniq
 
 #Id = PRIMARY KEY = Uniq + NotNull need method @Id, generated unique Id by self
 #Check = CHECK

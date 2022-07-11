@@ -5,6 +5,8 @@ from datetime import datetime
 import pytest
 import types
 from .epure_classes import *
+import psycopg2
+import psycopg2.extras
 
 def get_epure(cls):
     epure = cls()
@@ -13,18 +15,24 @@ def get_epure(cls):
     assert res == epure
     return res
 
-def table_exists():
-    pass
+def table_exists(table_name):
+    result = []
+    with psycopg2.connect(dbname="postgres", user="postgres", 
+            password="postgres", host="localhost", port=5432) as connection:
+        with connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute(f'select * from {table_name}')
+            if cursor.rowcount > 0:
+                result = cursor.fetchall()
 
 
 @pytest.fixture
 def default_epure():
     return get_epure(DefaultEpure)
 
-# def test_default_epure_table(default_epure):
-#     assert default_epure.table.name == 'default_epure'
-#     assert default_epure.db.name == 'GresDb'
-#     assert table_exists('default_epure')
+def test_default_epure_table(default_epure):
+    assert default_epure.table.name == 'default_epure'
+    assert default_epure.db.name == 'GresDb'
+    assert table_exists('default_epure')
 
 # def test_default_epure_fields(default_epure):
 #     pass

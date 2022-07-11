@@ -1,17 +1,22 @@
+from uuid import UUID
 from ..db.db import Db
 import psycopg2
 import psycopg2.extras
-from typing import Sequence, Union, cast, Type, Dict
+from typing import Sequence, Union, cast, Type, Dict, Any, Callable, List, Tuple
+from types import NoneType, LambdaType
 from itertools import groupby
 from .gres_table import GresTable
 from ..db.table import Table
-# from datetime import timedelta, datetime
-# from ipaddress import _IPAddressBase
+from datetime import timedelta, datetime
+from ipaddress import _IPAddressBase
 from ..resource import Resource, FullName, SnakeCaseNamed
 from ..savable import Savable
 import logging
 from inflection import underscore
 from ...helpers.type_helper import check_type
+from ..db.constraint import Constraint, Default, Foreign, Id, NotNull, Uniq
+from ...errors import DbError
+from ..file.json_file import JsonFile
 
 class GresDb(Db):
 
@@ -127,78 +132,128 @@ class GresDb(Db):
             group = list(group)
             table = self.deserialize_table(group)
             self._set_table(table)
-    
 
+
+    def serialize_constraint(self, constraint:Constraint) -> str:
         
-    py_db_types:Dict[str, str] = {
-        'int': 'bigint',
-        'float': 'numeric',
-        'str': 'text',
-        'complex': 'point',
+        db_type = self.get_db_type(constraint.py_type)
+        _default = getattr(constraint, 'default', '')
+        default = ''
+        if _default:
+            default = self.cast_py_db_type(constraint.py_type, _default)
+        
+        constraint = constraint.__origin__
+        
+        if constraint == Default:
+            return f"{db_type} DEFAULT {default}"
+        elif constraint == NotNull:
+            return f"{db_type} NOT NULL DEFAULT {default}"
+        elif constraint == Uniq:
+            return f"{db_type} UNIQUE"
+        elif constraint == Id:
+            return f"{db_type} PRIMARY KEY DEFAULT {default}"
+        elif constraint == Foreign:
+            return f"{db_type}" #Foreign not realy implemented yet, because of ciclyc cases
+                
+        raise DbError('unknown constraint')
+        
+    def cast_py_db_type(self, py_type:type, val:Any) -> Any:
+        if py_type in (int, float, UUID, bool):
+            return val
+        if py_type in (str, bytes, bytearray):
+            return f"'{val}'"
+        if py_type == complex:            
+            return f"point({val.real}, {val.imag})"
 
-        'list': 'jsonb',
-        'tuple': 'jsonb',
-        'object': 'jsonb',
-        'NoneType': 'jsonb',
-        'Any': 'jsonb'
+        json = JsonFile.serialize(val)
+        return f"'{json}'"
+        
+    py_db_types:Dict[type, str] = {
+        str: 'text',
+        int: 'bigint',
+        float: 'numeric',        
+        complex: 'point',
+        UUID: 'uuid',
+        bool: 'boolean',
+
+        #bytea siblings
+        bytes: 'bytea',
+        bytearray: 'bytea',
+
+        #jsonb siblings
+        range: 'jsonb',
+        list: 'jsonb',
+        List: 'jsonb',
+        tuple: 'jsonb',
+        Tuple: 'jsonb',
+        object: 'jsonb',
+        Any: 'jsonb',
+        dict: 'jsonb',
+        Dict: 'jsonb',
+        Dict[int,str]: 'jsonb',
+        set: 'jsonb',
+        frozenset: 'jsonb',
+        memoryview: 'jsonb',
+        LambdaType: 'jsonb',
+        Callable: 'jsonb'
     }
 
-    db_py_types:Dict[str, str] = {
-        'bigint': 'int', #-9223372036854775808 to +9223372036854775807
-        'text': 'str',
-        'json': 'object',
-        'name': 'str',
-        'ARRAY': 'list',
-        'oid': 'int', #0 to 4294967295
-        'interval': 'timedelta',
-        'smallint': 'int', #-32768 to +32767
-        'inet': '_IPAddressBase', #IPv4Address or IPv6Address ipaddress.ip_address        
-        'pg_node_tree': 'str', #representation of parsed sql query
-        'boolean': 'bool',
-        'numeric': 'float', #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point
-        'decimal': 'float', #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point        
-        'anyarray': 'list',
-        'regproc': 'str', #sql procidure name
-        'regtype': 'str', #sql type name
-        'timestamp' : 'datetime',
-        'timestamp with time zone': 'datetime',
-        'time' : 'datetime',
-        'time with time zone' : 'datetime',
-        'double precision': 'float',
-        'real': 'float',
-        '"char"': 'str',
-        'character varying': 'str',
-        'character': 'str',
-        'point' : 'complex',
-        'jsonb': 'Any',
+    db_py_types:Dict[str, type] = {
+        'bigint': int, #-9223372036854775808 to +9223372036854775807
+        'text': str,
+        'json': object,
+        'name': str,
+        'ARRAY': list,
+        'oid': int, #0 to 4294967295
+        'interval': timedelta,
+        'smallint': int, #-32768 to +32767
+        'inet': _IPAddressBase, #IPv4Address or IPv6Address ipaddress.ip_address        
+        'pg_node_tree': str, #representation of parsed sql query
+        'boolean': bool,
+        'numeric': float, #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point
+        'decimal': float, #up to 131072 digits before the decimal point; up to 16383 digits after the decimal point        
+        'anyarray': list,
+        'regproc': str, #sql procidure name
+        'regtype': str, #sql type name
+        'timestamp' : datetime,
+        'timestamp with time zone': datetime,
+        'time' : datetime,
+        'time with time zone' : datetime,
+        'double precision': float,
+        'real': float,
+        '"char"': str,
+        'character varying': str,
+        'character': str,
+        'point' : complex,
+        'jsonb': Any,
+        'uuid' : UUID,
+        'bytea': bytes,
 
-        'pg_ndistinct': 'int',
-        'pg_mcv_list': 'int',
-        'pg_dependencies': 'int',        
-        'xid': 'int',
-        'bytea': 'int',
-        'integer': 'int',
-        'pg_lsn': 'int',        
-        'date': 'int',
-        'smallserial':'int',
-        'serial': 'int',
-        'bigserial': 'int',
-        'bit': 'int',
-        'bit varying': 'int',
-        'box': 'int',
-        'cidr': 'int',
-        'circle': 'int',
-        'line' : 'int',
-        'lseg' : 'int',
-        'macaddr' : 'int',
-        'macaddr8' : 'int',
-        'money' : 'int',
-        'path' : 'int',
-        'pg_snapshot' : 'int',        
-        'polygon' : 'int',
-        'tsquery' : 'int',
-        'tsvector' : 'int',
-        'txid_snapshot' : 'int',
-        'uuid' : 'int',
-        'xml' : 'int'
+        'pg_ndistinct': int,
+        'pg_mcv_list': int,
+        'pg_dependencies': int,        
+        'xid': int,        
+        'integer': int,
+        'pg_lsn': int,        
+        'date': int,
+        'smallserial':int,
+        'serial': int,
+        'bigserial': int,
+        'bit': int,
+        'bit varying': int,
+        'box': int,
+        'cidr': int,
+        'circle': int,
+        'line' : int,
+        'lseg' : int,
+        'macaddr' : int,
+        'macaddr8' : int,
+        'money' : int,
+        'path' : int,
+        'pg_snapshot' : int,        
+        'polygon' : int,
+        'tsquery' : int,
+        'tsvector' : int,
+        'txid_snapshot' : int,        
+        'xml' : int
     }

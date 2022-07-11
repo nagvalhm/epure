@@ -14,6 +14,7 @@ from ...errors import EpureError
 from ..resource import UPDATE, CREATE
 from uuid import uuid4
 from .table_column import TableColumn
+from ..db.db_entity_resource import DbEntityResource
 
 
 class TableHeader(Savable):
@@ -22,7 +23,7 @@ class TableHeader(Savable):
         table:Table
 
     def __init__(self, 
-            columns:Dict[str, Any]=None, table:Table=None,
+            columns:Dict[str, type]=None, table:Table=None,
             name: str = '', res_id: object = None) -> None:
         check_type('columns', columns, [dict, NoneType])
 
@@ -33,11 +34,10 @@ class TableHeader(Savable):
         if not columns:
             return
 
-        for name, val in columns.items():
-            if isinstance(val, str):
-                val = TableColumn(name, val)
-            val = cast(TableColumn, val)
-            self.columns[name] = val
+        for name, py_type in columns.items():            
+            column = TableColumn(name, py_type)
+            column = cast(TableColumn, column)
+            self.columns[name] = column
 
     @property
     def db(self):
@@ -72,9 +72,11 @@ class TableHeader(Savable):
             return False
 
         self_column = self[column.name]
-        if self_column.column_type == 'Any' and \
-            column.column_type in self.db.any_types:
+        if self.db.same_db_type(self_column.column_type, column.column_type):
             return True
+        # if self_column.column_type == 'Any' and \
+        #     column.column_type in self.db.any_types:
+        #     return True
         
         return column == self_column
 
@@ -119,7 +121,13 @@ class TableHeader(Savable):
         if method == UPDATE:
             script = script + self._serialize_pre_delete(table_name, column, del_column_name)
 
-        script = script + self._create_column_script(table_name, column)
+
+        db:DbEntityResource
+        if 'db' in kwargs:
+            db = kwargs['db']
+        else:
+            db = self.table.db
+        script = script + self._create_column_script(table_name, column, db)
 
         if self.table.db.migrate_on_delete:
             script = script + self._migrate_columns_script(table_name, del_column_name, column.name)
@@ -182,7 +190,7 @@ class TableHeader(Savable):
     def _set_not_null_script(self, table_name:str, column_name:str) -> str:
         raise NotImplementedError
 
-    def _create_column_script(self, table_name:str, column:TableColumn) -> str:
+    def _create_column_script(self, table_name:str, column:TableColumn, db:DbEntityResource) -> str:
         raise NotImplementedError
 
     def _migrate_columns_script(self, table_name:str, from_column:str, to_column:str) -> str:

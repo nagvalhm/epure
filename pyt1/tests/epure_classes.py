@@ -2,7 +2,7 @@ from __future__ import annotations
 from ..epure.epure import epure, connect
 from ..epure.resource.gres.gres_db import GresDb
 from ..epure.resource.db.constraint import NotNull, Check, Id, Uniq, Default
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Callable
 from datetime import datetime
 import pytest
 import types
@@ -24,40 +24,42 @@ connect(GresDb('postgres://postgres:postgres@localhost:32',
 
 #parent
 class ParentClass1:
-    str:NotNull[str]
-    int:int = 5
-    float:float
-    complex:complex
-    list:list
-    tuple:tuple
+    str0:Default[str] = 'str0_value'
+    int0:Default[int] = 11
+    float0:Default[float] = 1.4
+    complex0:Default[complex] = 5 + 7j
+    list0:list
+    tuple0:tuple
 
 
 class ParentClass2(ParentClass1):
-    range:range
-    dict:dict
-    set:set
-    frozenset:frozenset
-    bool:bool
-    bytes:bytes
+    range0:range
+    dict0:dict
+    set0:set
+    frozenset0:frozenset
+    bool0:bool
+    bytes0:bytes
+    int0:Uniq[str] = 'uniq_str'
 
-class ParentClass3(ParentClass1):
-    bytearray:bytearray
-    memoryview:memoryview
-    NoneType:types.NoneType
-    none:None
-    generic_dict:Dict[int, str]
-    generic_list:List[int]
-    generic_tuple:Tuple[int]
-    lambda_field:types.LambdaType
+class ParentClass3(ParentClass2, ParentClass1):
+    bytearray0:bytearray
+    memoryview0:memoryview
+    NoneType0:types.NoneType
+    none0:None
+    generic_dict0:Dict[int, str]
+    generic_list0:List[int]
+    generic_tuple0:Tuple[int]
+    lambda_field0:types.LambdaType
+    str3:NotNull[int] = 6
 
 
 
 #regular fields
 @epure()
 class SeparatedEpure1:
-    str1:str
-    int1:Default[int]
-    float1:NotNull[float]
+    str1:str = None
+    int1:Default[int] = 7
+    float1:NotNull[float] = 3.14
     complex1:Uniq[complex]
     list1:list
     tuple1:tuple
@@ -123,15 +125,15 @@ class EpureClass3:
 #epures
 @epure()
 class DefaultEpure(ParentClass3):
-    regular_class:RegularClass3
-    epure_class:EpureClass3
-
-    str3:str
-    int3:int
-    float3:float
-    complex3:complex
+    str3:Default[str] = 'str3_value'
+    int3:NotNull[int] = 6
+    float3:Uniq[float]
+    complex3:complex = None
     list3:list
     tuple3:tuple
+
+    regular_class:RegularClass3
+    epure_class:EpureClass3
 
     def __init__(self):
         pass

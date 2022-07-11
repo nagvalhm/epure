@@ -32,6 +32,7 @@ class LiteDb{}
 class Savable{
     "__exclude__"
     resource
+    is_saved
     save(int level=0)
     to_json()
     is_excluded(str atr_name)

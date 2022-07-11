@@ -10,7 +10,7 @@
             "name": "pytest",
             "type": "python",
             "request": "launch",
-            // "justMyCode": false,          
+            // "justMyCode": false,
             "justMyCode": true,
             "module": "pytest",
             "args": ["pyt1/tests/"],

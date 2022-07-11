@@ -109,18 +109,32 @@ class TableStorage(DbEntityResource):
         table.resource = self
 
 
-    def get_table_for_resource(self, resource: Savable, table_name: str = '') -> Table:
-        table:Table
+    # def get_table_for_resource(self, resource: Savable, table_name: str = '') -> Table:
+    #     table:Table
 
-        full_name = self._get_full_table_name(table_name)        
-        columns = resource.__annotations__
-        columns = {name: val
-            for name, val in columns.items() if
-            not resource.is_excluded(name)}
+    #     full_name = self._get_full_table_name(table_name)
+    #     columns = self.get_annotations(resource)
+    #     columns = {name: val
+    #         for name, val in columns.items() if
+    #         not resource.is_excluded(name)}
 
-        TableCls = self.default_table_type
-        table = TableCls(full_name.name, columns, full_name.namespace)
-        return table
+    #     TableCls = self.default_table_type
+    #     table = TableCls(full_name.name, columns, full_name.namespace)
+    #     return table
+
+    # def get_annotations(self, resource: Savable):
+        
+    #     res = {}
+    #     resource_cls:type
+    #     if isinstance(resource, type):
+    #         resource_cls = resource
+    #     resource_cls = resource.__class__
+
+    #     res = resource.__annotations__
+        
+    #     for cls in resource_cls.mro():
+    #         res.update(cls.__annotations__)
+
 
     def _get_full_table_name(self, table_name:str) -> FullName:
         table_name = table_name

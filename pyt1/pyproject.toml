@@ -12,6 +12,7 @@ packages = [
 python = "^3.10"
 psycopg2 = "2.9.3"
 inflection = "^0.5.1"
+jsonpickle = "^2.2.0"
 
 [tool.poetry.dev-dependencies]
 pyright = "1.1.257"
@@ -24,4 +25,5 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pyright]
 strictParameterNoneValue = false
+reportSelfClsParameterName = false
 # reportWildcardImportFromLibrary = false

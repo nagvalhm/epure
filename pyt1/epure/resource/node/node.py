@@ -1,3 +1,4 @@
+from uuid import UUID
 from ..savable import Savable
 from ..resource import Resource
 
@@ -10,5 +11,11 @@ class Node(Savable):
 
 
 class TableNode(Node):
-    table:Savable
     db:Resource
+    res_id: UUID
+
+    @property
+    def table(self) -> Savable:
+        return self.resource
+
+    __exclude__:list = Node.__exclude__ + ['table', 'db']
