@@ -26,35 +26,8 @@ class DbEntityResource(Resource):
     def get_py_type(self, db_type:str):
         return self.db_py_types[db_type]
 
-    # @property
-    # def any_types(self):
-    #     if hasattr(self, '_any_types'):
-    #         return self._any_types
-    #     res = []
-    #     any_db_type = self.get_db_type(Any)
-    #     for py_type, db_type in self.py_db_types.items():
-    #         if db_type == any_db_type:
-    #             res.append(py_type)
-    #     self._any_types = res
-    #     return res
-
     def same_db_type(self, first:type, second:type) -> bool:
         if first == second:
             return True
-
-        first_siblings = self.get_sibling_py_types(first)
-        return second in first_siblings
-
-
-    def get_sibling_py_types(self, py_type:type) -> List[type]:
-        sib_db_type = self.get_db_type(py_type)
-        siblings = getattr(self, f'_{sib_db_type}_py_types', None)
-        if siblings:
-            return siblings
-        
-        res = []
-        for py_type, db_type in self.py_db_types.items():
-            if db_type == sib_db_type:
-                res.append(py_type)
-        setattr(self, f'_{sib_db_type}_py_types', res)
+        res = self.get_db_type(first) == self.get_db_type(second)
         return res

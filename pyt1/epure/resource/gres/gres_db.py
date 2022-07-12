@@ -14,7 +14,7 @@ from ..savable import Savable
 import logging
 from inflection import underscore
 from ...helpers.type_helper import check_type
-from ..db.constraint import Constraint, Default, Foreign, Id, NotNull, Uniq
+from ..db.constraint import Constraint, Default, Foreign, Prim, NotNull, Uniq
 from ...errors import DbError
 from ..file.json_file import JsonFile
 
@@ -59,11 +59,22 @@ class GresDb(Db):
         table_name = str(selector)
         full_table_name = self._get_full_table_name(table_name)
 
-        collumns = self.execute(f'''SELECT table_schema, table_name,
-                    column_name, is_nullable, data_type
-                    FROM information_schema.columns WHERE
-                    table_schema = \'{full_table_name.namespace}\' AND
-                    table_name = \'{full_table_name.name}\' ''')
+
+        collumns = self.execute(f'''SELECT cols.table_schema, cols.table_name, 
+                    cols.column_name, cols.is_nullable, cols.data_type, cols.column_default,
+                    cols_constr.table_schema AS foreign_schema,
+				    cols_constr.table_name AS foreign_table,
+				    cols_constr.column_name AS foreign_column,
+                    constr.constraint_type
+                    FROM information_schema.columns cols
+                    left join information_schema.constraint_column_usage cols_constr
+                    	on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
+                    	and cols.column_name = cols_constr.column_name
+                    left join information_schema.table_constraints constr
+                    	on cols_constr.constraint_name = constr.constraint_name WHERE
+                    cols.table_schema = \'{full_table_name.namespace}\' AND
+                    cols.table_name = \'{full_table_name.name}\' ''')
+
         if len(collumns) > 0:
             table = self.deserialize_table(collumns)
             self._set_table(table)
@@ -125,14 +136,27 @@ class GresDb(Db):
 
 
     def _set_tables(self):
-        script = '''SELECT table_schema, table_name, 
-                    column_name, is_nullable, data_type 
-                    FROM information_schema.columns 
-                    ORDER BY table_schema, table_name'''
+        script = '''
+          SELECT cols.table_schema, cols.table_name, 
+                    cols.column_name, cols.is_nullable, cols.data_type, cols.column_default,
+                    cols_constr.table_schema AS foreign_schema,
+				    cols_constr.table_name AS foreign_table,
+				    cols_constr.column_name AS foreign_column,
+                    constr.constraint_type
+                    FROM information_schema.columns cols
+                    left join information_schema.constraint_column_usage cols_constr
+                    	on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
+                    	and cols.column_name = cols_constr.column_name
+                    left join information_schema.table_constraints constr
+                    	on cols_constr.constraint_name = constr.constraint_name
+                    ORDER BY cols.table_schema, cols.table_name
+        '''
         all_collumns = self.execute(script)    
         
         for key, group in groupby(all_collumns,  lambda row: row['table_schema'] + '.' + row['table_name']):
             group = list(group)
+            # if group[0]['table_name'] == 'default_epure':
+            #     breakpoint()
             table = self.deserialize_table(group)
             self._set_table(table)
 
@@ -153,7 +177,7 @@ class GresDb(Db):
             return f"{db_type} NOT NULL DEFAULT {default}"
         elif origin == Uniq:
             return f"{db_type} UNIQUE"
-        elif origin == Id:
+        elif origin == Prim:
             return f"{db_type} PRIMARY KEY DEFAULT {default}"
         elif origin == Foreign:
             return f"{db_type}" #Foreign not realy implemented yet, because of ciclyc cases

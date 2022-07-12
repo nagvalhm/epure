@@ -51,9 +51,20 @@ SELECT table_schema, table_name as table_name, column_name, is_nullable, data_ty
   FROM information_schema.columns where table_name = 'separated_epure1'
   order by table_schema, table_name
   
-  select * from separated_epure1
+  select * from 
+  information_schema.columns col
+  left join information_schema.constraint_column_usage
+  
+
+  
+  where col.table_name = 'default_epure'
   
   
+    select * from information_schema.columns where table_name like '%information_schema%'
+      select * from  information_schema.table_constraints
+      select * from  information_schema.constraint_column_usage
+  
+ select * from  information_schema.KEY_COLUMN_USAGE
   
   select data_type from information_schema.columns group by data_type
   
@@ -136,6 +147,8 @@ CREATE TABLE public.separated_epure1 (
 	CONSTRAINT rak_occurrence_pkey PRIMARY KEY (id)
 );
 
+select * from public.default_epure
+
 
 -- public.rak_occurrence foreign keys
 
@@ -148,3 +161,61 @@ ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_operator_fkey FO
 ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_state_fkey FOREIGN KEY (state) REFERENCES rak_occurrence_state(id) ON DELETE SET NULL;
 ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_supervisors_fkey FOREIGN KEY (supervisors) REFERENCES res_groups(id) ON DELETE SET NULL;
 ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_write_uid_fkey FOREIGN KEY (write_uid) REFERENCES res_users(id) ON DELETE SET NULL;
+
+
+
+
+----
+  SELECT cols.table_schema, cols.table_name, 
+                    cols.column_name, cols.is_nullable, cols.data_type, cols.column_default,
+				    cols_constr.table_schema AS foreign_schema,
+				    cols_constr.table_name AS foreign_table,
+				    cols_constr.column_name AS foreign_column,
+                    constr.constraint_type
+                    FROM information_schema.columns cols
+                    left join information_schema.constraint_column_usage cols_constr
+                    	on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
+                    	and cols.column_name = cols_constr.column_name
+                    left join information_schema.table_constraints constr
+                    	on cols_constr.constraint_name = constr.constraint_name
+                    
+                    where constr.constraint_type = 'FOREIGN KEY'
+                    
+                    where cols_constr.column_name is not null
+                    where cols.table_schema = 'public' and cols.table_name = 'default_epure'
+                    	
+                    ORDER BY cols.table_schema, cols.table_name
+                    
+      select * from information_schema.columns
+      select * from  information_schema.constraint_column_usage
+      select * from  information_schema.table_constraints
+      
+      
+      create table first_test_foreign(
+      	 id int unique,
+      	to_second_pointer int
+      );
+     
+     drop table first_test_foreign
+     drop table second_test_foreign
+      
+       create table second_test_foreign(
+      	 id int unique,
+      	to_first_pointer int
+      );
+
+alter table first_test_foreign add
+CONSTRAINT first_test_foreign_to_second_pointer
+   FOREIGN KEY(to_second_pointer) 
+      REFERENCES second_test_foreign(id)
+
+alter table second_test_foreign add
+CONSTRAINT second_test_foreign_to_first_pointer
+   FOREIGN KEY(to_first_pointer) 
+      REFERENCES first_test_foreign(id);
+      
+select * from first_test_foreign
+select * from second_test_foreign
+
+insert into first_test_foreign values (1, 1)
+insert into second_test_foreign values (1, 1)

@@ -7,20 +7,20 @@ from .db_entity_resource import DbEntityResource
 
 
 class TableColumn(Savable):
-    column_type:type
+    py_type:type
     
-    def __init__(self, name:str, column_type:type=NoneType) -> None:
-        self.column_type = column_type
+    def __init__(self, name:str, py_type:type=NoneType) -> None:
+        self.py_type = py_type
         super().__init__(name)
 
     
     def __eq__(self, other:TableColumn) -> bool:
         if self.name != other.name:
             return False            
-        return self.column_type == other.column_type
+        return self.py_type == other.py_type
 
     def serialize_type(self, db:DbEntityResource):
-        column_type = self.column_type
-        if isinstance(column_type, Constraint):
-            return db.serialize_constraint(column_type)
-        return db.get_db_type(column_type)
+        py_type = self.py_type
+        if isinstance(py_type, Constraint):
+            return db.serialize_constraint(py_type)
+        return db.get_db_type(py_type)

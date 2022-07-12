@@ -10,6 +10,8 @@ def is_float(val: str) -> bool:
         return False
 
     other_chars = val[1:]
+    if other_chars == '':
+        return True
     return other_chars.replace('.', '', 1).isdecimal()
 
 def is_int(val: str, val_is_float:bool=None) -> bool:

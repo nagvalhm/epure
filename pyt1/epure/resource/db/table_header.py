@@ -15,6 +15,7 @@ from ..resource import UPDATE, CREATE
 from uuid import uuid4
 from .table_column import TableColumn
 from ..db.db_entity_resource import DbEntityResource
+from .constraint import Constraint, NotNull, Default, Prim, Foreign, Uniq, Check
 
 
 class TableHeader(Savable):
@@ -60,7 +61,7 @@ class TableHeader(Savable):
             self_column = self[column_name]
 
             if self_column not in other:
-                res.append(self_column)
+                    res.append(self_column)
         return res
 
     def __contains__(self, other:Any) -> bool:
@@ -72,13 +73,16 @@ class TableHeader(Savable):
             return False
 
         self_column = self[column.name]
-        if self.db.same_db_type(self_column.column_type, column.column_type):
+
+        if column == self_column:
             return True
-        # if self_column.column_type == 'Any' and \
-        #     column.column_type in self.db.any_types:
-        #     return True
-        
-        return column == self_column
+
+        if isinstance(self_column.py_type, Constraint) or isinstance(column.py_type, Constraint):
+            return False
+
+        return self.db.same_db_type(self_column.py_type, column.py_type)
+           
+
 
 
     def create(self, column: Savable) -> Any:
@@ -148,18 +152,36 @@ class TableHeader(Savable):
         column_dict = self._deserialize(column_dict)
 
         column_name = column_dict['column_name']
-        is_nullable = column_dict['is_nullable']
         db_type = column_dict['db_type']
+
+        not_null = column_dict['not_null']
+        default = column_dict['default']
+        uniq = column_dict['uniq']
+        prim = column_dict['prim']
+        foreign = column_dict['foreign']
+
+        
 
         db = self._get_db(**kwargs)
         try:
             column_type = db.get_py_type(db_type)
+            if prim:
+                column_type = Prim[column_type]
+            elif uniq:
+                column_type = Uniq[column_type]
+            elif not_null:
+                column_type = NotNull[column_type, default]
+            elif default:
+                column_type = Default[column_type, default]
+            elif foreign:                
+                foreign_table = column_dict['foreign_table']
+                foreign_column = column_dict['foreign_column']
+                column_type = Foreign[column_type, foreign_table, foreign_column]
+            
+
         except KeyError as ex:
             raise TypeError(f'{db_type} is unknown for {db.name} '
-                            'set db_py_types attribute properly') from ex
-        # colum_type = TypeVar('colum_type', bound=colum_type)
-        if not is_nullable:
-            column_type = NotNull[column_type]
+                            'set db_py_types attribute properly') from ex       
         
         return TableColumn(column_name, column_type)
 

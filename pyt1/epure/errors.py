@@ -7,11 +7,11 @@ class DbError(Exception):
 class DefaultConstraintError(AttributeError):
     def get_message(self, class_name:str, field_name:str):
         return f'''field {field_name} of {class_name} doesn't have default value.
-            Default type constraint (etc Default, NotNull, Id)
+            Default type constraint (etc Default, NotNull, Prim)
                             must be provided with default value:
                             @epure()
                             class MyClass:
-                                my_id:Id[int] = 0
+                                my_prim:Prim[int] = 0
                                 ...
                             '''
 
