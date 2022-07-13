@@ -4,6 +4,9 @@ class EpureError(Exception):
 class DbError(Exception):
     pass
 
+class ResourceException(Exception):
+    pass
+
 class DefaultConstraintError(AttributeError):
     def get_message(self, class_name:str, field_name:str):
         return f'''field {field_name} of {class_name} doesn't have default value.

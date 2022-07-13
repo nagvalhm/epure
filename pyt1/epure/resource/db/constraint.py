@@ -30,6 +30,8 @@ class Constraint(type):
             return False
         if self.__origin__ != other.__origin__:
             return False
+        if self.__name__ != other.__name__:
+            return False
         
         if self.__origin__ == Default:
             self = cast(Default, self)

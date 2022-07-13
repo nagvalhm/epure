@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Union, Sequence, List
 if TYPE_CHECKING:
     from .savable import Savable
 from inflection import underscore
+from queue import Queue
 
 CREATE = 'CREATE'
 READ = 'READ'
@@ -13,15 +14,17 @@ DELETE = 'DELETE'
 class Resource():
 
     res_id:object
+    cache_queue:List[str] #Queue
     name = ''
     namespace = ''
+
     
     @abstractmethod
     def __init__(self, name:str='', res_id:object=None, namespace:str='') -> None:
         self.name = name if name else self.__class__.__name__
         self.namespace = namespace
         self.res_id = res_id if res_id else self.full_name
-        
+        self.cache_queue = []
 
     @property
     def full_name(self):
@@ -58,11 +61,15 @@ class Resource():
     def deserialize(self, resource:object, **kwargs) -> Savable:
         raise NotImplementedError
 
+    def cache(self, resource:Savable, method:str=''):
+        raise NotImplementedError
+
     # def delete_all(?):
     #     pass
 
     def execute(self, script:str='') -> object:
         raise NotImplementedError
+
 
 
 

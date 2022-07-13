@@ -167,7 +167,7 @@ class GresDb(Db):
         _default = getattr(constraint, 'default', '')
         default = ''
         if _default:
-            default = self.cast_py_db_type(constraint.py_type, _default)
+            default = self.cast_py_db_val(constraint.py_type, _default)
         
         origin = constraint.__origin__
         
@@ -184,7 +184,9 @@ class GresDb(Db):
                 
         raise DbError('unknown constraint')
         
-    def cast_py_db_type(self, py_type:type, val:Any) -> Any:
+    def cast_py_db_val(self, py_type:type, val:Any) -> str:
+        if val == None:
+            return 'NULL'
         if py_type in (int, float, UUID, bool):
             return val
         if py_type in (str, bytes, bytearray):

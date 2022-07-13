@@ -1,16 +1,26 @@
 from types import NoneType
 from .resource import Resource
-from typing import Any
+from typing import Any, Dict, get_type_hints
 
 class Savable(Resource):    
     
     resource: Resource
     is_saved:bool=False
+    _annotations: Dict[str,Any]
     #append to it, if u want excude
-    __exclude__:list = ['resource', 'is_saved']
+    __exclude__:list = ['resource', 'is_saved', '_annotations', 'cache_queue']
+    
 
+    @property
+    def annotations(self) -> Dict[str,Any]:
+        if not hasattr(self, '_annotations'):
+            if isinstance(self, type):                
+                self._annotations = get_type_hints(self)
+            else:
+                self.__class__._annotations = get_type_hints(self.__class__)
+        return self._annotations
 
-    def save(self, level:int=0, resource:Resource=None):
+    def save(self, cache:bool=False):
         pass
 
     def to_json(self):

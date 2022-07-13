@@ -17,7 +17,7 @@ class GresHeader(TableHeader):
         foreign = (column_dict['constraint_type'] == 'FOREIGN KEY')
 
         if default:
-            default = self.parse_column_default(default, db_type)
+            default = self.cast_db_py_column_default(default, db_type)
 
         res = {'column_name': column_name,
                 'not_null': not_null,
@@ -40,7 +40,7 @@ class GresHeader(TableHeader):
         return res
         
 
-    def parse_column_default(self, default:str, db_type:str):
+    def cast_db_py_column_default(self, default:str, db_type:str):
         res = re.sub('::[a-z]*', '', default)
         if res[0] == "'" and res[-1] == "'":
             res = res[1:-1]

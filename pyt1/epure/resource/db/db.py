@@ -88,6 +88,7 @@ class Db(TableStorage):
         if hasattr(self, 'logger') and self.logger:
             self.logger.debug(script)
         try:
+            script = self.get_cache() + script
             script = script.replace("\n", "")
             result = self._execute(script)
         except Exception as ex:
@@ -102,6 +103,14 @@ class Db(TableStorage):
     def _execute(self, script: str = '') -> list:
         raise NotImplementedError()
 
+    def get_cache(self) -> str:
+        res = self.cache_queue
+        if not res:
+            return ''
+        res = '\n'.join(res)
+        res = res + '\n'
+        self.cache_queue = []
+        return res
 
     def set_logger(self) -> Any:
         if self.log_level > logging.NOTSET:

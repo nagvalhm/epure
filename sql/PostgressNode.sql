@@ -186,36 +186,9 @@ ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_write_uid_fkey F
                     	
                     ORDER BY cols.table_schema, cols.table_name
                     
-      select * from information_schema.columns
-      select * from  information_schema.constraint_column_usage
-      select * from  information_schema.table_constraints
+                    point((5.0)::double precision, (7.0)::double precision)
+                    
+                    
+      select * from information_schema.columns where column_default is not null
       
-      
-      create table first_test_foreign(
-      	 id int unique,
-      	to_second_pointer int
-      );
-     
-     drop table first_test_foreign
-     drop table second_test_foreign
-      
-       create table second_test_foreign(
-      	 id int unique,
-      	to_first_pointer int
-      );
-
-alter table first_test_foreign add
-CONSTRAINT first_test_foreign_to_second_pointer
-   FOREIGN KEY(to_second_pointer) 
-      REFERENCES second_test_foreign(id)
-
-alter table second_test_foreign add
-CONSTRAINT second_test_foreign_to_first_pointer
-   FOREIGN KEY(to_first_pointer) 
-      REFERENCES first_test_foreign(id);
-      
-select * from first_test_foreign
-select * from second_test_foreign
-
-insert into first_test_foreign values (1, 1)
-insert into second_test_foreign values (1, 1)
+select * from default_epure de 

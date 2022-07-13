@@ -22,7 +22,7 @@ class Epure(type, Savable):
     
     EDb:Db
     epures:List[Epure] = []
-    annotations:Dict[str,Any]
+    # annotations:Dict[str,Any]
     resource:Savable
     prepared_resource:object
     
@@ -36,7 +36,7 @@ class Epure(type, Savable):
 
     def prepare_save(self, resource:object):        
         self.__class__.epures.append(self)
-        self.annotations = get_type_hints(self)
+        # self.annotations = get_type_hints(self)
         # self.set_annotations()
         self.prepared_resource = resource
 
