@@ -1,4 +1,5 @@
-from .query import Query, JoinClause, Pseudo
+from .query import  Pseudo
+# Query, JoinClause, ,
 from ...errors import DbError
 from typing import Any, TYPE_CHECKING
 if TYPE_CHECKING:
@@ -8,7 +9,7 @@ if TYPE_CHECKING:
 
 
 
-class PseudoColumn(Query, Pseudo):
+class PseudoColumn(Pseudo):
     if TYPE_CHECKING:
         table:Table
         column:TableColumn
@@ -38,18 +39,18 @@ class PresudoTable(Pseudo):
         res = PseudoColumn(self.__db__, self.__table__, column)
         return res
 
-    def __lshift__(self, other:Query): #<<
-        if hasattr(other, 'joins') and other.joins:
-            raise DbError('do not use joins inside where clause')
-        return JoinClause(other.condition, 'LEFT', self)
+    # def __lshift__(self, other:Query): #<<
+    #     if hasattr(other, 'joins') and other.joins:
+    #         raise DbError('do not use joins inside where clause')
+    #     return JoinClause(other.condition, 'LEFT', self)
 
-    def __rshift__(self, other): #>>
-        if hasattr(other, 'joins') and other.joins:
-            raise DbError('do not use joins inside where clause')
-        return JoinClause(other.condition, 'RIGHT', self)
+    # def __rshift__(self, other): #>>
+    #     if hasattr(other, 'joins') and other.joins:
+    #         raise DbError('do not use joins inside where clause')
+    #     return JoinClause(other.condition, 'RIGHT', self)
 
 
-class PseudoDb(Query, Pseudo):
+class PseudoDb(Pseudo):
     if TYPE_CHECKING:
         db:Db
     def __init__(self, db):
