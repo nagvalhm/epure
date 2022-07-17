@@ -8,28 +8,34 @@ if TYPE_CHECKING:
 
 
 
-class PseudoColumn(Pseudo):
+class PseudoColumn(Query, Pseudo):
     if TYPE_CHECKING:
         table:Table
         column:TableColumn
-    def __init__(self, table, column):
+        db:Db
+    def __init__(self, db, table, column):
+        self.db = db
         self.table = table
         self.column = column
 
     def __str__(self) -> str:
-        return f'{self.table.full_name}.{self.column.full_name}'
+        return f'{self.column.full_name}'
+        # return f'{self.table.full_name}.{self.column.full_name}'
 
-class PresudoTable(Query, Pseudo):
+class PresudoTable(Pseudo):
     if TYPE_CHECKING:
-        table:Table
-    def __init__(self, table):
-        self.table = table
+        __table__:Table
+        __db__:Db
+    def __init__(self, db, table):
+        self.__db__ = db
+        self.__table__ = table
+        
 
     def __getattr__(self, attr_name: str) -> Any:
-        if attr_name not in self.table.header:
-            raise DbError(f'column {attr_name} not in header of table {self.table.full_name}')
-        column = self.table.header[attr_name]
-        res = PseudoColumn(column, self.table)
+        if attr_name not in self.__table__.header:
+            raise DbError(f'column {attr_name} not in header of table {self.__table__.full_name}')
+        column = self.__table__.header[attr_name]
+        res = PseudoColumn(self.__db__, self.__table__, column)
         return res
 
     def __lshift__(self, other:Query): #<<
@@ -52,7 +58,7 @@ class PseudoDb(Query, Pseudo):
     def __getitem__(self, key:str):
         if key not in self.db:
             raise DbError(f'table {key} not in db {self.db.full_name}')
-        res = PresudoTable(self.db[key])
+        res = PresudoTable(self.db, self.db[key])
         return res
 
     def __iter__(self):

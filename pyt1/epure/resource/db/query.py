@@ -7,11 +7,13 @@ from ...errors import DbError
 class Pseudo:
     pass
 
+
 class Query():
 
     joins:list
     condition:str
     db:DbEntityResource
+    wrong_precedence:bool
 
     def __init__(self, condition, joins = []):
         self.condition = condition
@@ -26,29 +28,48 @@ class Query():
         raise NotImplementedError(f'''right join is cross-table relation, 
                         its unkown for types: {type(self)}, {type(other)}''')
 
+    def get_brackets_term(self, other, operator:str, right:bool=False):
+        return '(' + self.get_term(other, operator, right) + ')'
 
-    def get_term(self, other, operator:str):
+    def get_term(self, other, operator:str, right:bool=False):
         if not isinstance(other, Query):
-            other = self.db.cast_py_db_val(other)
-        return '(' + str(self) + f' {operator} ' + str(other) + ')'
+            other = self.db.cast_py_db_val(type(other), other)
+        if right:
+            return str(other) + f' {operator} ' + str(self)
+        return str(self) + f' {operator} ' + str(other)
 
-    def logical_operation(self, other, operator:str):
-        condiiton = self.get_term(other, operator)
-        joins = self.joins
-        if isinstance(other, Query): 
+
+    def logical_operation(self, other, operator:str, right:bool=False):
+
+        condition = self.get_condition(other, operator, right)
+
+        if hasattr(self, 'joins'):
+            joins = self.joins
+        else:
+            joins = []
+
+        if hasattr(other, 'joins'): 
             joins = joins + other.joins
-        return WhereClause(condiiton, joins)
+
+        res = WhereClause(condition, joins)
+        if isinstance(self, Pseudo) or isinstance(other, Pseudo):            
+            res.wrong_precedence = True
+
+        return res
            
     def __and__(self, other): #&
         return self.logical_operation(other, 'AND')
 
 
-    # def __xor__(self, other): #^
-    #     return self.logical_operation(other, 'AND')
-
-
     def __or__(self, other): #|
         return self.logical_operation(other, 'OR')
+
+    def __rand__(self, other): #&
+        return self.logical_operation(other, 'AND', True)
+
+
+    def __ror__(self, other): #|
+        return self.logical_operation(other, 'OR', True)
 
 
     def __lshift__(self, other): #<<
@@ -59,28 +80,41 @@ class Query():
         raise NotImplementedError(f'''right join is cross-table relation, 
                         its unkown for types: {type(self)}, {type(other)}''')
 
+    def get_condition(self, other, operator, right:bool=False):
+        if (hasattr(self, 'wrong_precedence') and self.wrong_precedence) or \
+            (hasattr(other, 'wrong_precedence') and other.wrong_precedence) or\
+                isinstance(self, Pseudo) or isinstance(other, Pseudo):
 
+            return self.get_term(other, operator, right)
+        
+        return self.get_brackets_term(other, operator, right)
 
     def __eq__(self, other):
+        operator = '='
+        
         if other is None:
-            return self.get_term(other, ' is ')
-        return self.get_term(other, '=')
+            operator = 'is'
+
+        condition = self.get_condition(other, operator)
+
+        return WhereClause(condition, [])
+
 
     def __ne__(self, other): #!=
         if other is None:
-            return self.get_term(other, ' is not ')
-        return self.get_term(other, '!=')
+            return self.get_brackets_term(other, ' is not ')
+        return self.get_brackets_term(other, '!=')
 
 
     def __lt__(self, other): #<
-        return self.get_term(other, '<')
+        return self.get_brackets_term(other, '<')
 
     def __le__(self, other): #<=
-        return self.get_term(other, '<=')
+        return self.get_brackets_term(other, '<=')
     def __gt__(self, other): #>
-        return self.get_term(other, '>')
+        return self.get_brackets_term(other, '>')
     def __ge__(self, other): #>=
-        return self.get_term(other, '>=')
+        return self.get_brackets_term(other, '>=')
 
 
     # def __invert__(self): #~
