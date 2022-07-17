@@ -3,6 +3,8 @@ from types import LambdaType, NoneType
 from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Callable, cast
 from ..savable import Savable
 from ..resource import UPDATE, CREATE
+import inspect
+from .pseudo_table import PresudoTable, PseudoDb
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -53,6 +55,32 @@ class Table(DbEntity):
     def create(self, node: Savable) -> object:
         script = self.serialize(node, CREATE)
         self.execute(script)
+
+
+
+    def read(self, selector: object = None, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
+        if selector == None:
+            return self.read_by_fields(**kwargs)
+        if isinstance(selector, str):
+            return self.execute(selector)
+        if not callable(selector):
+            raise NotImplementedError(f'couldn read by object of type {type(selector)}')
+
+
+        if inspect.ismethod(selector):
+            def reader(self:Table, *args, **kwargs):
+                pseudo_self = PresudoTable(self)
+                pseudo_db = PseudoDb(self.db)
+                script = selector(pseudo_self, pseudo_db, *args, **kwargs)
+                return self.execute(selector)
+            setattr(self, selector.__name__, reader)
+
+        pseudo_self = PresudoTable(self)
+        pseudo_db = PseudoDb(self.db)
+        script = selector(pseudo_self, pseudo_db)
+        res = self.execute(script)
+        return res
+
 
     def update(self, node: Savable) -> object:
         script = self.serialize(node, UPDATE)

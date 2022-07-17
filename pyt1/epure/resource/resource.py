@@ -41,7 +41,7 @@ class Resource():
     def create(self, resource:Savable) -> object:
         raise NotImplementedError
 
-    def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
+    def read(self, selector:object=None, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
         raise NotImplementedError
 
     def update(self, resource:Savable) -> object:

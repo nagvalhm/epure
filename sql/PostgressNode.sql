@@ -192,3 +192,88 @@ ALTER TABLE public.rak_occurrence ADD CONSTRAINT rak_occurrence_write_uid_fkey F
       select * from information_schema.columns where column_default is not null
       
 select * from default_epure de 
+
+
+
+          SELECT cols.table_schema, cols.table_name, 
+                    cols.column_name, cols.is_nullable, cols.data_type, cols.column_default,
+                    cols_constr.table_schema AS foreign_schema,
+				    cols_constr.table_name AS foreign_table,
+				    cols_constr.column_name AS foreign_column,
+                    constr.constraint_type
+                    FROM information_schema.columns cols
+                    left join information_schema.constraint_column_usage cols_constr
+                    	on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
+                    	and cols.column_name = cols_constr.column_name
+                    left join information_schema.constraint_column_usage cols_constr
+                    	on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
+                    	and cols.column_name = cols_constr.column_name
+                    left join information_schema.table_constraints constr
+                    	on cols_constr.constraint_name = constr.constraint_name
+                    ORDER BY cols.table_schema, cols.table_name
+                    
+                    
+       SELECT * FROM public.default_epure
+        full JOIN oraculs_domain.test_clssasdas
+        ON (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)
+        where 
+        public.default_epure.str3 = oraculs_domain.test_clssasdas.test_field2 
+        
+        create table man (
+        	id integer,
+        	man_name text
+        
+        );
+       
+       insert into man (id, man_name) values (1, 'nikita');
+      insert into man (id, man_name) values (2, 'pasha');
+     	insert into man (id, man_name) values (3, 'yury');
+       
+        create table woman (
+        	id integer,
+        	woman_name text,
+        	husband integer
+        );
+       
+   insert into woman (id, woman_name, husband) values (1, 'klara', 1);
+      insert into woman (id, woman_name) values (2, 'dasha');
+     	insert into woman (id, woman_name, husband) values (3, 'natasha', 3);
+       
+        create table dog (
+        	id integer,
+        	dog_name text,
+        	dog_owner integer
+        );
+
+   insert into dog (id, dog_name) values (1, 'elli');
+      insert into dog (id, dog_name, dog_owner) values (2, 'dog', 2);
+     	insert into dog (id, dog_name, dog_owner) values (3, 'kotya', 3);
+     	
+     
+
+    
+    select * from woman
+    left join dog on dog.dog_owner = woman.id
+    
+    
+     
+
+    
+    
+    
+    
+    
+    
+    select * from man 
+    join woman on woman.husband = man.id
+    union (select man.*, null, null, null from man except )
+    
+    
+     select * from man
+--     (select * from man union select null, null) man
+    full outer join (select * from woman union select null, null, null) woman on true
+--    full join (select * from dog union select null, null, null) dog on true
+--     where (man.id is not null)
+    where (man.id is not null and (woman.husband = man.id or woman.husband is null))
+    
+    and dog.dog_owner = woman.id

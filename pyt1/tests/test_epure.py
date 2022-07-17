@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ..epure.epure import epure, connect
+from ..epure.epure import Epure, epure, connect
 from typing import List, Dict
 from datetime import datetime
 import pytest
@@ -26,13 +26,25 @@ def table_exists(table_name):
 
 
 @pytest.fixture
-def default_epure():
-    return get_epure(DefaultEpure)
+def default_epure() -> Epure:
+    epure = DefaultEpure()
+    epure.float3 = 2,7
+    epure.range0 = range(1, 10)
+    epure.dict0 = {'field1': 'val1', 'field2': 3}
+    epure.set0 = {'set_val1', 3, 13.4}
+    epure.frozenset0 = frozenset([1, '2', 3.14])
+    epure.bool0 = True
+    epure.bytes0 = bytes(10)
 
-def test_default_epure_table(default_epure):
-    assert default_epure.table.name == 'default_epure'
-    assert default_epure.db.name == 'GresDb'
-    assert table_exists('default_epure')
+    id = epure.save().res_id
+    res = epure.table.read(id=id)
+    assert res == epure
+    return res
+
+# def test_default_epure_table(default_epure):
+#     assert default_epure.table.name == 'default_epure'
+#     assert default_epure.db.name == 'GresDb'
+#     assert table_exists('default_epure')
 
 # def test_default_epure_fields(default_epure):
 #     pass

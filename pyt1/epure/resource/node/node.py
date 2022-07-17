@@ -11,7 +11,7 @@ class Node(Savable):
         if not hasattr(self, 'resource'):
             raise ResourceException('Unable save Savable, resource not found')
 
-        method = UPDATE if self.is_saved else CREATE
+        method = UPDATE if hasattr(self, 'res_id') and  self.res_id else CREATE
         if cache:
             return self.resource.cache(self, method)
         

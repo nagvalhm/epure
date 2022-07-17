@@ -14,13 +14,14 @@ except Exception as ex:
 
 connect(GresDb('postgres://postgres:postgres@localhost:5432'))
 
-connect(GresDb('postgres://postgres:postgres@localhost:32', 
+db = GresDb('postgres://postgres:postgres@localhost:32', 
     # host="localhost", 
     port="5432", 
     # database="postgres", 
     # user="postgres", 
     password="postgres",
-    log_level=3))
+    log_level=3)
+connect(db)
 
 #parent
 class ParentClass1:

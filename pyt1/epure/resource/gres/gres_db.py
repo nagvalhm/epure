@@ -54,7 +54,7 @@ class GresDb(Db):
         self.json_serializer = JsonFile('')
 
 
-    def read(self, selector:object=None, **kwargs) -> Union[Resource, Sequence[Resource]]:
+    def read(self, selector:object=None, **kwargs) -> Any:#Union[Resource, Sequence[Resource]]:
         
         table_name = str(selector)
         full_table_name = self._get_full_table_name(table_name)
