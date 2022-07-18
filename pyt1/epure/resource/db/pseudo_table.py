@@ -1,4 +1,4 @@
-from .query import  Pseudo
+from .query import  Pseudo, _PseudoColumn, _PseudoTable
 # Query, JoinClause, ,
 from ...errors import DbError
 from typing import Any, TYPE_CHECKING
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 
-class PseudoColumn(Pseudo):
+class PseudoColumn(_PseudoColumn):
     if TYPE_CHECKING:
         table:Table
         column:TableColumn
@@ -23,7 +23,7 @@ class PseudoColumn(Pseudo):
         return f'{self.column.full_name}'
         # return f'{self.table.full_name}.{self.column.full_name}'
 
-class PresudoTable(Pseudo):
+class PresudoTable(_PseudoTable):
     if TYPE_CHECKING:
         __table__:Table
         __db__:Db
@@ -39,6 +39,8 @@ class PresudoTable(Pseudo):
         res = PseudoColumn(self.__db__, self.__table__, column)
         return res
 
+    def __str__(self) -> str:
+        return f'{self.__table__.full_name}'
     # def __lshift__(self, other:Query): #<<
     #     if hasattr(other, 'joins') and other.joins:
     #         raise DbError('do not use joins inside where clause')
