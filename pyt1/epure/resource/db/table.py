@@ -5,6 +5,7 @@ from ..savable import Savable
 from ..resource import UPDATE, CREATE
 import inspect
 from .pseudo_table import PresudoTable, PseudoDb
+from .select_query import SelectQuery
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -18,6 +19,10 @@ class Table(DbEntity):
     header:TableHeader
     if TYPE_CHECKING:
         resource:TableStorage
+
+    @property
+    def db(self):
+        return self.resource
 
     def __init__(self, name: str,
             header:Union[TableHeader, Dict[str, Any]]=None, namespace:str = '') -> None:        
@@ -101,16 +106,18 @@ class Table(DbEntity):
         self.header.resource = self
        
 
+    def serialize_create(self, node: Dict[str, str]) -> str:
+        raise NotImplementedError
 
-    @property
-    def db(self):
-        return self.resource
+    def serialize_read(self, selector:SelectQuery) -> str:
+        raise NotImplementedError
 
     def serialize_update(self, node: Dict[str, str]) -> str:
         raise NotImplementedError
 
-    def serialize_create(self, node: Dict[str, str]) -> str:
+    def serialize_delete(self, node: Dict[str, str]) -> str:
         raise NotImplementedError
+
     
     def serialize_header(self, db: TableStorage=None, **kwargs) -> List[Dict[str, str]]:
         res: List[Dict[str, str]] = list()

@@ -1,5 +1,31 @@
 
 
+def screen_regex_specials(val:str):
+    res = ''
+    specials = ('.', '+', '*', '?', '^', '$', '(', ')', '[', ']', '{', '}', '|', '\\', '<', '>')
+    for char in val:
+        if char in specials:
+            res += f"\\{char}"
+            continue
+        res += char
+    return res
+
+def find_parentheses(val:str):
+    toret = {}
+    pstack = []
+
+    for i, c in enumerate(val):
+        if c == '(':
+            pstack.append(i)
+        elif c == ')':
+            if len(pstack) == 0:
+                raise IndexError("No matching closing parens at: " + str(i))
+            toret[pstack.pop()] = i
+
+    if len(pstack) > 0:
+        raise IndexError("No matching opening parens at: " + str(pstack.pop()))
+
+    return toret
 
 
 def is_float(val: str) -> bool:

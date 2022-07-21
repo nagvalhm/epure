@@ -1,7 +1,9 @@
-from .query import  Pseudo, _PseudoColumn, _PseudoTable
+from .term import  Pseudo, _PseudoColumn, _PseudoTable, Term
+from .select_query import SelectQuery
 # Query, JoinClause, ,
 from ...errors import DbError
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, cast
+from ...helpers.type_helper import check_type
 if TYPE_CHECKING:
     from .table_column import TableColumn
     from .table import Table
@@ -41,15 +43,7 @@ class PresudoTable(_PseudoTable):
 
     def __str__(self) -> str:
         return f'{self.__table__.full_name}'
-    # def __lshift__(self, other:Query): #<<
-    #     if hasattr(other, 'joins') and other.joins:
-    #         raise DbError('do not use joins inside where clause')
-    #     return JoinClause(other.condition, 'LEFT', self)
 
-    # def __rshift__(self, other): #>>
-    #     if hasattr(other, 'joins') and other.joins:
-    #         raise DbError('do not use joins inside where clause')
-    #     return JoinClause(other.condition, 'RIGHT', self)
 
 
 class PseudoDb(Pseudo):
@@ -70,3 +64,12 @@ class PseudoDb(Pseudo):
     def __len__(self):
         return self.db.__len__()
 
+    def __call__(self, *args: list) -> Term:
+        select_header = args[0:-1]
+        select_body = args[-1]
+        check_type('select_body', select_body, Term)
+
+        res = SelectQuery(select_header, select_body)
+        
+        table = list(self.db.tables.values())[0]
+        return table.serialize_read(res)

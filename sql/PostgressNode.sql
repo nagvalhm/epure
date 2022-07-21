@@ -250,13 +250,14 @@ select * from default_epure de
      	insert into dog (id, dog_name, dog_owner) values (3, 'kotya', 3);
      	
      
-
+	select * from dog
     
-    select * from woman
-    left join dog on dog.dog_owner = woman.id
+    select woman.*, woman.husband, dog.dog_name from woman
+    left join dog on dog.dog_owner < woman.id
     
     
-     
+        select woman.* from woman
+    left join dog on dog.dog_owner < woman.id 
 
     
     

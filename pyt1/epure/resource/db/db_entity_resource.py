@@ -3,11 +3,19 @@ from typing import Dict, List, Any, Callable
 from .constraint import Constraint
 from ...errors import DbError
 
+
 class DbEntityResource(Resource):
 
     py_db_types:Dict[type, str]
     db_py_types:Dict[str, type]
     default_namespace:str
+    py_db_operators:Dict[str, str] = {
+        '==': '=',
+    }
+    # py_db_key_words:Dict[str, str] = {
+    #     'where': 'where'
+    # }
+    
 
     def serialize_constraint(self, constraint:Constraint) -> str:
         raise NotImplementedError
