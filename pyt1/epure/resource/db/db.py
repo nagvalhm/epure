@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import Dict, Any, Type, cast
+from typing import Dict, Any, Type, cast, List
 import logging
 
 from .db_entity import DbEntity
@@ -26,6 +26,7 @@ class Db(TableStorage):
     log_level:int = logging.NOTSET
     logger:logging.Logger
     connection:Any
+    cache_queue:List[str] #Queue
     
     
 
@@ -40,7 +41,7 @@ class Db(TableStorage):
                 port:str='', 
                 default_namespace='', 
                 log_level:int = logging.NOTSET,
-                name:str='', res_id:object=None,
+                name:str='',
                 default_table_type:Type[Table]=None,
                 migrate_on_delete:bool=False):
         
@@ -60,11 +61,11 @@ class Db(TableStorage):
         if log_level:
             self.log_level = log_level
 
-
+        self.cache_queue = []
         self.tables = {}
         self.set_logger()
 
-        return super().__init__(name, default_table_type, res_id, migrate_on_delete)
+        return super().__init__(name, default_table_type, migrate_on_delete)
 
 
 

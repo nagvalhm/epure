@@ -187,10 +187,11 @@ class GresDb(Db):
     def cast_py_db_val(self, py_type:type, val:Any) -> str:
         if val == None:
             return 'NULL'
-        if py_type in (int, float, UUID, bool):
-            return val
-        if py_type in (str, bytes, bytearray):
-            return f"'{val}'"
+        if py_type in (int, float, bool):
+            return str(val)
+        if py_type in (str, UUID, bytes, bytearray):
+            res = f"'{str(val)}'"
+            return res
         if py_type == complex:            
             return f"point({val.real}, {val.imag})"
 

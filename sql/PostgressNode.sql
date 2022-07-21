@@ -260,9 +260,9 @@ select * from default_epure de
     left join dog on dog.dog_owner < woman.id 
 
     
+    SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure  LEFT JOIN oraculs_domain.test_clssasdas on str0 == test_field1 WHERE  (((int0 = test_field2)   and (float0 = 5)) or (complex0 = test_field3))
     
-    
-    
+    select * from default_epure
     
     
     select * from man 

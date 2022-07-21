@@ -32,12 +32,12 @@ class Epure(type, Savable):
     def __call__(self, *args, **kwargs):
         if not self.is_saved:
             self.save_epure()
+            self.is_saved = True
+            
         return super(Epure, self).__call__(*args, **kwargs)
 
     def prepare_save(self, resource:object):        
         self.__class__.epures.append(self)
-        # self.annotations = get_type_hints(self)
-        # self.set_annotations()
         self.prepared_resource = resource
 
 
@@ -57,7 +57,7 @@ class Epure(type, Savable):
             resource = self._create_or_update(table_name)
 
         self.resource = resource
-        self.is_saved = True
+        
         
 
     def _create_or_update(self, table_name:str) -> Table:
@@ -98,14 +98,14 @@ class Epure(type, Savable):
             columns[field_name] = py_type
 
         TableCls = self.EDb.default_table_type
-        table = TableCls(full_name.name, columns, full_name.namespace)
+        table = TableCls(full_name.name, columns, self.EDb, full_name.namespace)
         return table
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
        
         if py_type in self.epures:
             py_type = cast(Epure, py_type)
-            return self.get_py_type(field_name, py_type.annotations['res_id'])
+            return self.get_py_type(field_name, py_type.annotations['node_id'])
             
         if isinstance(py_type, Constraint) and issubclass(py_type.__origin__, Default):
             return self.get_default_type(field_name, py_type)
@@ -127,11 +127,11 @@ class Epure(type, Savable):
 
 
     def get_foreign_type(self, foreign:Epure) -> Any:
-        foreign_id_type = foreign.annotations['res_id']
+        foreign_id_type = foreign.annotations['node_id']
 
         foreign_table = self._get_table_name(foreign, foreign.prepared_resource)
 
-        foreign_column = 'res_id'
+        foreign_column = 'node_id'
         column_type = Foreign[foreign_id_type, foreign_table, foreign_column]
         return column_type
 

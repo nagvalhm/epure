@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 from ..savable import Savable
 from ...helpers.type_helper import check_type
 from ...errors import EpureError
-from ..resource import UPDATE, CREATE
+from ..resource import UPDATE, CREATE, DELETE
 from uuid import uuid4
 from .table_column import TableColumn
 from ..db.db_entity_resource import DbEntityResource
@@ -25,13 +25,13 @@ class TableHeader(Savable):
 
     def __init__(self, 
             columns:Dict[str, type]=None, table:Table=None,
-            name: str = '', res_id: object = None) -> None:
+            name: str = '') -> None:
         check_type('columns', columns, [dict, NoneType])
 
         if table:
             self.table = table
         self.columns = {}
-        super().__init__(name, res_id)
+        super().__init__(name)
         if not columns:
             return
 
@@ -60,6 +60,9 @@ class TableHeader(Savable):
         for column_name in self:
             self_column = self[column_name]
 
+            if self_column.is_deleted:
+                continue
+
             if self_column not in other:
                     res.append(self_column)
         return res
@@ -68,6 +71,9 @@ class TableHeader(Savable):
         if not isinstance(other, TableColumn):
             return other in self.columns
         column = cast(TableColumn, other)
+
+        if column.is_deleted:
+            return False
 
         if column.name not in self:
             return False
@@ -89,6 +95,15 @@ class TableHeader(Savable):
         check_type('column', column, TableColumn)
 
         script = self.serialize(column, method=CREATE)
+        script = str(script)
+        self.execute(script)
+
+        return column
+
+    def delete(self, column: Savable) -> Any:
+        check_type('column', column, TableColumn)
+
+        script = self.serialize(column, method=DELETE)
         script = str(script)
         self.execute(script)
 
@@ -116,27 +131,42 @@ class TableHeader(Savable):
     def serialize(self, column: Savable, method:str='', **kwargs) -> object:
         check_type('column', column, TableColumn)
         column = cast(TableColumn, column)
-        script = ''
+        
 
         table_name = self.table.full_name
-        random_id = str(uuid4()).replace('-', '')
-        del_column_name = f'{column.name}_deleted_{random_id}'
+        create_script = ''
+        pre_delete_script = ''
+        
 
-        if method == UPDATE:
-            script = script + self._serialize_pre_delete(table_name, column, del_column_name)
+        if method == CREATE or method == UPDATE:
+            db:DbEntityResource
+            if 'db' in kwargs:
+                db = kwargs['db']
+            else:
+                db = self.table.db
+            create_script = self._create_column_script(table_name, column, db)
+
+        if method == DELETE or method == UPDATE:
+            random_id = str(uuid4()).replace('-', '')
+            del_column_name = f'{column.name}_deleted_{random_id}'
+
+            pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
 
 
-        db:DbEntityResource
-        if 'db' in kwargs:
-            db = kwargs['db']
-        else:
-            db = self.table.db
-        script = script + self._create_column_script(table_name, column, db)
 
-        if self.table.db.migrate_on_delete:
-            script = script + self._migrate_columns_script(table_name, del_column_name, column.name)
+        if method == CREATE:
+            return create_script
+        elif method == DELETE:
+            return pre_delete_script
 
-        return script
+        elif method == UPDATE:
+            migrate_script = ''
+            if self.table.db.migrate_on_delete:
+                migrate_script = self._migrate_columns_script(table_name, del_column_name, column.name)
+            return pre_delete_script + create_script + migrate_script
+
+        raise NotImplementedError
+        
 
 
     def _serialize_pre_delete(self, table_name:str, column:TableColumn, del_column_name:str) -> str:

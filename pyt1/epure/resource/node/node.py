@@ -5,24 +5,31 @@ from ...errors import ResourceException
 
 class Node(Savable):
 
+    node_id:object
     __exclude__:list
 
     def save(self, cache:bool=False):
         if not hasattr(self, 'resource'):
             raise ResourceException('Unable save Savable, resource not found')
+        resource = self.resource
+        method = ''
+        if hasattr(self, 'node_id') and  self.node_id:
+            method = UPDATE
+        else:
+            method = CREATE
+            self.node_id = resource.generate_id()
 
-        method = UPDATE if hasattr(self, 'res_id') and  self.res_id else CREATE
         if cache:
-            return self.resource.cache(self, method)
+            return resource.cache(self, method)
         
-        if self.is_saved:
-            return self.resource.update(self)
-        return self.resource.create(self)
+        if method == UPDATE:
+            return resource.update(self)
+        return resource.create(self)
 
 
 class TableNode(Node):
     db:Resource
-    res_id: UUID
+    node_id: UUID
     resource:Savable
 
     @property

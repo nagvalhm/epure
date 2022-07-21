@@ -6,6 +6,8 @@ from ..resource import UPDATE, CREATE
 import inspect
 from .pseudo_table import PresudoTable, PseudoDb
 from .select_query import SelectQuery
+from .constraint import Constraint
+from ..resource import Resource
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -25,19 +27,22 @@ class Table(DbEntity):
         return self.resource
 
     def __init__(self, name: str,
-            header:Union[TableHeader, Dict[str, Any]]=None, namespace:str = '') -> None:        
+            header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '') -> None:        
         check_type('header', header, [TableHeader, dict, NoneType])
         
 
         self._set_header(header)
 
-        super().__init__(name, namespace=namespace)
+        super().__init__(name, namespace, resource)
 
 
 
     def serialize(self, node: Savable, method: str = '', **kwargs) -> str:
         res = {}
         for field_name, field_type in node.annotations.items():
+            if isinstance(field_type, Constraint):
+                field_type = field_type.py_type
+                
             if node.is_excluded(field_name, field_type):
                 continue
             if field_name not in self.header:
@@ -45,7 +50,9 @@ class Table(DbEntity):
 
             field_val = getattr(node, field_name, None)
             if isinstance(field_val, Savable):
-                field_val = field_val.save(True)
+                field_type = field_val.annotations['node_id']
+                field_val = field_val.save(True).node_id
+                
             field_val = self.db.cast_py_db_val(field_type, field_val)
 
             res[field_name] = field_val
@@ -93,7 +100,8 @@ class Table(DbEntity):
 
     def cache(self, node: Savable, method: str = ''):
         script = self.serialize(node, method)
-        self.cache_queue.append(script)
+        self.db.cache_queue.append(script)
+        return node
 
     def _set_header(self, header):
         if header == None:

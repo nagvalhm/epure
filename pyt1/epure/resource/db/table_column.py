@@ -4,11 +4,17 @@ from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Calla
 from ..savable import Savable
 from .constraint import Constraint
 from .db_entity_resource import DbEntityResource
+import re
 
 
 class TableColumn(Savable):
     py_type:type
     
+    @property
+    def is_deleted(self):
+        res = re.match(r'.*deleted_[a-f0-9]{32}', self.name)
+        return res
+
     def __init__(self, name:str, py_type:type=NoneType) -> None:
         self.py_type = py_type
         super().__init__(name)

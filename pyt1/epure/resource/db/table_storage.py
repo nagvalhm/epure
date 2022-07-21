@@ -17,14 +17,14 @@ class TableStorage(DbEntityResource):
 
     @abstractmethod
     def __init__(self, name:str='', default_table_type:Type[Table]=None, 
-    res_id:object=None, migrate_on_delete:bool=False):
+    migrate_on_delete:bool=False):
 
         if default_table_type:
             self.default_table_type = default_table_type
 
         self.migrate_on_delete = migrate_on_delete
 
-        super().__init__(name, res_id) 
+        super().__init__(name) 
 
 
         
@@ -68,14 +68,16 @@ class TableStorage(DbEntityResource):
         old_header = old_table.header
 
         diff = new_header - old_header
-        if not diff:
-            return old_table
 
         for column in diff:
             if column.name in old_header:
                 old_header.update(column)
             else:
                 old_header.create(column)
+        
+        diff = old_header - new_header
+        for column in diff:
+            old_header.delete(column)
 
         self._set_table(new_table)
         return new_table
@@ -88,8 +90,8 @@ class TableStorage(DbEntityResource):
         full_name = self._deserialize_table_name(table_columns)
 
         TableCls = self.default_table_type
-        table = TableCls(name=full_name.name, namespace=full_name.namespace)
-        table.resource = self
+        table = TableCls(name=full_name.name, namespace=full_name.namespace, resource=self)
+        
         
         for column_dict in table_columns:
             column = table.header.deserialize(column_dict, db=self)

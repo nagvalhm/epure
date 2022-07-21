@@ -91,7 +91,7 @@ class RegularClass3:
 #epure fields
 @epure()
 class EpureClass1:
-    str2:str
+    str2:str = 'EpureClass1.str2'
     int2:int
     float2:float
     complex2:complex

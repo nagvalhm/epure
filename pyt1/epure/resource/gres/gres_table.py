@@ -6,6 +6,7 @@ from ..savable import Savable
 from ...errors import  DbError
 from ..db.select_query import SelectQuery
 from ..db.term import JoinBinary, Pseudo, _PseudoColumn, _PseudoTable
+from uuid import uuid4
 
 class GresTable(Table, GresEntity):
     def _set_header(self, header):
@@ -84,10 +85,10 @@ class GresTable(Table, GresEntity):
 
     def serialize_update(self, node_dict: Dict[str, str]) -> str:
 
-        if not ('res_id' in node_dict and node_dict['res_id']):
-            raise DbError('unable update node without res_id')
+        if not ('node_id' in node_dict and node_dict['node_id']):
+            raise DbError('unable update node without node_id')
 
-        res_id = node_dict['res_id']
+        node_id = node_dict['node_id']
         pairs = ''
 
         for name, val in node_dict.items():
@@ -96,5 +97,9 @@ class GresTable(Table, GresEntity):
         pairs = pairs[:-2]
         res = f'''UPDATE {self.full_name}
                 SET {pairs}
-                WHERE res_id = {res_id};'''
+                WHERE node_id = {node_id};'''
         return res
+
+
+    def generate_id(self, resource: Savable = None):
+        return uuid4()
