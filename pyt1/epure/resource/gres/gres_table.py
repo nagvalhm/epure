@@ -19,7 +19,11 @@ class GresTable(Table, GresEntity):
         self.header = header
         self.header.resource = self
 
-    def serialize_create(self, node_dict: Dict[str, str]) -> str:
+
+
+    def serialize_for_create(self, node: Savable, **kwargs) -> object:
+
+        node_dict = self._serialize(node)
 
         columns = ""
         values = ""
@@ -30,8 +34,9 @@ class GresTable(Table, GresEntity):
         columns = columns[:-2]
         values = values[:-2]
 
-        res = f'INSERT INTO {self.full_name}({columns}) VALUES ({values});'
+        res = f'INSERT INTO {self.full_name}({columns}) VALUES ({values}) returning node_id;'
         return res
+
 
 
     def serialize_read(self, selector:SelectQuery) -> str:
@@ -82,8 +87,11 @@ class GresTable(Table, GresEntity):
     def serialize_join(self, join:JoinBinary):
         return f'{join.join_type} JOIN {join.table} on {join.on_clause}\n'
 
+        
 
-    def serialize_update(self, node_dict: Dict[str, str]) -> str:
+    def serialize_for_update(self, node: Savable, **kwargs) -> object:
+
+        node_dict = self._serialize(node)
 
         if not ('node_id' in node_dict and node_dict['node_id']):
             raise DbError('unable update node without node_id')

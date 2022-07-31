@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 from ..savable import Savable
 from ...helpers.type_helper import check_type
 from ...errors import EpureError
-from ..resource import UPDATE, CREATE, DELETE
 from uuid import uuid4
 from .table_column import TableColumn
 from ..db.db_entity_resource import DbEntityResource
@@ -94,7 +93,7 @@ class TableHeader(Savable):
     def create(self, column: Savable) -> Any:
         check_type('column', column, TableColumn)
 
-        script = self.serialize(column, method=CREATE)
+        script = self.serialize_for_create(column)
         script = str(script)
         self.execute(script)
 
@@ -103,7 +102,7 @@ class TableHeader(Savable):
     def delete(self, column: Savable) -> Any:
         check_type('column', column, TableColumn)
 
-        script = self.serialize(column, method=DELETE)
+        script = self.serialize_for_delete(column)
         script = str(script)
         self.execute(script)
 
@@ -119,7 +118,7 @@ class TableHeader(Savable):
         if new_column in self:
             return old_column
 
-        script = self.serialize(new_column, method=UPDATE)
+        script = self.serialize_for_update(new_column)
         script = str(script)
         self.execute(script)
 
@@ -127,51 +126,66 @@ class TableHeader(Savable):
 
 
 
-
-    def serialize(self, column: Savable, method:str='', **kwargs) -> object:
+    def serialize_for_create(self, column: Savable, **kwargs) -> object:
         check_type('column', column, TableColumn)
         column = cast(TableColumn, column)
-        
-
         table_name = self.table.full_name
-        create_script = ''
-        pre_delete_script = ''
-        
 
-        if method == CREATE or method == UPDATE:
-            db:DbEntityResource
-            if 'db' in kwargs:
-                db = kwargs['db']
-            else:
-                db = self.table.db
-            create_script = self._create_column_script(table_name, column, db)
+        db:DbEntityResource
+        if 'db' in kwargs:
+            db = kwargs['db']
+        else:
+            db = self.table.db        
 
-        if method == DELETE or method == UPDATE:
-            random_id = str(uuid4()).replace('-', '')
-            del_column_name = f'{column.name}_deleted_{random_id}'
-
-            pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
+        create_script = self._create_column_script(table_name, column, db)
+        return create_script
 
 
 
-        if method == CREATE:
-            return create_script
-        elif method == DELETE:
-            return pre_delete_script
+    def serialize_for_update(self, column: Savable, **kwargs) -> object:
+        check_type('column', column, TableColumn)
+        column = cast(TableColumn, column)
+        table_name = self.table.full_name
 
-        elif method == UPDATE:
-            migrate_script = ''
-            if self.table.db.migrate_on_delete:
-                migrate_script = self._migrate_columns_script(table_name, del_column_name, column.name)
-            return pre_delete_script + create_script + migrate_script
+        random_id = str(uuid4()).replace('-', '')
+        del_column_name = f'{column.name}_deleted_{random_id}'
 
-        raise NotImplementedError
+        pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
+
+        db:DbEntityResource
+        if 'db' in kwargs:
+            db = kwargs['db']
+        else:
+            db = self.table.db        
+
+        create_script = self._create_column_script(table_name, column, db)
+
+        migrate_script = ''
+        if self.table.db.migrate_on_delete:
+            migrate_script = self._migrate_columns_script(table_name, del_column_name, column.name)
+
+        return pre_delete_script + create_script + migrate_script
+
+
+
+    def serialize_for_delete(self, column: Savable, **kwargs) -> object:
+        check_type('column', column, TableColumn)
+        column = cast(TableColumn, column)
+        table_name = self.table.full_name
+
+        random_id = str(uuid4()).replace('-', '')
+        del_column_name = f'{column.name}_deleted_{random_id}'
+
+        pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
+        return pre_delete_script
+
+
         
 
 
     def _serialize_pre_delete(self, table_name:str, column:TableColumn, del_column_name:str) -> str:
         script = self._rename_column_script(table_name, column.name, del_column_name)\
-                + self._set_not_null_script(table_name, del_column_name)
+                + self._set_nullable_script(table_name, del_column_name)
         return script
 
 
@@ -240,6 +254,9 @@ class TableHeader(Savable):
         
     
     def _set_not_null_script(self, table_name:str, column_name:str) -> str:
+        raise NotImplementedError
+
+    def _set_nullable_script(self, table_name:str, column_name:str) -> str:
         raise NotImplementedError
 
     def _create_column_script(self, table_name:str, column:TableColumn, db:DbEntityResource) -> str:

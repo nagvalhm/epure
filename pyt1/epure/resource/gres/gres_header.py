@@ -65,6 +65,11 @@ class GresHeader(TableHeader):
             ALTER TABLE {table_name} ALTER COLUMN {column_name} SET NOT NULL;
         '''
 
+    def _set_nullable_script(self, table_name:str, column_name:str) -> str:
+        return f'''
+            ALTER TABLE {table_name} ALTER COLUMN {column_name} DROP NOT NULL;
+        '''
+
     def _create_column_script(self, table_name:str, column:TableColumn, db:DbEntityResource) -> str:        
         db_type = column.serialize_type(db) #db.get_db_type(column.column_type)
         

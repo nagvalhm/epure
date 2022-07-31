@@ -4,5 +4,5 @@ import jsonpickle
 
 class JsonFile(FileStorage):
     
-    def serialize(self, resource: Savable, method: str = '', **kwargs) -> object:
-        return str(jsonpickle.encode(resource))
+    def serialize_for_update(self, savable: Savable, **kwargs) -> object:
+        return str(jsonpickle.encode(savable))

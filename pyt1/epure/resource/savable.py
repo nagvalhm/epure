@@ -25,7 +25,7 @@ class Savable(Resource):
                 self.__class__._annotations = get_type_hints(self.__class__)
         return self._annotations
 
-    def save(self, cache:bool=False):
+    def save(self, asynch:bool=False):
         pass
 
     def to_json(self):

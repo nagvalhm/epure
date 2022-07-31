@@ -6,14 +6,13 @@ if TYPE_CHECKING:
 from inflection import underscore
 from queue import Queue
 
-CREATE = 'CREATE'
-READ = 'READ'
-UPDATE = 'UPDATE'
-DELETE = 'DELETE'
+# CREATE = 'CREATE'
+# READ = 'READ'
+# UPDATE = 'UPDATE'
+# DELETE = 'DELETE'
 
 class Resource():
-    
-    
+        
     name = ''
     namespace = ''
 
@@ -36,20 +35,32 @@ class Resource():
         return self.name
         
 
-    def create(self, resource:Savable) -> object:
+    def create(self, savable:Savable, asynch:bool=False) -> object:
+        raise NotImplementedError
+
+    def serialize_for_create(self, savable:Savable, **kwargs) -> object:
         raise NotImplementedError
 
     def read(self, selector:object=None, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
         raise NotImplementedError
 
-    def update(self, resource:Savable) -> object:
+    def serialize_for_read(self, savable:Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def delete(resource:Savable):
+    def update(self, savable:Savable, asynch:bool=False) -> object:
         raise NotImplementedError
 
-    def delete_all(resource:Savable, selector:object):
+    def serialize_for_update(self, savable:Savable,  **kwargs) -> object:
         raise NotImplementedError
+
+    def delete(self, savable:Savable, asynch:bool=False):
+        raise NotImplementedError
+
+    def serialize_for_delete(self, savable:Savable,  **kwargs) -> object:
+        raise NotImplementedError
+
+
+    #all
 
     def create_all(self, savables:List[Savable]):
         raise NotImplementedError
@@ -57,23 +68,21 @@ class Resource():
     def update_all(self, savables:List[Savable], selector:object):
         raise NotImplementedError
 
-
-    def serialize(self, resource:Savable, method:str='', **kwargs) -> object:
+    def delete_all(self, savables:List[Savable], selector:object):
         raise NotImplementedError
 
-    def deserialize(self, resource:object, **kwargs) -> Savable:
+
+
+    def deserialize(self, savable:object, **kwargs) -> Savable:
         raise NotImplementedError
 
-    def cache(self, resource:Savable, method:str=''):
-        raise NotImplementedError
-
-  
+    def cache(self, script:str):
+        raise NotImplementedError  
 
     def execute(self, script:str='') -> object:
         raise NotImplementedError
 
-
-    def generate_id(self, resource:Savable=None):
+    def generate_id(self, savable:Savable=None):
         raise NotImplementedError
 
 

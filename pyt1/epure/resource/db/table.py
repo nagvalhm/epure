@@ -2,7 +2,6 @@ from __future__ import annotations
 from types import LambdaType, NoneType
 from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Callable, cast
 from ..savable import Savable
-from ..resource import UPDATE, CREATE
 import inspect
 from .pseudo_table import PresudoTable, PseudoDb
 from .select_query import SelectQuery
@@ -36,8 +35,7 @@ class Table(DbEntity):
         super().__init__(name, namespace, resource)
 
 
-
-    def serialize(self, node: Savable, method: str = '', **kwargs) -> str:
+    def _serialize(self, node: Savable) -> Dict[str, str]:
         res = {}
         for field_name, field_type in node.annotations.items():
             if isinstance(field_type, Constraint):
@@ -49,6 +47,7 @@ class Table(DbEntity):
                 continue
 
             field_val = getattr(node, field_name, None)
+            #working for db:
             if isinstance(field_val, Savable):
                 field_type = field_val.annotations['node_id']
                 field_val = field_val.save(True).node_id
@@ -56,17 +55,17 @@ class Table(DbEntity):
             field_val = self.db.cast_py_db_val(field_type, field_val)
 
             res[field_name] = field_val
-            
-        if method == UPDATE:
-            return self.serialize_update(res)
-        elif method == CREATE:
-            return self.serialize_create(res)
-        raise DbError(f'Couldnt serialize node for method {method}')
+        
+        return res
 
 
-    def create(self, node: Savable) -> object:
-        script = self.serialize(node, CREATE)
-        self.execute(script)
+
+    def create(self, node: Savable, asynch:bool=False) -> object:
+        script = self.serialize_for_create(node)
+        if asynch:
+            self.cache(script)
+        else:
+            self.execute(script)
 
 
 
@@ -94,14 +93,17 @@ class Table(DbEntity):
         return res
 
 
-    def update(self, node: Savable) -> object:
-        script = self.serialize(node, UPDATE)
-        self.execute(script)
+    def update(self, node: Savable, asynch:bool=False) -> object:
+        script = self.serialize_for_update(node)
+        if asynch:
+            self.cache(script)
+        else:
+            self.execute(script)
 
-    def cache(self, node: Savable, method: str = ''):
-        script = self.serialize(node, method)
+
+    def cache(self, script: str):        
         self.db.cache_queue.append(script)
-        return node
+
 
     def _set_header(self, header):
         if header == None:
@@ -113,33 +115,32 @@ class Table(DbEntity):
         self.header = header
         self.header.resource = self
        
-
-    def serialize_create(self, node: Dict[str, str]) -> str:
+    def serialize_for_create(self, node: Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def serialize_read(self, selector:SelectQuery) -> str:
+    def serialize_for_read(self, node: Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def serialize_update(self, node: Dict[str, str]) -> str:
+    def serialize_for_update(self, node: Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def serialize_delete(self, node: Dict[str, str]) -> str:
+    def serialize_for_delete(self, node: Savable, **kwargs) -> object:
         raise NotImplementedError
 
     
     def serialize_header(self, db: TableStorage=None, **kwargs) -> List[Dict[str, str]]:
         res: List[Dict[str, str]] = list()
 
-        if not db:
+        if db == None:
             db = self.db
 
-        if not db:
+        if db == None:
             raise EpureError('undefined db for header serialization')
         
         header = self.header
         for column_name in header:
             column = header[column_name]
-            # serialized = header.serialize(column, db=db)
+           
             serialized = {
                 "column_name": column.name,
                 "column_type": column.serialize_type(db) #db.get_db_type(column.column_type)

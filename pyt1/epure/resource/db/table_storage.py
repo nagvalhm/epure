@@ -51,7 +51,7 @@ class TableStorage(DbEntityResource):
         check_type('table', table, self.default_table_type)
         table = cast(Table, table)
 
-        script = self.serialize(table)
+        script = self.serialize_for_create(table)
         script = str(script)
         self.execute(script)
 

@@ -83,7 +83,7 @@ class GresDb(Db):
 
 
 
-    def serialize(self, table: Savable, method:str='', **kwargs) -> object:
+    def serialize_for_create(self, table: Savable, **kwargs) -> object:
         check_type('table', table, self.default_table_type)
         table = cast(Table, table)
 
@@ -188,14 +188,19 @@ class GresDb(Db):
         if val == None:
             return 'NULL'
         if py_type in (int, float, bool):
-            return str(val)
-        if py_type in (str, UUID, bytes, bytearray):
+            return str(val)            
+        if py_type in (str, UUID):
             res = f"'{str(val)}'"
+            return res
+        if py_type in (bytes, bytearray):            
+            val = val.decode()
+            val = val.replace("\x00","")
+            res = f"'{val}'"
             return res
         if py_type == complex:            
             return f"point({val.real}, {val.imag})"
 
-        json = self.json_serializer.serialize(val)
+        json = self.json_serializer.serialize_for_update(val)
         return f"'{json}'"
         
     py_db_types:Dict[type, str] = {

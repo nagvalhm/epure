@@ -11,8 +11,7 @@ class Resource{
     serialize(Savable resource)
     deserialize(str)
     
-    "execute"(str script='')
-    res_id
+    "execute"(str script='')    
     name
     namespace
 }
@@ -64,7 +63,8 @@ class JsonFile{
 }
 
 class Node{    
-    save(int level)    
+    save(int level)
+    node_id
 }
 
 class TableNode{
