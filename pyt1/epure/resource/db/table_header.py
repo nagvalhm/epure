@@ -97,6 +97,8 @@ class TableHeader(Savable):
         script = str(script)
         self.execute(script)
 
+        self.columns[column.name] = column
+
         return column
 
     def delete(self, column: Savable) -> Any:
@@ -109,20 +111,22 @@ class TableHeader(Savable):
         return column
 
 
-    def update(self, new_column: Savable) -> Any:
-        check_type('new_column', new_column, TableColumn)
+    def update(self, py_column: Savable) -> Any:
+        check_type('py_column', py_column, TableColumn)
 
-        new_column = cast(TableColumn, new_column)
-        old_column = self.columns[new_column.name]
+        py_column = cast(TableColumn, py_column)
+        db_column = self.columns[py_column.name]
 
-        if new_column in self:
-            return old_column
+        if py_column in self:
+            return db_column
 
-        script = self.serialize_for_update(new_column)
+        script = self.serialize_for_update(py_column)
         script = str(script)
         self.execute(script)
 
-        return old_column
+        self.columns[py_column.name] = py_column
+
+        return db_column
 
 
 

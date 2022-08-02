@@ -40,8 +40,8 @@ class ParentClass2(ParentClass1):
     frozenset0:frozenset
     bool0:bool
     bytes0:bytes
-    # int0:Uniq[str] = 'uniq_str'
-    int0:str = 'uniq_str'
+    int0:Uniq[str] = None
+    # int0:str = 'uniq_str'
 
 class ParentClass3(ParentClass2, ParentClass1):
     bytearray0:bytearray
@@ -129,8 +129,8 @@ class EpureClass3:
 class DefaultEpure(ParentClass3):
     str3:Default[str] = 'str3_value'
     int3:NotNull[int] = 6
-    # float3:Uniq[float]
-    float3:float
+    float3:Uniq[float]
+    # float3:float
     complex3:complex = None
     list3:list
     tuple3:tuple

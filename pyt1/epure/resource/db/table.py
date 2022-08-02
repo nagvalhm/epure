@@ -7,6 +7,7 @@ from .pseudo_table import PresudoTable, PseudoDb
 from .select_query import SelectQuery
 from .constraint import Constraint
 from ..resource import Resource
+from ..node.node import Node
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -60,13 +61,14 @@ class Table(DbEntity):
 
 
 
-    def create(self, node: Savable, asynch:bool=False) -> object:
+    def create(self, node: Node, asynch:bool=False) -> object:
+        node.node_id = self.generate_id()
         script = self.serialize_for_create(node)
         if asynch:
             self.cache(script)
         else:
             self.execute(script)
-
+        return node
 
 
     def read(self, selector: object = None, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
@@ -99,6 +101,7 @@ class Table(DbEntity):
             self.cache(script)
         else:
             self.execute(script)
+        return node
 
 
     def cache(self, script: str):        

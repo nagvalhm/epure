@@ -7,6 +7,7 @@ import types
 from .epure_classes import *
 import psycopg2
 import psycopg2.extras
+import random
 
 def get_epure(cls):
     epure = cls()
@@ -82,7 +83,7 @@ def regular_class3():
 @pytest.fixture
 def default_epure(regular_class3, epure_class3) -> Epure:
     epure = DefaultEpure()
-    epure.float3 = 2.7
+    epure.float3 = random.uniform(0.0, 1000000.0)
     epure.range0 = range(1, 10)
     epure.dict0 = {'field1': 'val1', 'field2': 3}
     epure.set0 = {'set_val1', 3, 13.4}
@@ -93,7 +94,7 @@ def default_epure(regular_class3, epure_class3) -> Epure:
     epure.regular_class = regular_class3
     epure.epure_class = epure_class3
 
-    id = epure.save().res_id
+    id = epure.save().node_id
     res = epure.table.read(id=id)
     assert res == epure
     return res

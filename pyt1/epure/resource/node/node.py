@@ -13,13 +13,13 @@ class Node(Savable):
             raise ResourceException('Unable save Savable, resource not found')
         resource = self.resource
         
-
+        
         if hasattr(self, 'node_id') and  self.node_id:
-            return resource.update(self, asynch)
-        else:            
-            self.node_id = resource.generate_id()
-            return resource.create(self, asynch)
-
+            res = resource.update(self, asynch)
+            return res
+        else:
+            res = resource.create(self, asynch)
+            return res
 
 
 class TableNode(Node):

@@ -58,29 +58,29 @@ class TableStorage(DbEntityResource):
         self._set_table(table)
         return table
 
-    def update_table(self, new_table: Savable) -> Any:
-        check_type('new_table', new_table, Table)
+    def update_table(self, py_table: Savable) -> Any:
+        check_type('py_table', py_table, Table)
 
-        new_table = cast(Table, new_table)        
-        old_table = self.tables[new_table.full_name]
+        py_table = cast(Table, py_table)        
+        db_table = self.tables[py_table.full_name]
 
-        new_header = new_table.header
-        old_header = old_table.header
+        py_header = py_table.header
+        db_header = db_table.header
 
-        diff = new_header - old_header
+        diff = py_header - db_header
 
         for column in diff:
-            if column.name in old_header:
-                old_header.update(column)
+            if column.name in db_header:
+                db_header.update(column)
             else:
-                old_header.create(column)
+                db_header.create(column)
         
-        diff = old_header - new_header
+        diff = db_header - py_header
         for column in diff:
-            old_header.delete(column)
+            db_header.delete(column)
 
-        self._set_table(new_table)
-        return new_table
+        self._set_table(py_table)
+        return py_table
 
 
     def deserialize_table(self, table_columns: object) -> Table:

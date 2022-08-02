@@ -1,5 +1,5 @@
 from ..db.db_entity import DbEntity
-from ..resource import UPDATE, SnakeCaseNamed
+from ..resource import SnakeCaseNamed
 
 class GresEntity(DbEntity, SnakeCaseNamed):
     pass
