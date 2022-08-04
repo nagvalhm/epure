@@ -99,10 +99,10 @@ def default_epure(regular_class3, epure_class3) -> Epure:
     assert res == epure
     return res
 
-def test_default_epure_table(default_epure):
-    assert default_epure.table.name == 'default_epure'
-    assert default_epure.db.name == 'GresDb'
-    assert table_exists('default_epure')
+# def test_default_epure_table(default_epure):
+#     assert default_epure.table.name == 'default_epure'
+#     assert default_epure.db.name == 'GresDb'
+#     assert table_exists('default_epure')
 
 # def test_default_epure_fields(default_epure):
 #     pass
