@@ -17,6 +17,7 @@ from ...helpers.type_helper import check_type
 from ..db.constraint import Constraint, Default, Foreign, Prim, NotNull, Uniq
 from ...errors import DbError
 from ..file.json_file import JsonFile
+from .jsonb_table import JsonbTable
 
 class GresDb(Db):
 
@@ -160,6 +161,13 @@ class GresDb(Db):
             table = self.deserialize_table(group)
             self._set_table(table)
 
+    def _get_table_type(self, table_columns:list):
+        if len(table_columns) > 2:
+            return self.default_table_type
+        jsonb_cols = list(filter(lambda c: c['data_type'] == 'jsonb', table_columns))
+        if len(jsonb_cols) != 1:
+            return self.default_table_type
+        return JsonbTable
 
     def serialize_constraint(self, constraint:Constraint) -> str:
         

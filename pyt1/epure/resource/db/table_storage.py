@@ -89,7 +89,7 @@ class TableStorage(DbEntityResource):
 
         full_name = self._deserialize_table_name(table_columns)
 
-        TableCls = self.default_table_type
+        TableCls = self._get_table_type(table_columns)
         table = TableCls(name=full_name.name, namespace=full_name.namespace, resource=self)
         
         
@@ -99,8 +99,10 @@ class TableStorage(DbEntityResource):
             table.header._set_column(column)
         
         return table
-
         
+    def _get_table_type(self, table_columns:list):
+        return self.default_table_type
+
     def _deserialize_table_name(self, table_columns:list) -> FullName:
         raise NotImplementedError
 
