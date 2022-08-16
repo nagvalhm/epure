@@ -1,14 +1,23 @@
 from __future__ import annotations
 from ast import Name, BinOp, Compare, Constant
+from msilib.schema import Error
+from turtle import left, right
 from typing import Dict, List
 from uuid import UUID, uuid4
-from functools import cmp_to_key
+import networkx as nx
+import matplotlib.pyplot as plt
+# from functools import cmp_to_key
 
 class Term:
     id:UUID
     terms_graph: Dict[UUID, Term]
     left_parent:Term
     right_parent:Term
+    val:str
+
+    def __init__(self) -> None:
+        self.id = str(uuid4())
+        self.terms_graph = {self.id: self}
 
     #primitive operators:
     def __and__(self, other): #&
@@ -56,9 +65,7 @@ class Term:
         return self.comparison(self, other, '>=')
 
 
-    def __init__(self) -> None:
-        self.id = str(uuid4())
-        self.terms_graph = {self.id: self}
+
 
 
 
@@ -77,11 +84,59 @@ class Term:
     def serialize(self) -> str:
         raise NotImplementedError
 
+    def _copy(self) -> Term:
+        res = Term()
+        if hasattr(self, 'id') and self.id:
+            res.id = self.id
+
+        res.val = ''
+        if isinstance(self, Binary):
+            res.val = self.operator
+        else:
+            res.val = self.serialize()
+        return res
+
+
+    def _restore_links(self, origin_terms, copies):
+        self_orig_index = self.index_of(origin_terms)
+        orig = origin_terms[self_orig_index]
+
+        if hasattr(orig, 'left') and orig.left:
+            left_copy_index = orig.left.index_of(copies)
+            left_copy = copies[left_copy_index]
+            self.left = left_copy
+        if hasattr(orig, 'right') and orig.right:
+            right_copy_index = orig.right.index_of(copies)
+            right_copy = copies[right_copy_index]
+            self.right = right_copy
+        if hasattr(orig, 'left_parent') and orig.left_parent:
+            left_parent_copy_index = orig.left_parent.index_of(copies)
+            left_parent_copy = copies[left_parent_copy_index]
+            self.left_parent = left_parent_copy
+        if hasattr(orig, 'right_parent') and orig.right_parent:
+            right_parent_copy_index = orig.right_parent.index_of(copies)
+            right_parent_copy = copies[right_parent_copy_index]
+            self.right_parent = right_parent_copy
+
+
+
+    def index_of(self, terms: List[Term]):
+        indexes = [index for (index, item) in enumerate(terms) if item.id == self.id]
+        if len(indexes) > 1:
+            raise Error('term occurred in a list more then once')
+        if len(indexes) == 0:
+            return -1
+        return indexes[0]
+
 class Binary(Term):
     left:Term
-    bottom_right:Term
+    right:Term
     operator:str
     parentheses = False
+
+    @property
+    def val(self):
+        return self.operator
 
     def __init__(self, left, right, operator='') -> None:
 
@@ -112,23 +167,81 @@ class Binary(Term):
         res = ''
         sorted_graph = self.sort_graph()
         for term in sorted_graph:
-            res += term.serialize()
+            res += " " + str(term.val)
         return res
 
     def sort_graph(self):
         res = []
         terms = list(self.terms_graph.values())
+
+        #copy terms
+        copies = []
+        for term in terms:
+            term_copy = term._copy()
+            copies.append(term_copy)
+
+        for copy in copies:
+            copy._restore_links(terms, copies)
+
+        
+        # log = self.show_graph_structure(copies)
+        
         # terms = sorted(terms, key=cmp_to_key(self.compare_terms))
         
-        while len(terms):
-            shifted = self.shift_graph(terms)
-            res.append(shifted)
+        while len(copies):
+            shifted = self.shift_graph(copies)
+            # log = self.show_graph_structure(copies)
+            term = self.terms_graph[shifted.id]
+            res.append(term)
+            del shifted
 
         return res
 
-    def shift_graph(self, terms: List[Term]):
 
-        iterat = self.get_tops(terms)[0]
+
+    def show_graph_structure(self, terms: List[Term]) -> str:
+        res = ''
+
+        nx_edges = []
+        for term in terms:
+            term_name = str(term.id)[0:4]
+            term_name = f'{term.val}_{term_name}'
+
+            # self_index = term.index_of(terms)
+
+            res += "{"
+            res += f'{term_name}, '
+
+            # res += f"{self_index}_id_{term.id},"
+            if hasattr(term, 'left') and term.left:
+                # left_index = term.left.index_of(terms)
+                # res += f"{self_index}_left_{left_index},"
+
+                left_name = str(term.left.id)[0:4]
+                left_name = f'{term.left.val}_{left_name}'
+                nx_edges.append((term_name, left_name))
+
+            if hasattr(term, 'right') and term.right:
+                # right_index = term.right.index_of(terms)
+                # res += f"{self_index}_right_{right_index},"
+
+                right_name = str(term.right.id)[0:4]
+                right_name = f'{term.right.val}_{right_name}'
+                nx_edges.append((term_name, right_name))
+
+            res += '}:'
+
+        nx_graph = nx.Graph()
+        nx_graph.add_edges_from(nx_edges)
+        plt.figure(str(uuid4()))
+        nx.draw_networkx(nx_graph, label='legend')
+        plt.show()
+
+        return res
+
+    def shift_graph(self, terms: List[Term]) -> Term:
+
+        iterat = self.get_top(terms)
 
         while True:
             if hasattr(iterat, 'left_parent') and iterat.left_parent:
@@ -136,40 +249,38 @@ class Binary(Term):
                 continue
             elif hasattr(iterat, 'left') and iterat.left:
                 iterat = iterat.left
+                continue
             else:
                 break
 
         if hasattr(iterat, 'right_parent') and iterat.right_parent\
             and hasattr(iterat, 'right') and iterat.right:
             iterat.right_parent.left = iterat.right
-            iterat.right.left_parent = iterat.right_parent
-            return iterat
-
-        if hasattr(iterat, 'right_parent') and iterat.right_parent:
-            iterat.right_parent.left = None
-            return iterat
-
-        if hasattr(iterat, 'right') and iterat.right:
+            iterat.right.right_parent = iterat.right_parent
             iterat.right.left_parent = None
-            return iterat
 
+        elif hasattr(iterat, 'right_parent') and iterat.right_parent:
+            iterat.right_parent.left = None            
 
-    def get_tops(self, terms: List[Term]):
-        not_tops = set()
-        for term in terms:
-            if not isinstance(term, Binary):
+        elif hasattr(iterat, 'right') and iterat.right:
+            iterat.right.left_parent = None            
+
+        del terms[iterat.index_of(terms)]
+        return iterat
+
+    def get_top(self, terms: List[Term]) -> Term:
+        top = terms[0]
+        while True:
+            if hasattr(top, 'left_parent') and top.left_parent:
+                top = top.left_parent
                 continue
-            not_tops.add(term.left)
-            not_tops.add(term.right)
-        tops = []
-        for term in terms:
-            if term not in not_tops:
-                tops.append(term)
-        return tops
+            elif hasattr(top, 'right_parent') and top.right_parent:
+                top = top.right_parent
+                continue
+            else:
+                break
+        return top
         
-
-    # def compare_terms(self, x, y):
-    #     pass
 
     def merge_graphs(self):
         terms_graph = {}

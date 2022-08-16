@@ -1,6 +1,17 @@
 from ..epure.parser.querying_proxy import DbProxy
 from .epure_classes import db as real_db
+import networkx as nx
+import matplotlib.pyplot as plt
 
+
+# def test_show_graph():
+#     G = nx.Graph()
+#     G.add_edges_from([('hello' ,'but') , (2 ,3) , (1 ,3) , (1 ,4), (1, 5) ])
+#     # pos = { 1: (20, 30), 2: (40, 30), 3: (30, 10),4: (0, 40)} 
+
+#     # nx.draw_networkx(G, pos=pos)
+#     nx.draw_networkx(G)
+#     plt.show()
 
 def test_simple_queries():
     db = DbProxy(real_db)
@@ -10,7 +21,7 @@ def test_simple_queries():
 
     query = x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
 
-    str(query) == ''
+    str_query = str(query)
 
     query = x.f1 == y.f2 | x.f3 == y.f4 & 5 == x.f5 | (x.f6 == y.f7)
     assert str(query) == 'str0 = test_field1 OR int0 = test_field2 AND 5 = float0 OR (complex0 = test_field3)'

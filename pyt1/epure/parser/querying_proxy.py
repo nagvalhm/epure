@@ -11,6 +11,10 @@ class QueryingProxy(Term):
     if TYPE_CHECKING:
         __db__:Db
 
+    @property
+    def val(self):
+        return self.serialize()
+
 
 class ColumnProxy(QueryingProxy, Name):
     if TYPE_CHECKING:
@@ -22,6 +26,7 @@ class ColumnProxy(QueryingProxy, Name):
         self.__table__ = table
         self.__column__ = column
         super().__init__()
+
 
     def serialize(self) -> str:
         return f'{self.__column__.full_name}'

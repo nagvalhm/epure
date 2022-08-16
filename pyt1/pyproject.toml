@@ -19,6 +19,8 @@ astor = "^0.8.1"
 pyright = "1.1.257"
 pytest = "7.1.2"
 pre-commit = "^2.19.0"
+networkx = "^2.8.5"
+matplotlib = "^3.5.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
