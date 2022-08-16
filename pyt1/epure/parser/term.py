@@ -14,6 +14,7 @@ class Term:
     left_parent:Term
     right_parent:Term
     val:str
+    debug = False
 
     def __init__(self) -> None:
         self.id = str(uuid4())
@@ -183,14 +184,15 @@ class Binary(Term):
         for copy in copies:
             copy._restore_links(terms, copies)
 
-        
-        # log = self.show_graph_structure(copies)
+        if self.debug:
+            self.show_graph_structure(copies)
         
         # terms = sorted(terms, key=cmp_to_key(self.compare_terms))
         
         while len(copies):
             shifted = self.shift_graph(copies)
-            # log = self.show_graph_structure(copies)
+            if self.debug:
+                self.show_graph_structure(copies)
             term = self.terms_graph[shifted.id]
             res.append(term)
             del shifted
@@ -199,8 +201,8 @@ class Binary(Term):
 
 
 
-    def show_graph_structure(self, terms: List[Term]) -> str:
-        res = ''
+    def show_graph_structure(self, terms: List[Term]):
+        # res = ''
 
         nx_edges = []
         for term in terms:
@@ -209,8 +211,8 @@ class Binary(Term):
 
             # self_index = term.index_of(terms)
 
-            res += "{"
-            res += f'{term_name}, '
+            # res += "{"
+            # res += f'{term_name}, '
 
             # res += f"{self_index}_id_{term.id},"
             if hasattr(term, 'left') and term.left:
@@ -229,7 +231,7 @@ class Binary(Term):
                 right_name = f'{term.right.val}_{right_name}'
                 nx_edges.append((term_name, right_name))
 
-            res += '}:'
+            # res += '}:'
 
         nx_graph = nx.Graph()
         nx_graph.add_edges_from(nx_edges)
@@ -237,7 +239,7 @@ class Binary(Term):
         nx.draw_networkx(nx_graph, label='legend')
         plt.show()
 
-        return res
+        # return res
 
     def shift_graph(self, terms: List[Term]) -> Term:
 

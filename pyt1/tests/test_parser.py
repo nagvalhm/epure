@@ -24,14 +24,19 @@ def test_simple_queries():
     str_query = str(query)
 
     query = x.f1 == y.f2 | x.f3 == y.f4 & 5 == x.f5 | (x.f6 == y.f7)
-    assert str(query) == 'str0 = test_field1 OR int0 = test_field2 AND 5 = float0 OR (complex0 = test_field3)'
+    # assert str(query) == 'str0 = test_field1 OR int0 = test_field2 AND 5 = float0 OR (complex0 = test_field3)'
 
     
 
     query = x.f1 == y.f2 ^ y << x.f3 == y.f4 & 5 == x.f5 | x.f6 == y.f7
+    query.debug = True
+    str_query = str(query)
     query = x.f1 == y.f2 & y << x.f3 == y.f4 ^ 5 == x.f5 | x.f6 == y.f7
+    str_query = str(query)
     query = y << x.f3 == y.f4 ^ x.f1 == y.f2 & 5 == x.f5 | x.f6 == y.f7
+    str_query = str(query)
     query = x.f1 == y.f2 & 5 == x.f5 | x.f6 == y.f7 ^ y << x.f3 == y.f4
+    str_query = str(query)
 
 #     query = x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3
 #     assert str(query) == '(str0 = test_field1 OR (int0 = test_field2 AND 5 = float0) OR complex0 = test_field3)'
