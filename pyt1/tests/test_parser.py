@@ -1,7 +1,8 @@
-from ..epure.parser.querying_proxy import DbProxy
+from ..epure.parser.column_proxy import DbProxy
 from .epure_classes import db as real_db
 import networkx as nx
 import matplotlib.pyplot as plt
+from ..epure.parser.term_debugger import MatplotTermDebugger
 
 
 # def test_show_graph():
@@ -18,28 +19,38 @@ def test_simple_queries():
     x = db['oraculs_domain.competitions']
     y = db['oraculs_domain.oraculs']
 
-
+    debugger = MatplotTermDebugger()
     query = x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
-
+    # query.debugger = debugger
     str_query = str(query)
+    assert str_query == 'f1 == f2 or f3 == f4 and 4 == f5 or f6 == f7'
 
     query = x.f1 == y.f2 | x.f3 == y.f4 & 5 == x.f5 | (x.f6 == y.f7)
     # assert str(query) == 'str0 = test_field1 OR int0 = test_field2 AND 5 = float0 OR (complex0 = test_field3)'
-
+    str_query = str(query)
+    assert str_query == 'f1 == f2 or f3 == f4 and 5 == f5 or f6 == f7'
     
-
     query = x.f1 == y.f2 ^ y << x.f3 == y.f4 & 5 == x.f5 | x.f6 == y.f7
-    query.debug = True
+    # query.debugger = debugger
     str_query = str(query)
+    assert str_query == 'f1 == f2 ^ oraculs_domain.oraculs << f3 == f4 and 5 == f5 or f6 == f7'
+
     query = x.f1 == y.f2 & y << x.f3 == y.f4 ^ 5 == x.f5 | x.f6 == y.f7
+    # query.debugger = debugger
     str_query = str(query)
+    assert str_query == 'f1 == f2 and oraculs_domain.oraculs << f3 == f4 ^ 5 == f5 or f6 == f7'
+
     query = y << x.f3 == y.f4 ^ x.f1 == y.f2 & 5 == x.f5 | x.f6 == y.f7
     str_query = str(query)
+    assert str_query == 'oraculs_domain.oraculs << f3 == f4 ^ f1 == f2 and 5 == f5 or f6 == f7'
+
     query = x.f1 == y.f2 & 5 == x.f5 | x.f6 == y.f7 ^ y << x.f3 == y.f4
     str_query = str(query)
+    assert str_query == 'f1 == f2 and 5 == f5 or f6 == f7 ^ oraculs_domain.oraculs << f3 == f4'
 
-#     query = x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3
-#     assert str(query) == '(str0 = test_field1 OR (int0 = test_field2 AND 5 = float0) OR complex0 = test_field3)'
+    query = x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3
+    str_query = str(query)
+    assert str_query == 'str0 == test_field1 or int0 == test_field2 and 5 == float0 or complex0 == test_field3'
     
 #     query = (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
 #     assert str(query) == '((str0 = test_field1) OR int0 = test_field2 AND 5 = float0 OR complex0 = test_field3)'

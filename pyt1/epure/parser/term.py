@@ -2,11 +2,11 @@ from __future__ import annotations
 from ast import Name, BinOp, Compare, Constant
 from msilib.schema import Error
 from turtle import left, right
-from typing import Dict, List
+from typing import Dict, List, TYPE_CHECKING
 from uuid import UUID, uuid4
-import networkx as nx
-import matplotlib.pyplot as plt
-# from functools import cmp_to_key
+if TYPE_CHECKING:
+    from ..resource.db.db import Db
+
 
 class Term:
     id:UUID
@@ -14,7 +14,6 @@ class Term:
     left_parent:Term
     right_parent:Term
     val:str
-    debug = False
 
     def __init__(self) -> None:
         self.id = str(uuid4())
@@ -85,7 +84,7 @@ class Term:
     def serialize(self) -> str:
         raise NotImplementedError
 
-    def _copy(self) -> Term:
+    def _simple_copy(self) -> Term:
         res = Term()
         if hasattr(self, 'id') and self.id:
             res.id = self.id
@@ -104,20 +103,24 @@ class Term:
 
         if hasattr(orig, 'left') and orig.left:
             left_copy_index = orig.left.index_of(copies)
-            left_copy = copies[left_copy_index]
-            self.left = left_copy
+            if left_copy_index != None:
+                left_copy = copies[left_copy_index]
+                self.left = left_copy
         if hasattr(orig, 'right') and orig.right:
             right_copy_index = orig.right.index_of(copies)
-            right_copy = copies[right_copy_index]
-            self.right = right_copy
+            if right_copy_index != None:
+                right_copy = copies[right_copy_index]
+                self.right = right_copy
         if hasattr(orig, 'left_parent') and orig.left_parent:
             left_parent_copy_index = orig.left_parent.index_of(copies)
-            left_parent_copy = copies[left_parent_copy_index]
-            self.left_parent = left_parent_copy
+            if left_parent_copy_index != None:
+                left_parent_copy = copies[left_parent_copy_index]
+                self.left_parent = left_parent_copy
         if hasattr(orig, 'right_parent') and orig.right_parent:
             right_parent_copy_index = orig.right_parent.index_of(copies)
-            right_parent_copy = copies[right_parent_copy_index]
-            self.right_parent = right_parent_copy
+            if right_parent_copy_index != None:
+                right_parent_copy = copies[right_parent_copy_index]
+                self.right_parent = right_parent_copy
 
 
 
@@ -126,7 +129,7 @@ class Term:
         if len(indexes) > 1:
             raise Error('term occurred in a list more then once')
         if len(indexes) == 0:
-            return -1
+            return None
         return indexes[0]
 
 class Binary(Term):
@@ -134,6 +137,8 @@ class Binary(Term):
     right:Term
     operator:str
     parentheses = False
+    debugger = None
+
 
     @property
     def val(self):
@@ -146,8 +151,13 @@ class Binary(Term):
 
         if not isinstance(left, Term):
             left = Primitive(left)
+        elif isinstance(left, QueryingProxy) and not left.is_copy:
+            left = left._copy()
+
         if not isinstance(right, Term):
             right = Primitive(right)
+        elif isinstance(right, QueryingProxy) and not right.is_copy:
+            right = right._copy()
 
         left.right_parent = self
         right.left_parent = self
@@ -155,6 +165,7 @@ class Binary(Term):
         self.left = left
         self.right = right
         self.operator = operator
+        self.positions = {}
         super().__init__()
 
     def serialize(self) -> str:        
@@ -168,8 +179,8 @@ class Binary(Term):
         res = ''
         sorted_graph = self.sort_graph()
         for term in sorted_graph:
-            res += " " + str(term.val)
-        return res
+            res += str(term.val) + " "
+        return res[:-1]
 
     def sort_graph(self):
         res = []
@@ -178,21 +189,21 @@ class Binary(Term):
         #copy terms
         copies = []
         for term in terms:
-            term_copy = term._copy()
+            term_copy = term._simple_copy()
             copies.append(term_copy)
 
         for copy in copies:
             copy._restore_links(terms, copies)
 
-        if self.debug:
-            self.show_graph_structure(copies)
+        if self.debugger:
+            self.debugger.show(copies)
         
         # terms = sorted(terms, key=cmp_to_key(self.compare_terms))
         
         while len(copies):
             shifted = self.shift_graph(copies)
-            if self.debug:
-                self.show_graph_structure(copies)
+            if self.debugger:
+                self.debugger.show(copies)
             term = self.terms_graph[shifted.id]
             res.append(term)
             del shifted
@@ -200,46 +211,6 @@ class Binary(Term):
         return res
 
 
-
-    def show_graph_structure(self, terms: List[Term]):
-        # res = ''
-
-        nx_edges = []
-        for term in terms:
-            term_name = str(term.id)[0:4]
-            term_name = f'{term.val}_{term_name}'
-
-            # self_index = term.index_of(terms)
-
-            # res += "{"
-            # res += f'{term_name}, '
-
-            # res += f"{self_index}_id_{term.id},"
-            if hasattr(term, 'left') and term.left:
-                # left_index = term.left.index_of(terms)
-                # res += f"{self_index}_left_{left_index},"
-
-                left_name = str(term.left.id)[0:4]
-                left_name = f'{term.left.val}_{left_name}'
-                nx_edges.append((term_name, left_name))
-
-            if hasattr(term, 'right') and term.right:
-                # right_index = term.right.index_of(terms)
-                # res += f"{self_index}_right_{right_index},"
-
-                right_name = str(term.right.id)[0:4]
-                right_name = f'{term.right.val}_{right_name}'
-                nx_edges.append((term_name, right_name))
-
-            # res += '}:'
-
-        nx_graph = nx.Graph()
-        nx_graph.add_edges_from(nx_edges)
-        plt.figure(str(uuid4()))
-        nx.draw_networkx(nx_graph, label='legend')
-        plt.show()
-
-        # return res
 
     def shift_graph(self, terms: List[Term]) -> Term:
 
@@ -267,7 +238,10 @@ class Binary(Term):
         elif hasattr(iterat, 'right') and iterat.right:
             iterat.right.left_parent = None            
 
-        del terms[iterat.index_of(terms)]
+        iterat_index = iterat.index_of(terms)
+        if iterat_index == None:
+            a=1
+        del terms[iterat_index]
         return iterat
 
     def get_top(self, terms: List[Term]) -> Term:
@@ -311,3 +285,16 @@ class Primitive(Term, Constant):
 
     def serialize(self) -> str:
         return str(self.val)
+
+
+class QueryingProxy(Term):
+    if TYPE_CHECKING:
+        __db__:Db
+    is_copy = False
+    
+    @property
+    def val(self):
+        return self.serialize()
+
+    def _copy(self):
+        raise NotImplementedError

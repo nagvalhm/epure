@@ -4,16 +4,9 @@ if TYPE_CHECKING:
     from ..resource.db.table import Table
     from ..resource.db.db import Db
 from ..errors import DbError
-from .term import Term
+from .term import QueryingProxy
 from ast import Name
 
-class QueryingProxy(Term):
-    if TYPE_CHECKING:
-        __db__:Db
-
-    @property
-    def val(self):
-        return self.serialize()
 
 
 class ColumnProxy(QueryingProxy, Name):
@@ -34,6 +27,11 @@ class ColumnProxy(QueryingProxy, Name):
     def __str__(self) -> str:
         return f'{self.__column__.full_name}'
 
+    def _copy(self):
+        res = ColumnProxy(self.__db__, self.__table__, self.__column__)
+        res.is_copy = True
+        return res
+
 
 class TableProxy(QueryingProxy, Name):
     if TYPE_CHECKING:
@@ -45,6 +43,8 @@ class TableProxy(QueryingProxy, Name):
         super().__init__()
 
     def __getattr__(self, attr_name: str) -> Any:
+        if self.is_copy:
+            raise AttributeError
         if attr_name not in self.__table__.header:
             raise DbError(f'column {attr_name} not in header of table {self.__table__.full_name}')
         column = self.__table__.header[attr_name]
@@ -53,6 +53,11 @@ class TableProxy(QueryingProxy, Name):
 
     def serialize(self) -> str:
         return f'{self.__table__.full_name}'
+
+    def _copy(self):
+        res = TableProxy(self.__db__, self.__table__)
+        res.is_copy = True
+        return res
 
 class DbProxy(QueryingProxy):
 
