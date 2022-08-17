@@ -1,6 +1,9 @@
 class EpureError(Exception):
     pass
 
+class EpureParseError(Exception):
+    pass
+
 class DbError(Exception):
     pass
 

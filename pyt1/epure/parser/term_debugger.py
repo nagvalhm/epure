@@ -1,10 +1,12 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from uuid import UUID, uuid4
-from pyvis.network import Network
 
 class TermDebugger:
-    pass
+    each_step = False
+
+    def __init__(self, each_step=False) -> None:
+        self.each_step = each_step
 
 class MatplotTermDebugger(TermDebugger):
     debug_tree_step = 10
@@ -21,59 +23,36 @@ class MatplotTermDebugger(TermDebugger):
         for term in terms:
             term_name = str(term.id)[0:4]
             term_name = f'{term.val}_{term_name}'
+            if term.parentheses:
+                term_name = term_name + '_()'
             term.name = term_name
 
-            # term_position = None
-            # if term_name in self.positions:
-            #     term_position = self.positions[term_name]
 
             if hasattr(term, 'left') and term.left:
                 left_name = str(term.left.id)[0:4]
                 left_name = f'{term.left.val}_{left_name}'
+                if term.left.parentheses:
+                    left_name = left_name + '_()'
                 nx_edges.append((term_name, left_name))
-
-                # if left_name in self.positions:                    
-                #     if term_name not in self.positions:
-                #         left_position = self.positions[left_name]
-                #         term_position = (left_position[0] + 1, left_position[1] + 1)
-                #         self.positions[term_name] = term_position
-                # elif term_position:
-                #     left_position = (term_position[0] - 1, term_position[1] - 1)
-                #     self.positions[left_name] = left_position
 
 
             if hasattr(term, 'right') and term.right:
                 right_name = str(term.right.id)[0:4]
                 right_name = f'{term.right.val}_{right_name}'
+                if term.right.parentheses:
+                    right_name = right_name + '_()'
                 nx_edges.append((term_name, right_name))
 
-                # if right_name in self.positions:                    
-                #     if term_name not in self.positions:
-                #         right_position = self.positions[right_name]
-                #         term_position = (right_position[0] + 1, right_position[1] - 1)
-                #         self.positions[term_name] = term_position
-                # elif term_position:
-                #     right_position = (term_position[0] - 1, term_position[1] + 1)
-                #     self.positions[left_name] = right_position
-
-            # if not term_position:
-            #     right_up = self._get_right_up_position()
-            #     term_position = (right_up[0], right_up[1] + self.debug_tree_step)
-            #     self.positions[term_name] = term_position
 
         positions = self.get_positions(terms)
 
         nx_graph = nx.DiGraph()
         nx_graph.add_edges_from(nx_edges)
-
-        # net = Network()
-        # net.from_nx(nx_graph)
-        # net.show('tree.html')
-        # net.show(str(uuid4())+'.html')
         
         plt.figure(str(uuid4()))
         nx.draw_networkx(nx_graph, pos=positions)
         plt.show()
+
 
     def get_positions(self, terms):
         tops = self.get_tops(terms)

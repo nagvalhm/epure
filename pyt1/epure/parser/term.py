@@ -1,5 +1,4 @@
 from __future__ import annotations
-from ast import Name, BinOp, Compare, Constant
 from msilib.schema import Error
 from turtle import left, right
 from typing import Dict, List, TYPE_CHECKING
@@ -11,8 +10,8 @@ if TYPE_CHECKING:
 class Term:
     id:UUID
     terms_graph: Dict[UUID, Term]
-    left_parent:Term
-    right_parent:Term
+    left_parent:Term = None
+    right_parent:Term = None
     val:str
 
     def __init__(self) -> None:
@@ -66,22 +65,23 @@ class Term:
 
 
 
-
-
-
     def operation(self, left:Term, right:Term, operator:str):
+        from .binary import BinOperation
         res = BinOperation(left, right, operator)
         res.merge_graphs()
         return res
 
 
     def comparison(self, left:Term, right:Term, operator:str):
+        from .binary import Comparison
         res = Comparison(left, right, operator)
         res.merge_graphs()
         return res
 
+    def __str__(self):
+        return self.serialize(True)
 
-    def serialize(self) -> str:
+    def serialize(self, for_debug=False) -> str:
         raise NotImplementedError
 
     def _simple_copy(self) -> Term:
@@ -89,11 +89,12 @@ class Term:
         if hasattr(self, 'id') and self.id:
             res.id = self.id
 
-        res.val = ''
-        if isinstance(self, Binary):
-            res.val = self.operator
+        res.val = self.serialize(True)
+
+        if hasattr(self, 'parentheses'):
+            res.parentheses = self.parentheses
         else:
-            res.val = self.serialize()
+            res.parentheses = False
         return res
 
 
@@ -132,169 +133,12 @@ class Term:
             return None
         return indexes[0]
 
-class Binary(Term):
-    left:Term
-    right:Term
-    operator:str
-    parentheses = False
-    debugger = None
 
+    def go_until_hasattr(self, attr_name) -> Term:
+        next = None
+        if hasattr(self, attr_name):
+            next = getattr(self, attr_name)
 
-    @property
-    def val(self):
-        return self.operator
-
-    def __init__(self, left, right, operator='') -> None:
-
-        if not (isinstance(left, Term) or isinstance(right, Term)):
-            raise NotImplementedError('please fuck urself')
-
-        if not isinstance(left, Term):
-            left = Primitive(left)
-        elif isinstance(left, QueryingProxy) and not left.is_copy:
-            left = left._copy()
-
-        if not isinstance(right, Term):
-            right = Primitive(right)
-        elif isinstance(right, QueryingProxy) and not right.is_copy:
-            right = right._copy()
-
-        left.right_parent = self
-        right.left_parent = self
-
-        self.left = left
-        self.right = right
-        self.operator = operator
-        self.positions = {}
-        super().__init__()
-
-    def serialize(self) -> str:        
-        # res = f'{self.left.serialize()} {self.operator} {self.right.serialize()}'
-        # if self.parentheses:
-        #     return f'({res})'
-        # return res
-        return self.operator
-
-    def __str__(self):
-        res = ''
-        sorted_graph = self.sort_graph()
-        for term in sorted_graph:
-            res += str(term.val) + " "
-        return res[:-1]
-
-    def sort_graph(self):
-        res = []
-        terms = list(self.terms_graph.values())
-
-        #copy terms
-        copies = []
-        for term in terms:
-            term_copy = term._simple_copy()
-            copies.append(term_copy)
-
-        for copy in copies:
-            copy._restore_links(terms, copies)
-
-        if self.debugger:
-            self.debugger.show(copies)
-        
-        # terms = sorted(terms, key=cmp_to_key(self.compare_terms))
-        
-        while len(copies):
-            shifted = self.shift_graph(copies)
-            if self.debugger:
-                self.debugger.show(copies)
-            term = self.terms_graph[shifted.id]
-            res.append(term)
-            del shifted
-
-        return res
-
-
-
-    def shift_graph(self, terms: List[Term]) -> Term:
-
-        iterat = self.get_top(terms)
-
-        while True:
-            if hasattr(iterat, 'left_parent') and iterat.left_parent:
-                iterat = iterat.left_parent
-                continue
-            elif hasattr(iterat, 'left') and iterat.left:
-                iterat = iterat.left
-                continue
-            else:
-                break
-
-        if hasattr(iterat, 'right_parent') and iterat.right_parent\
-            and hasattr(iterat, 'right') and iterat.right:
-            iterat.right_parent.left = iterat.right
-            iterat.right.right_parent = iterat.right_parent
-            iterat.right.left_parent = None
-
-        elif hasattr(iterat, 'right_parent') and iterat.right_parent:
-            iterat.right_parent.left = None            
-
-        elif hasattr(iterat, 'right') and iterat.right:
-            iterat.right.left_parent = None            
-
-        iterat_index = iterat.index_of(terms)
-        if iterat_index == None:
-            a=1
-        del terms[iterat_index]
-        return iterat
-
-    def get_top(self, terms: List[Term]) -> Term:
-        top = terms[0]
-        while True:
-            if hasattr(top, 'left_parent') and top.left_parent:
-                top = top.left_parent
-                continue
-            elif hasattr(top, 'right_parent') and top.right_parent:
-                top = top.right_parent
-                continue
-            else:
-                break
-        return top
-        
-
-    def merge_graphs(self):
-        terms_graph = {}
-        terms_graph.update(self.terms_graph)        
-        terms_graph.update(self.left.terms_graph)        
-        terms_graph.update(self.right.terms_graph)
-
-        
-        self.left.terms_graph = terms_graph        
-        self.right.terms_graph = terms_graph
-        self.terms_graph = terms_graph
-
-        return terms_graph
-
-class BinOperation(Binary, BinOp):
-    pass
-
-class Comparison(Binary, Compare):
-    pass
-
-class Primitive(Term, Constant):
-    val = None
-    def __init__(self, val) -> None:
-        self.val = val
-        super().__init__()
-
-    def serialize(self) -> str:
-        return str(self.val)
-
-
-class QueryingProxy(Term):
-    if TYPE_CHECKING:
-        __db__:Db
-    is_copy = False
-    
-    @property
-    def val(self):
-        return self.serialize()
-
-    def _copy(self):
-        raise NotImplementedError
+        if not next:
+            return self
+        return next.go_until_hasattr(attr_name)

@@ -1,0 +1,29 @@
+class Term{}
+
+class Binary{}
+
+class BinOperation{}
+
+class Comparison{}
+
+
+
+class Leaf{}
+
+class Primitive{}
+
+class QueryingProxy{}
+
+class ColumnProxy{}
+
+class TableProxy{}
+
+
+Term <|-- Binary
+    Binary <|-- BinOperation
+    Binary <|-- Comparison
+Term <|-- Leaf
+    Leaf <|-- Primitive
+    Leaf <|-- QueryingProxy
+        QueryingProxy <|-- ColumnProxy
+        QueryingProxy <|-- TableProxy
