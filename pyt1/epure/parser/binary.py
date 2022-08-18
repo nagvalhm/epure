@@ -1,3 +1,4 @@
+from ..errors import EpureParseError
 from .term import Term
 from ast import BinOp, Compare
 from .leaf import Primitive, QueryingProxy
@@ -15,7 +16,7 @@ class Binary(Term):
     def __init__(self, left, right, operator='') -> None:
 
         if not (isinstance(left, Term) or isinstance(right, Term)):
-            raise NotImplementedError('please fuck urself')
+            raise EpureParseError('expression is incorrect')
 
         if not isinstance(left, Term):
             left = Primitive(left)
@@ -108,46 +109,70 @@ class Binary(Term):
         del terms[left_leaf_index]
         return left_leaf
 
-    def get_last_left_term(self, terms: List[Term]):
+    def get_last_left_term(self, terms: List[Term]=None):
+        if terms == None:
+            terms = list(self.terms_graph.values())
         iterat = self.get_top(terms)
 
         while True:
-            if hasattr(iterat, 'left_parent') and iterat.left_parent:
+            if hasattr(iterat, 'left_parent') and iterat.left_parent\
+                 and iterat.left_parent.index_of(terms) != None:
+
+                iterat = iterat.left_parent                
+            elif hasattr(iterat, 'left') and iterat.left\
+                and iterat.left.index_of(terms) != None:
+
+                iterat = iterat.left                
+            else:
+                break
+
+            # if terms != None and next and next.index_of(terms) == None:
+            #     break
+            # else:
+            #     iterat = next
+        return iterat
+
+    def get_last_right_term(self, terms: List[Term] = None):        
+        if terms == None:
+            terms = list(self.terms_graph.values())
+        iterat = self.get_top(terms)
+
+        while True:
+            if hasattr(iterat, 'right_parent') and iterat.right_parent\
+                and iterat.right_parent.index_of(terms) != None:
+
+                iterat = iterat.right_parent                
+            elif hasattr(iterat, 'right') and iterat.right\
+                and iterat.right.index_of(terms) != None:
+
+                iterat = iterat.right                
+            else:
+                break
+
+            # if terms != None and next and next.index_of(terms) == None:
+            #     break
+            # else:
+            #     iterat = next
+        return iterat
+
+    def get_top(self, terms: List[Term]=None) -> Term:
+        if terms == None:
+            terms = list(self.terms_graph.values())
+        iterat = terms[0]        
+        while True:
+            if hasattr(iterat, 'left_parent') and iterat.left_parent\
+                and iterat.left_parent.index_of(terms) != None:
+
                 iterat = iterat.left_parent
-                continue
-            elif hasattr(iterat, 'left') and iterat.left:
-                iterat = iterat.left
-                continue
-            else:
-                break
-        return iterat
+                
+            elif hasattr(iterat, 'right_parent') and iterat.right_parent\
+                and iterat.right_parent.index_of(terms) != None:
 
-    def get_last_right_term(self, terms: List[Term]):
-        iterat = self.get_top(terms)
-
-        while True:
-            if hasattr(iterat, 'right_parent') and iterat.right_parent:
                 iterat = iterat.right_parent
-                continue
-            elif hasattr(iterat, 'right') and iterat.right:
-                iterat = iterat.right
-                continue
+                
             else:
                 break
         return iterat
-
-    def get_top(self, terms: List[Term]) -> Term:
-        top = terms[0]
-        while True:
-            if hasattr(top, 'left_parent') and top.left_parent:
-                top = top.left_parent
-                continue
-            elif hasattr(top, 'right_parent') and top.right_parent:
-                top = top.right_parent
-                continue
-            else:
-                break
-        return top
         
 
     def merge_graphs(self):
@@ -165,18 +190,39 @@ class Binary(Term):
 
     def set_parentheses(self):
         self.parentheses = True
-        terms = list(self.terms_graph.values())
-        left_leaf = self.get_last_left_term(terms)
+        left_leaf = self.left
+        if isinstance(self.left, Binary):
+            left_leaf = self.left.get_last_left_term()
         left_leaf.left_parentheses_count += 1
-        right_leaf = self.get_last_right_term(terms)
+
+        right_leaf = self.right
+        if isinstance(self.right, Binary):
+            right_leaf = self.right.get_last_right_term()
         right_leaf.right_parentheses_count += 1
 
 
 class BinOperation(Binary, BinOp):
     def __init__(self, left, right, operator='') -> None:
+        from .leaf import TableProxy
+
         super().__init__(left, right, operator)
+
+        left = self.left
+        right = self.right
+        
+
         if isinstance(left, Comparison) and isinstance(right, Comparison):
             self.set_parentheses()
+        elif isinstance(left, Comparison) and isinstance(right, BinOperation)\
+            and right.is_correct():
+            self.set_parentheses()
+        elif isinstance(left, BinOperation) and isinstance(right, Comparison)\
+            and left.is_correct():
+            self.set_parentheses()
+        # if isinstance(left, TableProxy):# and isinstance(right, Comparison):
+        #     self.set_parentheses()
+
+        
 
 
     def is_correct(self):
@@ -192,23 +238,30 @@ class BinOperation(Binary, BinOp):
         return right_open
 
     def left_closed(self):
-        terms = list(self.terms_graph.values())
-        left_leaf = self.get_last_left_term(terms)
-        left_closed = isinstance(left_leaf.right_parent, Comparison)
+        from .leaf import TableProxy
+        left_leaf = self.get_last_left_term()
+        left_closed = isinstance(left_leaf, TableProxy) or isinstance(left_leaf.right_parent, Comparison)
         return left_closed
 
     def right_closed(self):
-        terms = list(self.terms_graph.values())
-        right_leaf = self.get_last_right_term(terms)
-        right_closed = isinstance(right_leaf.left_parent, Comparison)
+        from .leaf import TableProxy
+        right_leaf = self.get_last_right_term()
+        right_closed = isinstance(right_leaf, TableProxy) or isinstance(right_leaf.left_parent, Comparison)
         return right_closed
 
 class Comparison(Binary, Compare):
     def __init__(self, left, right, operator='') -> None:
         from .leaf import ColumnProxy
         from .leaf import Primitive
+        from .leaf import Leaf
 
         super().__init__(left, right, operator)
+
+        left = self.left
+        right = self.right
+        self.set_join_parentheses(left, right)
+        
+        
 
         if isinstance(left, ColumnProxy) and isinstance(right, ColumnProxy):
             self.set_parentheses()
@@ -219,11 +272,38 @@ class Comparison(Binary, Compare):
         elif isinstance(left, Primitive) and isinstance(right, Primitive):
             self.set_parentheses()
 
-        if isinstance(left, BinOperation) and isinstance(right, BinOperation):
+        elif isinstance(left, BinOperation) and isinstance(right, Leaf):            
+            # if left.is_correct():
+            #     self.set_parentheses()
+            if left.right_open() and left.left_closed():
+                self.set_parentheses()
+
+        elif isinstance(left, Leaf) and isinstance(right, BinOperation):            
+            # if right.is_correct():
+            #     self.set_parentheses()
+            if right.left_open() and right.right_closed():
+                self.set_parentheses()
+
+        elif isinstance(left, BinOperation) and isinstance(right, BinOperation):
             if left.is_correct() and right.is_correct():
                 self.set_parentheses()
             elif left.left_closed() and left.right_open() \
                 and right.left_open() and right.right_closed():
                 self.set_parentheses()
 
+        
 
+
+    def set_join_parentheses(self, left, right):     
+        
+        if not isinstance(left, Binary):
+            return
+        
+        left_right_leaf = left.get_last_right_term()
+        jhon_dow = left_right_leaf.left_parent
+        if hasattr(jhon_dow, 'operator') and jhon_dow.operator in ('<<', '>>'):
+            right_left_leaf = right
+            if isinstance(right, Binary):
+                right_left_leaf = right.get_last_left_term()
+            left_right_leaf.left_parentheses_count += 1
+            right_left_leaf.right_parentheses_count += 1

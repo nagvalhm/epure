@@ -21,75 +21,93 @@ def test_simple_queries():
 
     debugger = MatplotTermDebugger()
 
-    query = x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
-    # query.debugger = debugger
-    str_query = str(query)
-    assert str_query == '(f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
+    # query = x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    # # query.debugger = debugger
+    # str_query = str(query)
+    # assert str_query == '(f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
 
-    query = x.f1 == y.f2 | x.f3 == y.f4 & 5 == x.f5 | (x.f6 == y.f7)
-    # query.debugger = debugger
-    str_query = str(query)
-    assert str_query == '(f1 == f2 or f3 == f4 and 5 == f5 or (f6 == f7))'
+    # query = x.f1 == y.f2 | x.f3 == y.f4 & 5 == x.f5 | (x.f6 == y.f7)
+    # # query.debugger = debugger
+    # str_query = str(query)
+    # assert str_query == '(f1 == f2 or f3 == f4 and 5 == f5 or (f6 == f7))'
     
     query = x.f1 == y.f2 ^ y << x.f3 == y.f4 & 5 == x.f5 | x.f6 == y.f7
-    query.debugger = debugger
+    # query.debugger = debugger
     str_query = str(query)
-    assert str_query == 'f1 == f2 ^ oraculs_domain.oraculs << f3 == f4 and 5 == f5 or f6 == f7'
+    assert str_query == '(f1 == f2 ^ oraculs_domain.oraculs << (f3 == f4) and 5 == f5 or f6 == f7)'
+
+    query = x.f1 == y.f2 ^ y << (x.f3 == y.f4) & 5 == x.f5 | x.f6 == y.f7
+    # query.debugger = debugger
+    str_query = str(query)
+    assert str_query == '(f1 == f2 ^ oraculs_domain.oraculs << (f3 == f4) and 5 == f5 or f6 == f7)'
+
+    query = x.f1 == y.f2 ^ y << (x.f3 == y.f4 & 5 == x.f5) | x.f6 == y.f7
+    # query.debugger = debugger
+    str_query = str(query)
+    assert str_query == '(f1 == f2 ^ oraculs_domain.oraculs << (f3 == f4 and 5 == f5) or f6 == f7)'
 
     query = x.f1 == y.f2 & y << x.f3 == y.f4 ^ 5 == x.f5 | x.f6 == y.f7
-    query.debugger = debugger
+    # query.debugger = debugger
     str_query = str(query)
-    assert str_query == 'f1 == f2 and oraculs_domain.oraculs << f3 == f4 ^ 5 == f5 or f6 == f7'
+    assert str_query == '(f1 == f2 and oraculs_domain.oraculs << (f3 == f4) ^ 5 == f5 or f6 == f7)'
 
     query = y << x.f3 == y.f4 ^ x.f1 == y.f2 & 5 == x.f5 | x.f6 == y.f7
-    query.debugger = debugger
+    # query.debugger = debugger
     str_query = str(query)
-    assert str_query == 'oraculs_domain.oraculs << f3 == f4 ^ f1 == f2 and 5 == f5 or f6 == f7'
+    assert str_query == '(oraculs_domain.oraculs << (f3 == f4) ^ f1 == f2 and 5 == f5 or f6 == f7)'
 
     query = x.f1 == y.f2 & 5 == x.f5 | x.f6 == y.f7 ^ y << x.f3 == y.f4
-    query.debugger = debugger
+    # query.debugger = debugger
     str_query = str(query)
-    assert str_query == 'f1 == f2 and 5 == f5 or f6 == f7 ^ oraculs_domain.oraculs << f3 == f4'
+    assert str_query == '(f1 == f2 and 5 == f5 or f6 == f7 ^ oraculs_domain.oraculs << (f3 == f4))'
 
     query = x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3
-    query.debugger = debugger
+    # query.debugger = debugger
     str_query = str(query)
-    assert str_query == 'str0 == test_field1 or int0 == test_field2 and 5 == float0 or complex0 == test_field3'
+    assert str_query == '(str0 == test_field1 or (int0 == test_field2 and 5 == float0) or complex0 == test_field3)'
     
-#     query = (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
-#     assert str(query) == '((str0 = test_field1) OR int0 = test_field2 AND 5 = float0 OR complex0 = test_field3)'
+    query = (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
+    str_query = str(query)
+    assert str_query == '((str0 == test_field1) or int0 == test_field2 and 5 == float0 or complex0 == test_field3)'
 
-#     query = (x.str0 == y.test_field1 | x.int0 == y.test_field2)
-#     assert str(query) == '(str0 = test_field1 OR int0 = test_field2)'
+    query = (x.str0 == y.test_field1 | x.int0 == y.test_field2)
+    str_query = str(query)
+    assert str_query == '(str0 == test_field1 or int0 == test_field2)'
 
-#     query = (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0 | x.complex0 == y.test_field3
-#     assert str(query) == '((str0 = test_field1 OR int0 = test_field2) AND 5 = float0 OR complex0 = test_field3)'
+    query = (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0 | x.complex0 == y.test_field3
+    str_query = str(query)
+    assert str_query == '((str0 == test_field1 or int0 == test_field2) and 5 == float0 or complex0 == test_field3)'
 
-#     query = (x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0)) | x.complex0 == y.test_field3
-#     assert str(query) == '(str0 = test_field1 OR (int0 = test_field2 AND 5 = float0) OR complex0 = test_field3)'
+    query = (x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0)) | x.complex0 == y.test_field3
+    str_query = str(query)
+    assert str_query == '((str0 == test_field1 or (int0 == test_field2 and 5 == float0)) or complex0 == test_field3)'
  
-#     query = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
-#     assert str(query) == '(((str0 = test_field1) OR ((int0 = test_field2) AND (float0 = 5))) OR (complex0 = test_field3))'
+    query = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
+    str_query = str(query)
+    assert str_query == '(((str0 == test_field1) or ((int0 == test_field2) and (float0 == 5))) or (complex0 == test_field3))'
 
 
-# def test_join_queries():
-#     db = PseudoDb(real_db)
-#     x = db['default_epure']
-#     y = db['oraculs_domain.test_clssasdas']
+def test_join_queries():
+    db = DbProxy(real_db)
+    x = db['default_epure']
+    y = db['oraculs_domain.test_clssasdas']
 
 
-#     query = y << (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
-#     assert str(query) == '(((oraculs_domain.test_clssasdas << (str0 = test_field1)) OR ((int0 = test_field2) AND (float0 = 5))) OR (complex0 = test_field3))'
+    query = y << (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
+    str_query = str(query)
+    assert str_query == '(oraculs_domain.test_clssasdas << (str0 == test_field1) or ((int0 == test_field2) and (float0 == 5)) or (complex0 == test_field3))'
                         
-#     query = y << x.str0 == y.test_field1 | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
-#     assert str(query) == 'oraculs_domain.test_clssasdas << str0 = test_field1 OR ((int0 = test_field2) AND (float0 = 5)) OR (complex0 = test_field3)'
+    query = y << x.str0 == y.test_field1 | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
+    str_query = str(query)
+    assert str_query == '(oraculs_domain.test_clssasdas << (str0 == test_field1) or ((int0 == test_field2) and (float0 == 5)) or (complex0 == test_field3))'
 
-#     query =  (x.int0 == y.test_field2) & y << x.str0 == y.test_field1 & (5 == x.float0) | (x.complex0 == y.test_field3)
-#     assert str(query) == '(int0 = test_field2) AND oraculs_domain.test_clssasdas << str0 = test_field1 AND (float0 = 5) OR (complex0 = test_field3)'
+    query =  (x.int0 == y.test_field2) & y << x.str0 == y.test_field1 & (5 == x.float0) | (x.complex0 == y.test_field3)
+    str_query = str(query)
+    assert str_query == '((int0 == test_field2) and oraculs_domain.test_clssasdas << (str0 == test_field1) and (float0 == 5) or (complex0 == test_field3))'
 
 
 # def test_select_queries():
-#     db = PseudoDb(real_db)
+#     db = DbProxy(real_db)
 #     x = db['default_epure']
 #     y = db['oraculs_domain.test_clssasdas']
 #     # z = db['no_table']

@@ -14,6 +14,11 @@ class Leaf(Term):
     left_parentheses_count = 0
     right_parentheses_count = 0
 
+    def __init__(self) -> None:
+        self.left_parentheses_count = 0
+        self.right_parentheses_count = 0
+        super().__init__()
+
     def append_parentheses(self, val):
         return '(' * self.left_parentheses_count + val + ')' * self.right_parentheses_count
         # res = val
