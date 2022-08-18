@@ -78,7 +78,7 @@ class Term:
         res.merge_graphs()
         return res
 
-    def __str__(self):
+    def str(self):
         return self.serialize(True)
 
     def serialize(self, for_debug=False) -> str:
@@ -134,11 +134,29 @@ class Term:
         return indexes[0]
 
 
-    def go_until_hasattr(self, attr_name) -> Term:
-        next = None
-        if hasattr(self, attr_name):
-            next = getattr(self, attr_name)
 
-        if not next:
-            return self
-        return next.go_until_hasattr(attr_name)
+
+
+
+
+    # def go_until_hasattr(self, terms: List[Term], attr_names: List[str]) -> Term:
+    #     prev = None
+    #     next = self
+
+    #     while True:            
+    #         for attr in attr_names:                
+    #             if hasattr(prev, attr):
+    #                 prev = next
+    #                 next = getattr(prev, attr)        
+    #                 break
+    #         if not next:
+    #             return prev
+
+    #     # for attr_name in attr_names:
+    #     #     if hasattr(self, attr_name):
+    #     #         next = getattr(self, attr_name)
+    #     #         break
+
+    #     # if not next:
+    #     #     return self
+    #     # return next.go_until_hasattr(terms, attr_names)

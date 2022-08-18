@@ -45,10 +45,18 @@ class Binary(Term):
         return self.operator
 
     def __str__(self):
+        return self.str(False)
+        # res = ''
+        # sorted_graph = self.sort_graph()
+        # for term in sorted_graph:
+        #     res += term.serialize() + " "
+        # return res[:-1]
+
+    def str(self, debug=True):
         res = ''
         sorted_graph = self.sort_graph()
         for term in sorted_graph:
-            res += term.serialize() + " "
+            res += term.serialize(debug) + " "
         return res[:-1]
 
     def sort_graph(self):
@@ -82,7 +90,25 @@ class Binary(Term):
 
 
     def shift_graph(self, terms: List[Term]) -> Term:
+        left_leaf = self.get_last_left_term(terms)
 
+        if hasattr(left_leaf, 'right_parent') and left_leaf.right_parent\
+            and hasattr(left_leaf, 'right') and left_leaf.right:
+            left_leaf.right_parent.left = left_leaf.right
+            left_leaf.right.right_parent = left_leaf.right_parent
+            left_leaf.right.left_parent = None
+
+        elif hasattr(left_leaf, 'right_parent') and left_leaf.right_parent:
+            left_leaf.right_parent.left = None            
+
+        elif hasattr(left_leaf, 'right') and left_leaf.right:
+            left_leaf.right.left_parent = None            
+
+        left_leaf_index = left_leaf.index_of(terms)
+        del terms[left_leaf_index]
+        return left_leaf
+
+    def get_last_left_term(self, terms: List[Term]):
         iterat = self.get_top(terms)
 
         while True:
@@ -94,21 +120,20 @@ class Binary(Term):
                 continue
             else:
                 break
+        return iterat
 
-        if hasattr(iterat, 'right_parent') and iterat.right_parent\
-            and hasattr(iterat, 'right') and iterat.right:
-            iterat.right_parent.left = iterat.right
-            iterat.right.right_parent = iterat.right_parent
-            iterat.right.left_parent = None
+    def get_last_right_term(self, terms: List[Term]):
+        iterat = self.get_top(terms)
 
-        elif hasattr(iterat, 'right_parent') and iterat.right_parent:
-            iterat.right_parent.left = None            
-
-        elif hasattr(iterat, 'right') and iterat.right:
-            iterat.right.left_parent = None            
-
-        iterat_index = iterat.index_of(terms)
-        del terms[iterat_index]
+        while True:
+            if hasattr(iterat, 'right_parent') and iterat.right_parent:
+                iterat = iterat.right_parent
+                continue
+            elif hasattr(iterat, 'right') and iterat.right:
+                iterat = iterat.right
+                continue
+            else:
+                break
         return iterat
 
     def get_top(self, terms: List[Term]) -> Term:
@@ -138,49 +163,67 @@ class Binary(Term):
 
         return terms_graph
 
+    def set_parentheses(self):
+        self.parentheses = True
+        terms = list(self.terms_graph.values())
+        left_leaf = self.get_last_left_term(terms)
+        left_leaf.left_parentheses_count += 1
+        right_leaf = self.get_last_right_term(terms)
+        right_leaf.right_parentheses_count += 1
 
 
 class BinOperation(Binary, BinOp):
     def __init__(self, left, right, operator='') -> None:
+        super().__init__(left, right, operator)
         if isinstance(left, Comparison) and isinstance(right, Comparison):
-            self.parentheses = True
-        return super().__init__(left, right, operator)
+            self.set_parentheses()
+
 
     def is_correct(self):
-        not_correct = (self.right_open() or self.left_open())
-        return not not_correct
-
-    def right_open(self):
-        right_leaf = self.go_until_hasattr('right')
-        right_closed = isinstance(right_leaf.left_parent, Comparison)
-        right_open = not right_closed
-        return right_open
+        res = self.left_closed() and self.right_closed()
+        return res
 
     def left_open(self):
-        left_leaf = self.go_until_hasattr('left')
-        left_closed = isinstance(left_leaf.right_parent, Comparison)
-        left_open = not left_closed
+        left_open = not self.left_closed()
         return left_open
+
+    def right_open(self):
+        right_open = not self.right_closed()
+        return right_open
+
+    def left_closed(self):
+        terms = list(self.terms_graph.values())
+        left_leaf = self.get_last_left_term(terms)
+        left_closed = isinstance(left_leaf.right_parent, Comparison)
+        return left_closed
+
+    def right_closed(self):
+        terms = list(self.terms_graph.values())
+        right_leaf = self.get_last_right_term(terms)
+        right_closed = isinstance(right_leaf.left_parent, Comparison)
+        return right_closed
 
 class Comparison(Binary, Compare):
     def __init__(self, left, right, operator='') -> None:
         from .leaf import ColumnProxy
         from .leaf import Primitive
 
+        super().__init__(left, right, operator)
+
         if isinstance(left, ColumnProxy) and isinstance(right, ColumnProxy):
-            self.parentheses = True
+            self.set_parentheses()
         elif isinstance(left, ColumnProxy) and isinstance(right, Primitive):
-            self.parentheses = True
+            self.set_parentheses()
         elif isinstance(left, Primitive) and isinstance(right, ColumnProxy):
-            self.parentheses = True #raize Error?
+            self.set_parentheses() #raize Error?
         elif isinstance(left, Primitive) and isinstance(right, Primitive):
-            self.parentheses = True
+            self.set_parentheses()
 
         if isinstance(left, BinOperation) and isinstance(right, BinOperation):
             if left.is_correct() and right.is_correct():
-                self.parentheses = True
-            elif left.right_open() and right.left_open():
-                self.parentheses = True
+                self.set_parentheses()
+            elif left.left_closed() and left.right_open() \
+                and right.left_open() and right.right_closed():
+                self.set_parentheses()
 
 
-        return super().__init__(left, right, operator)
