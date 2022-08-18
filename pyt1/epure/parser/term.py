@@ -66,14 +66,14 @@ class Term:
 
 
     def operation(self, left:Term, right:Term, operator:str):
-        from .binary import BinOperation
+        from .bin_operation import BinOperation
         res = BinOperation(left, right, operator)
         res.merge_graphs()
         return res
 
 
     def comparison(self, left:Term, right:Term, operator:str):
-        from .binary import Comparison
+        from .bin_operation import Comparison
         res = Comparison(left, right, operator)
         res.merge_graphs()
         return res
@@ -139,18 +139,23 @@ class Term:
 
 
 
-    # def go_until_hasattr(self, terms: List[Term], attr_names: List[str]) -> Term:
-    #     prev = None
-    #     next = self
+    def go_until_hasattr(self, attr_names: List[str], terms: List[Term]=None) -> Term:
+        if terms == None:
+            terms = list(self.terms_graph.values())
+        # prev = None
+        next = self
 
-    #     while True:            
-    #         for attr in attr_names:                
-    #             if hasattr(prev, attr):
-    #                 prev = next
-    #                 next = getattr(prev, attr)        
-    #                 break
-    #         if not next:
-    #             return prev
+        while True:
+            has_attr = False
+            for attr in attr_names:                
+                if hasattr(next, attr):
+                    tmp = getattr(next, attr) 
+                    if tmp and tmp.index_of(terms) != None:
+                        next = tmp
+                        has_attr = True
+                        break
+            if not has_attr:
+                return next
 
     #     # for attr_name in attr_names:
     #     #     if hasattr(self, attr_name):

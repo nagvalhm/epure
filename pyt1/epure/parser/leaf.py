@@ -21,34 +21,6 @@ class Leaf(Term):
 
     def append_parentheses(self, val):
         return '(' * self.left_parentheses_count + val + ')' * self.right_parentheses_count
-        # res = val
-        # if hasattr(self, 'left_parent') and self.left_parent:
-        #     count = self.count_parentheses(self.left_parent, 'left', 0)
-        #     res = val + ')' * count
-        #     return res
-        # elif hasattr(self, 'right_parent') and self.right_parent:
-        #     count = self.count_parentheses(self.right_parent, 'right', 0)
-        #     res = '(' * count + val
-        #     return res
-        # else:
-        #     raise EpureParseError('Leaf must have either left parent or right parent')
-            
-        
-    # def count_parentheses(self, term:Term, direction, count):        
-    #     if hasattr(term, 'parentheses') and term.parentheses:
-    #         count += 1
-
-    #     parent = None
-    #     if direction == 'left':
-    #         parent = term.left_parent
-    #     elif direction == 'right':
-    #         parent = term.right_parent
-    #     else:
-    #         raise EpureParseError('unknown direction')
-
-    #     if not parent:
-    #         return count
-    #     return self.count_parentheses(parent, direction, count)
 
 
 class Primitive(Leaf, Constant):
