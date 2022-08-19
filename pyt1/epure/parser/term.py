@@ -83,6 +83,23 @@ class Term:
 
     def serialize(self, for_debug=False) -> str:
         raise NotImplementedError
+        
+
+    def _simple_copy_terms(self, terms: List[Term]=None):
+        if terms == None:
+            terms = list(self.terms_graph.values())
+
+        copies = []
+        for term in terms:
+            term_copy = term._simple_copy()
+            copies.append(term_copy)
+
+        for copy in copies:
+            copy._restore_links(terms, copies)
+
+        return copies
+
+
 
     def _simple_copy(self) -> Term:
         res = Term()
@@ -134,28 +151,46 @@ class Term:
         return indexes[0]
 
 
+    def in_list(self, terms: List[Term]=None) -> bool:
+        return self.index_of(terms) != None
 
 
-
-
-
-    def go_until_hasattr(self, attr_names: List[str], terms: List[Term]=None) -> Term:
+    def go_until_hasattr(self, first_attr: str, second_attr: str, terms: List[Term]=None) -> Term:
         if terms == None:
             terms = list(self.terms_graph.values())
-        # prev = None
-        next = self
 
+        iterat = self
         while True:
-            has_attr = False
-            for attr in attr_names:                
-                if hasattr(next, attr):
-                    tmp = getattr(next, attr) 
-                    if tmp and tmp.index_of(terms) != None:
-                        next = tmp
-                        has_attr = True
-                        break
-            if not has_attr:
-                return next
+            first_attr_val: Term = getattr(iterat, first_attr, None)
+            second_attr_val: Term = getattr(iterat, second_attr, None)
+
+            if first_attr_val and first_attr_val.in_list(terms):
+                iterat = first_attr_val
+
+            elif second_attr_val and second_attr_val.in_list(terms):
+                iterat = second_attr_val
+
+            else:
+                break
+
+        return iterat
+
+
+
+
+    # def go_until_hasattr(self, attr_names: List[str], terms: List[Term]=None) -> Term:
+    #     next = self
+    #     while True:
+    #         has_attr = False
+    #         for attr in attr_names:                
+    #             if hasattr(next, attr):
+    #                 tmp = getattr(next, attr) 
+    #                 if tmp and tmp.index_of(terms) != None:
+    #                     next = tmp
+    #                     has_attr = True
+    #                     break
+    #         if not has_attr:
+    #             return next
 
     #     # for attr_name in attr_names:
     #     #     if hasattr(self, attr_name):

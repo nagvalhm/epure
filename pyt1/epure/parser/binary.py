@@ -38,20 +38,12 @@ class Binary(Term):
         super().__init__()
 
 
-    def serialize(self, for_debug=False) -> str:        
-        # res = f'{self.left.serialize()} {self.operator} {self.right.serialize()}'
-        # if self.parentheses:
-        #     return f'({res})'
-        # return res
+    def serialize(self, for_debug=False) -> str:
         return self.operator
 
     def __str__(self):
         return self.str(False)
-        # res = ''
-        # sorted_graph = self.sort_graph()
-        # for term in sorted_graph:
-        #     res += term.serialize() + " "
-        # return res[:-1]
+
 
     def str(self, debug=True):
         res = ''
@@ -60,23 +52,16 @@ class Binary(Term):
             res += term.serialize(debug) + " "
         return res[:-1]
 
+
+
     def sort_graph(self):
         res = []
-        terms = list(self.terms_graph.values())
-
-        #copy terms
-        copies = []
-        for term in terms:
-            term_copy = term._simple_copy()
-            copies.append(term_copy)
-
-        for copy in copies:
-            copy._restore_links(terms, copies)
+        
+        copies = self._simple_copy_terms()
 
         if self.debugger:
             self.debugger.show(copies)
-        
-        # terms = sorted(terms, key=cmp_to_key(self.compare_terms))
+
         
         while len(copies):
             shifted = self.shift_graph(copies)
@@ -112,61 +97,27 @@ class Binary(Term):
     def get_last_left_term(self, terms: List[Term]=None):
         if terms == None:
             terms = list(self.terms_graph.values())
-        iterat = self.get_top(terms)
+        top = self.get_top(terms)
 
-        res = iterat.go_until_hasattr(['left_parent', 'left'], terms)
-        # return res
-        while True:
-            if hasattr(iterat, 'left_parent') and iterat.left_parent\
-                 and iterat.left_parent.index_of(terms) != None:
+        res = top.go_until_hasattr('left_parent', 'left', terms)
+        return res
 
-                iterat = iterat.left_parent                
-            elif hasattr(iterat, 'left') and iterat.left\
-                and iterat.left.index_of(terms) != None:
-
-                iterat = iterat.left                
-            else:
-                break
-
-        return iterat
 
     def get_last_right_term(self, terms: List[Term] = None):        
         if terms == None:
             terms = list(self.terms_graph.values())
         iterat = self.get_top(terms)
 
-        while True:
-            if hasattr(iterat, 'right_parent') and iterat.right_parent\
-                and iterat.right_parent.index_of(terms) != None:
-
-                iterat = iterat.right_parent                
-            elif hasattr(iterat, 'right') and iterat.right\
-                and iterat.right.index_of(terms) != None:
-
-                iterat = iterat.right                
-            else:
-                break
-
-        return iterat
+        res = iterat.go_until_hasattr('right_parent', 'right', terms)
+        return res
 
     def get_top(self, terms: List[Term]=None) -> Term:
         if terms == None:
             terms = list(self.terms_graph.values())
-        iterat = terms[0]        
-        while True:
-            if hasattr(iterat, 'left_parent') and iterat.left_parent\
-                and iterat.left_parent.index_of(terms) != None:
+        iterat = terms[0]
 
-                iterat = iterat.left_parent
-                
-            elif hasattr(iterat, 'right_parent') and iterat.right_parent\
-                and iterat.right_parent.index_of(terms) != None:
-
-                iterat = iterat.right_parent
-                
-            else:
-                break
-        return iterat
+        res = iterat.go_until_hasattr('left_parent', 'right_parent', terms)
+        return res
         
 
     def merge_graphs(self):
