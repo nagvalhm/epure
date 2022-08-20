@@ -22,15 +22,18 @@ class Leaf(Term):
     def append_parentheses(self, val):
         return '(' * self.left_parentheses_count + val + ')' * self.right_parentheses_count
 
+    def __str__(self):
+        return self.serialize(False)
+
 
 class Primitive(Leaf, Constant):
     def __init__(self, val) -> None:
         self.val = val
         super().__init__()
 
-    def serialize(self, for_debug=False) -> str:
+    def serialize(self, parentheses=True) -> str:
         res = str(self.val)
-        if for_debug:
+        if not parentheses:
             return res
         res = self.append_parentheses(res)
         return res
@@ -56,9 +59,9 @@ class ColumnProxy(QueryingProxy, Name):
         super().__init__()
 
 
-    def serialize(self, for_debug=False) -> str:
+    def serialize(self, parentheses=True) -> str:
         res = f'{self.__column__.full_name}'
-        if for_debug:
+        if not parentheses:
             return res
         res = self.append_parentheses(res)
         return res
@@ -88,9 +91,9 @@ class TableProxy(QueryingProxy, Name):
         res = ColumnProxy(self.__db__, self.__table__, column)
         return res
 
-    def serialize(self, for_debug=False) -> str:
+    def serialize(self, parentheses=True) -> str:
         res = f'{self.__table__.full_name}'
-        if for_debug:
+        if not parentheses:
             return res
         res = self.append_parentheses(res)
         return res

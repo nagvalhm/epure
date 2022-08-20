@@ -3,8 +3,7 @@ from ast import BinOp, Compare
 
 
 class BinOperation(Binary, BinOp):
-    def __init__(self, left, right, operator='') -> None:
-        from .leaf import TableProxy
+    def __init__(self, left, right, operator='') -> None:        
 
         super().__init__(left, right, operator)
 
@@ -15,12 +14,18 @@ class BinOperation(Binary, BinOp):
         if isinstance(left, Comparison) and isinstance(right, Comparison):
             self.set_parentheses()
         elif isinstance(left, Comparison) and isinstance(right, BinOperation)\
-            and right.is_correct():
+            and right.is_correct() and not right.is_join():
             self.set_parentheses()
         elif isinstance(left, BinOperation) and isinstance(right, Comparison)\
-            and left.is_correct():
+            and left.is_correct() and not left.is_join():
             self.set_parentheses()
         
+    def is_join(self):
+        from .leaf import TableProxy
+        if self.operator not in ('<<', '>>'):
+            return False
+        res = isinstance(self.left, TableProxy)
+        return res
 
 
     def is_correct(self):
@@ -59,8 +64,9 @@ class Comparison(Binary, Compare):
 
         left = self.left
         right = self.right
-        self.set_join_parentheses(left, right)
-        
+
+        if self.is_join():
+            self.set_join_parentheses()        
         
 
         if isinstance(left, ColumnProxy) and isinstance(right, ColumnProxy):
@@ -92,18 +98,19 @@ class Comparison(Binary, Compare):
                 self.set_parentheses()
 
         
-
-
-    def set_join_parentheses(self, left, right):     
-        
-        if not isinstance(left, Binary):
-            return
-        
-        left_right_leaf = left.get_last_right_term()
+    def is_join(self):
+        if not isinstance(self.left, Binary):
+            return False
+        left_right_leaf = self.left.get_last_right_term()
         x = left_right_leaf.left_parent
-        if hasattr(x, 'operator') and x.operator in ('<<', '>>'):
-            right_left_leaf = right
-            if isinstance(right, Binary):
-                right_left_leaf = right.get_last_left_term()
-            left_right_leaf.left_parentheses_count += 1
-            right_left_leaf.right_parentheses_count += 1
+        res = hasattr(x, 'operator') and x.operator in ('<<', '>>')
+        return res
+
+    def set_join_parentheses(self):
+        right = self.right
+        right_left_leaf = right
+        left_right_leaf = self.left.get_last_right_term()
+        if isinstance(right, Binary):
+            right_left_leaf = right.get_last_left_term()
+        left_right_leaf.left_parentheses_count += 1
+        right_left_leaf.right_parentheses_count += 1

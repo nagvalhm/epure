@@ -38,7 +38,7 @@ class Binary(Term):
         super().__init__()
 
 
-    def serialize(self, for_debug=False) -> str:
+    def serialize(self, parentheses=True) -> str:
         return self.operator
 
     def __str__(self):
@@ -47,9 +47,10 @@ class Binary(Term):
 
     def str(self, debug=True):
         res = ''
+        parentheses = not debug
         sorted_graph = self.sort_graph()
         for term in sorted_graph:
-            res += term.serialize(debug) + " "
+            res += term.serialize(parentheses) + " "
         return res[:-1]
 
 

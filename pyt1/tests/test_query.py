@@ -1,6 +1,6 @@
-from .epure_classes import db as real_db
-from ..epure.resource.db.pseudo_table import PseudoDb
-from pytest import fixture
+# from .epure_classes import db as real_db
+# from ..epure.resource.db.pseudo_table import PseudoDb
+# from pytest import fixture
 
 
 # def test_simple_queries():

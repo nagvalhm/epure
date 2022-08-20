@@ -81,7 +81,7 @@ def regular_class3():
     return res
 
 @pytest.fixture
-def default_epure(regular_class3, epure_class3) -> Epure:
+def default_epure(regular_class3, epure_class3, epure_class1) -> Epure:
     epure = DefaultEpure()
     epure.float3 = random.uniform(0.0, 1000000.0)
     epure.range0 = range(1, 10)
@@ -93,6 +93,7 @@ def default_epure(regular_class3, epure_class3) -> Epure:
 
     epure.regular_class = regular_class3
     epure.epure_class = epure_class3
+    epure.epure_class1 = epure_class1
 
     id = epure.save().node_id
     res = epure.table.read(id=id)

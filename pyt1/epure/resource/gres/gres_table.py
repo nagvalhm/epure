@@ -4,8 +4,10 @@ from .gres_entity import GresEntity
 from typing import Dict, Any, List
 from ..savable import Savable
 from ...errors import  DbError
-from ..db.select_query import SelectQuery
-from ..db.term import JoinBinary, Pseudo, _PseudoColumn, _PseudoTable
+# from ..db.select_query import SelectQuery
+# from ..db.term import JoinBinary, Pseudo, _PseudoColumn, _PseudoTable
+from ...parser.leaf import QueryingProxy, ColumnProxy, TableProxy
+from ...parser.term_parser import JoinOperation
 from uuid import uuid4
 
 class GresTable(Table, GresEntity):
@@ -39,30 +41,30 @@ class GresTable(Table, GresEntity):
 
 
 
-    def serialize_read(self, selector:SelectQuery) -> str:
-        header = self.serialize_select_header(selector.header)
-        joins = self.serialize_joins(selector.joins)        
+    def serialize_read(self, header, joins, where_clause) -> str:
+        res_header = self.serialize_select_header(header)
+        res_joins = self.serialize_joins(joins)        
 
-        res = f'{header} \n {joins} WHERE \n {selector.where_clause}'
+        res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
         res = self.replace_operators(res)
         return res
 
 
 
-    def serialize_select_header(self, header:List[Pseudo]):
+    def serialize_select_header(self, header:List[QueryingProxy]):
         res = 'SELECT'
         for item in header:
-            if isinstance(item, _PseudoColumn):
+            if isinstance(item, ColumnProxy):
                 res += f' {str(item)},'
-            elif isinstance(item, _PseudoTable):
+            elif isinstance(item, TableProxy):
                 res += f' {str(item)}.*,'
         res = res[:-1]
 
         first_item = header[0]
         table_name = ''
-        if isinstance(first_item, _PseudoColumn):
-            table_name = first_item.table.full_name
-        elif isinstance(first_item, _PseudoTable):
+        if isinstance(first_item, ColumnProxy):
+            table_name = first_item.__table__.full_name
+        elif isinstance(first_item, TableProxy):
             table_name = str(first_item)
         res = res + f' FROM {table_name}'
         return res
@@ -77,14 +79,14 @@ class GresTable(Table, GresEntity):
 
 
 
-    def serialize_joins(self, joins:List[JoinBinary]):
+    def serialize_joins(self, joins:List[JoinOperation]):
         res = ''
         for join in joins:
             ser_join = self.serialize_join(join)
             res += ser_join        
         return res
 
-    def serialize_join(self, join:JoinBinary):
+    def serialize_join(self, join:JoinOperation):
         return f'{join.join_type} JOIN {join.table} on {join.on_clause}\n'
 
         

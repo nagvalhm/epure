@@ -3,8 +3,8 @@ from types import LambdaType, NoneType
 from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Callable, cast
 from ..savable import Savable
 import inspect
-from .pseudo_table import PresudoTable, PseudoDb
-from .select_query import SelectQuery
+# from .pseudo_table import PresudoTable, PseudoDb
+# from .select_query import SelectQuery
 from .constraint import Constraint
 from ..resource import Resource
 from ..node.node import Node
@@ -72,27 +72,28 @@ class Table(DbEntity):
 
 
     def read(self, selector: object = None, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
-        if selector == None:
-            return self.read_by_fields(**kwargs)
-        if isinstance(selector, str):
-            return self.execute(selector)
-        if not callable(selector):
-            raise NotImplementedError(f'couldn read by object of type {type(selector)}')
+        pass
+        # if selector == None:
+        #     return self.read_by_fields(**kwargs)
+        # if isinstance(selector, str):
+        #     return self.execute(selector)
+        # if not callable(selector):
+        #     raise NotImplementedError(f'couldn read by object of type {type(selector)}')
 
 
-        if inspect.ismethod(selector):
-            def reader(self:Table, *args, **kwargs):
-                pseudo_self = PresudoTable(self)
-                pseudo_db = PseudoDb(self.db)
-                script = selector(pseudo_self, pseudo_db, *args, **kwargs)
-                return self.execute(selector)
-            setattr(self, selector.__name__, reader)
+        # if inspect.ismethod(selector):
+        #     def reader(self:Table, *args, **kwargs):
+        #         pseudo_self = PresudoTable(self)
+        #         pseudo_db = PseudoDb(self.db)
+        #         script = selector(pseudo_self, pseudo_db, *args, **kwargs)
+        #         return self.execute(selector)
+        #     setattr(self, selector.__name__, reader)
 
-        pseudo_self = PresudoTable(self)
-        pseudo_db = PseudoDb(self.db)
-        script = selector(pseudo_self, pseudo_db)
-        res = self.execute(script)
-        return res
+        # pseudo_self = PresudoTable(self)
+        # pseudo_db = PseudoDb(self.db)
+        # script = selector(pseudo_self, pseudo_db)
+        # res = self.execute(script)
+        # return res
 
 
     def update(self, node: Savable, asynch:bool=False) -> object:

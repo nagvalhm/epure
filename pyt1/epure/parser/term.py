@@ -79,9 +79,9 @@ class Term:
         return res
 
     def str(self):
-        return self.serialize(True)
+        return self.serialize(False)
 
-    def serialize(self, for_debug=False) -> str:
+    def serialize(self, parentheses=True) -> str:
         raise NotImplementedError
         
 
@@ -106,7 +106,7 @@ class Term:
         if hasattr(self, 'id') and self.id:
             res.id = self.id
 
-        res.val = self.serialize(True)
+        res.val = self.serialize(False)
 
         if hasattr(self, 'parentheses'):
             res.parentheses = self.parentheses
