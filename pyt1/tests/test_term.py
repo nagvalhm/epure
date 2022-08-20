@@ -117,76 +117,78 @@ def test_term_parser():
     parser = TermParser(real_x)
 
 
-    term = (x.str0 == y.test_field1 
-        | x.int0 == y.test_field2 & 5 == x.float0 
-        | (x.complex0 == y.test_field3))
-    query = parser.parse([x, y], term)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or int0 = test_field2 and 5 = float0 or (complex0 = test_field3))'
+    # term = (x.str0 == y.test_field1 
+    #     | x.int0 == y.test_field2 & 5 == x.float0 
+    #     | (x.complex0 == y.test_field3))
+    # query = parser.parse([x, y], term)
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
                          
-    query = parser.parse([x, y], x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3)'
+    # query = parser.parse([x, y], x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3)
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3)'
     
-    query = parser.parse([x.str0, x.int0, y.test_field2, y], (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3)
-    assert query == 'SELECT str0, int0, test_field2, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n ((str0 = test_field1) or int0 = test_field2 and 5 = float0 or complex0 = test_field3)'
+    # query = parser.parse([x.str0, x.int0, y.test_field2, y], (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3)
+    # assert query == 'SELECT str0, int0, test_field2, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n ((str0 = test_field1) or int0 = test_field2 and 5 = float0 or complex0 = test_field3)'
 
-    query = parser.parse([x, y], x.str0 == y.test_field1 | x.int0 == y.test_field2)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or int0 = test_field2)'
+    # query = parser.parse([x, y], x.str0 == y.test_field1 | x.int0 == y.test_field2)
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or int0 = test_field2)'
 
-    query = parser.parse([x, y], (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0 | x.complex0 == y.test_field3)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n ((str0 = test_field1 or int0 = test_field2) and 5 = float0 or complex0 = test_field3)'
+    # query = parser.parse([x, y], (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0 | x.complex0 == y.test_field3)
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n ((str0 = test_field1 or int0 = test_field2) and 5 = float0 or complex0 = test_field3)'
 
-    query = parser.parse([x, y], (x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0)) | x.complex0 == y.test_field3)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n ((str0 = test_field1 or (int0 = test_field2 and 5 = float0)) or complex0 = test_field3)'
+    # query = parser.parse([x, y], (x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0)) | x.complex0 == y.test_field3)
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n ((str0 = test_field1 or (int0 = test_field2 and 5 = float0)) or complex0 = test_field3)'
     
-    term = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
-    term_str = str(term)
-    assert term_str == '(((str0 == test_field1) or ((int0 == test_field2) and (float0 == 5))) or (complex0 == test_field3))'
-    query = parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (((str0 = test_field1) or ((int0 = test_field2) and (float0 = 5))) or (complex0 = test_field3))'
+    # term = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
+    # term_str = str(term)
+    # assert term_str == '(((str0 == test_field1) or ((int0 == test_field2) and (float0 == 5))) or (complex0 == test_field3))'
+    # query = parser.parse([x, y], term_str)
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (((str0 = test_field1) or ((int0 = test_field2) and (float0 = 5))) or (complex0 = test_field3))'
     
     
     term = (x.int0 == y.test_field2) ^ y << (x.str0 == y.test_field1) & (5 == x.float0) | (x.complex0 == y.test_field3)
     term_str = str(term)
     assert term_str == '(((int0 == test_field2) ^ oraculs_domain.test_clssasdas << (str0 == test_field1) and (float0 == 5)) or (complex0 == test_field3))'
     query = parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n (((int0 = test_field2)   and (float0 = 5)) or (complex0 = test_field3))'
+    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n (int0 = test_field2)   and float0 = 5 or complex0 = test_field3'
 
     term = y << x.str0 == y.test_field1 ^ (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
     term_str = str(term)
     assert term_str == '(oraculs_domain.test_clssasdas << (str0 == test_field1) ^ ((int0 == test_field2) and (float0 == 5)) or (complex0 == test_field3))'
     query = parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n (  ((int0 = test_field2) and (float0 = 5)) or (complex0 = test_field3))'
+    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n   (int0 = test_field2 and float0 = 5) or complex0 = test_field3'
 
 
     term = (x.int0 == y.test_field2) ^ y << (x.str0 == y.test_field1 & (x.float0 == 5 | x.int0 == 4)) | (x.complex0 == y.test_field3)
     term_str = str(term)
     assert term_str == '((int0 == test_field2) ^ oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5 or int0 == 4)) or (complex0 == test_field3))'
     query =  parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and (float0 = 5 or int0 = 4)\n WHERE \n ((int0 = test_field2)   or (complex0 = test_field3))'
+    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and (float0 = 5 or int0 = 4)\n WHERE \n (int0 = test_field2)   or complex0 = test_field3'
     
     # wrong serialize
     term = (x.int0 == y.test_field2) & y << (x.str0 == y.test_field1 & (5 == x.float0)) ^ (x.complex0 == y.test_field3)
     term_str = str(term)
     assert term_str == '((int0 == test_field2) and oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5)) ^ (complex0 == test_field3))'
     query =  parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and float0 = 5\n WHERE \n ((int0 = test_field2) and oraculs_domain.test_clssasdas << (str0 = test_field1 and (float0 = 5))  (complex0 = test_field3))'
+    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and float0 = 5\n WHERE \n int0 = test_field2 and   (complex0 = test_field3)'
 
-    term = (x.int0 == y.test_field2) &  (x.complex0 == y.test_field3) ^ y << (x.str0 == y.test_field1 & (5 == x.float0)) 
+    term = (x.int0 == y.test_field2) &  (x.complex0 == y.test_field3) ^ y << (x.str0 == y.test_field1 & (5 == x.float0))
     term_str = str(term)
-    assert term_str == ''
+    assert term_str == '((int0 == test_field2) and (complex0 == test_field3)) ^ oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5))'
     query =  parser.parse([x, y], term_str)
-    assert query == '(int0 = test_field2) AND oraculs_domain.test_clssasdas << str0 = test_field1 AND (float0 = 5) OR (complex0 = test_field3)'
+    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and float0 = 5\n WHERE \n (int0 = test_field2 and complex0 = test_field3)  '
     
 
-    query = parser.parse([x.complex0, y.test_field3], 
-    (y << (x.str0 == y.test_field1 | x.int0 == y.test_field2
-    & x.float0 ==  5 | x.complex0 == y.test_field3)) ^
-        z >> y.test_field1 == z.test_field
-        ^ x.complex0 == 'vse'
-        | y << (x.str0 == y.test_field3)
-        & (x.list0 > 100500 | x.tuple0 < False)
-        & x.str0 < y.test_field3
-        & x.no_field == 4
-        & x >> z)
+    term = (y << (x.str0 == y.test_field1 | x.int0 == y.test_field2\
+    & x.float0 ==  5 | x.complex0 == y.test_field3)) ^\
+        z >> y.test_field1 == z.test_field\
+        & x.complex0 == 'vse'\
+        | y << (x.int3 == y.test_field3)\
+        ^ (x.list0 > 100500 | x.tuple0 < False)\
+        & x.float3 < y.test_field3\
+        & x.complex3 == 4\
+        & x >> z
+    term_str = str(term)
+    assert term_str == "(oraculs_domain.test_clssasdas << (str0 == test_field1 or int0 == test_field2 and float0 == 5 or complex0 == test_field3) ^ oraculs_domain.oraculs >> (test_field1 == test_field) and complex0 == 'vse' or oraculs_domain.test_clssasdas << (int3 == test_field3) ^ (list0 > 100500 or tuple0 < False) and float3 < test_field3 and complex3 == 4 and public.default_epure >> oraculs_domain.oraculs)"
+    query = parser.parse([x.complex0, y.test_field3], term)
 
     assert(query) == ''

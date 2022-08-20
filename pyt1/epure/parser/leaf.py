@@ -33,6 +33,8 @@ class Primitive(Leaf, Constant):
 
     def serialize(self, parentheses=True) -> str:
         res = str(self.val)
+        if isinstance(self.val, str):
+            res = f"'{res}'"
         if not parentheses:
             return res
         res = self.append_parentheses(res)
