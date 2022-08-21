@@ -36,6 +36,9 @@ class Term:
     def __xor__(self, other:Term): #^
         return self.operation(self, other, '^')
 
+    def __rxor__(self, other:Term): #^
+        return self.operation(other, self, '^')
+
 
     def __lshift__(self, other:Term): #<<
         return self.operation(self, other, '<<')
@@ -78,10 +81,10 @@ class Term:
         res.merge_graphs()
         return res
 
-    def str(self):
-        return self.serialize(False)
+    def str(self, parentheses=False, full_names=False):
+        return self.serialize(parentheses, full_names)
 
-    def serialize(self, parentheses=True) -> str:
+    def serialize(self, parentheses=True, full_names=True) -> str:
         raise NotImplementedError
         
 
@@ -106,7 +109,7 @@ class Term:
         if hasattr(self, 'id') and self.id:
             res.id = self.id
 
-        res.val = self.serialize(False)
+        res.val = self.serialize(False, False)
 
         if hasattr(self, 'parentheses'):
             res.parentheses = self.parentheses

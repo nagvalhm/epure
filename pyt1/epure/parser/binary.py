@@ -38,19 +38,19 @@ class Binary(Term):
         super().__init__()
 
 
-    def serialize(self, parentheses=True) -> str:
+    def serialize(self, parentheses=True, full_names=True) -> str:
         return self.operator
 
     def __str__(self):
-        return self.str(False)
+        #not debug mode
+        return self.str(parentheses=True, full_names=True)
 
 
-    def str(self, debug=True):
-        res = ''
-        parentheses = not debug
+    def str(self, parentheses=False, full_names=False):
+        res = ''        
         sorted_graph = self.sort_graph()
         for term in sorted_graph:
-            res += term.serialize(parentheses) + " "
+            res += term.serialize(parentheses, full_names) + " "
         return res[:-1]
 
 

@@ -3,7 +3,7 @@ from .gres_header import GresHeader
 from .gres_entity import GresEntity
 from typing import Dict, Any, List
 from ..savable import Savable
-from ...errors import  DbError
+from ...errors import  DbError, EpureParseError
 # from ..db.select_query import SelectQuery
 # from ..db.term import JoinBinary, Pseudo, _PseudoColumn, _PseudoTable
 from ...parser.leaf import QueryingProxy, ColumnProxy, TableProxy
@@ -41,8 +41,8 @@ class GresTable(Table, GresEntity):
 
 
 
-    def serialize_read(self, header, joins, where_clause) -> str:
-        res_header = self.serialize_select_header(header)
+    def serialize_read(self, header, joins, where_clause, full_names) -> str:
+        res_header = self.serialize_select_header(header, full_names)
         res_joins = self.serialize_joins(joins)        
 
         res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
@@ -51,13 +51,15 @@ class GresTable(Table, GresEntity):
 
 
 
-    def serialize_select_header(self, header:List[QueryingProxy]):
+    def serialize_select_header(self, header:List[QueryingProxy], full_names):
         res = 'SELECT'
         for item in header:
             if isinstance(item, ColumnProxy):
-                res += f' {str(item)},'
+                res += f' {item.str(False, full_names)},'
             elif isinstance(item, TableProxy):
-                res += f' {str(item)}.*,'
+                res += f' {item.str(False, full_names)}.*,'
+            else:
+                raise EpureParseError('select header item must be ColumnProxy or TableProxy')
         res = res[:-1]
 
         first_item = header[0]

@@ -1,14 +1,18 @@
 from .binary import Binary
 from ast import BinOp, Compare
+from ..errors import UserInputError
 
 
 class BinOperation(Binary, BinOp):
     def __init__(self, left, right, operator='') -> None:        
-
+        from .leaf import TableProxy
         super().__init__(left, right, operator)
 
         left = self.left
         right = self.right
+
+        if self.is_join() and isinstance(right, TableProxy):
+            raise UserInputError('right operand of join must be logical expression, not table')
         
 
         if isinstance(left, Comparison) and isinstance(right, Comparison):
@@ -58,7 +62,7 @@ class Comparison(Binary, Compare):
     def __init__(self, left, right, operator='') -> None:
         from .leaf import ColumnProxy
         from .leaf import Primitive
-        from .leaf import Leaf
+        from .leaf import Leaf        
 
         super().__init__(left, right, operator)
 
@@ -107,10 +111,13 @@ class Comparison(Binary, Compare):
         return res
 
     def set_join_parentheses(self):
+        from .leaf import TableProxy
         right = self.right
         right_left_leaf = right
         left_right_leaf = self.left.get_last_right_term()
         if isinstance(right, Binary):
             right_left_leaf = right.get_last_left_term()
-        left_right_leaf.left_parentheses_count += 1
+        if isinstance(right_left_leaf, TableProxy):
+            raise UserInputError('right operand of join must be logical expression, not table')
+        left_right_leaf.left_parentheses_count += 1        
         right_left_leaf.right_parentheses_count += 1

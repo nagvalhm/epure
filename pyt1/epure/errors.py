@@ -4,6 +4,9 @@ class EpureError(Exception):
 class EpureParseError(Exception):
     pass
 
+class UserInputError(EpureParseError):
+    pass
+
 class DbError(Exception):
     pass
 

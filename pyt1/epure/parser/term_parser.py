@@ -5,9 +5,11 @@ from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, parse, dump, N
 import re
 # import astor
 from ..helpers.string_helper import find_parentheses
+from ..helpers.dict_helper import reverse_dict
 from ..resource.db.table import Table
 from ..helpers.type_helper import check_type
 from uuid import uuid4
+from ..errors import EpureParseError
 
 class JoinOperation:    
     table:str
@@ -37,15 +39,19 @@ class TermParser(NodeTransformer):
         self.joins = []
 
     
-    def parse(self, header:List[QueryingProxy], body:object) -> str:
+    def parse(self, header:List[QueryingProxy], body:object, full_names=True) -> str:
         check_type('body', body, [Term, str])
-        body = str(body)
+
+        if isinstance(body, Term) and full_names:
+            body = body.str(True, full_names)
+        else:
+            body = str(body)
 
         self.joins = []        
         body = self.collect_joins(body)
         where_clause = self.remove_join_ids(body)
         
-        res = self.resource.serialize_read(header, self.joins, where_clause)
+        res = self.resource.serialize_read(header, self.joins, where_clause, full_names)
         self.joins = []
         return res
 
@@ -70,25 +76,35 @@ class TermParser(NodeTransformer):
         body = self.clear_parentheses(body, '(and')
         body = self.clear_parentheses(body, '( or')
         body = self.clear_parentheses(body, '(or')
-        body = self.clear_parentheses(body, 'and )')
-        body = self.clear_parentheses(body, 'and)')
-        body = self.clear_parentheses(body, 'or )')
-        body = self.clear_parentheses(body, 'or)')
+
+        body = self.clear_parentheses(body, 'and )', 4)
+        body = self.clear_parentheses(body, 'and)', 3)
+        body = self.clear_parentheses(body, 'or )', 3)
+        body = self.clear_parentheses(body, 'or)', 2)
         #needed?
 
         body = body.replace('^', '')
 
         return body
 
-    def clear_parentheses(self, body:str, pattern:str):
+    def clear_parentheses(self, body:str, pattern:str, offset:int=0):
         if pattern not in body:
             return body
 
             
         while pattern in body:
-            first = body.index(pattern)
-            parentheses = find_parentheses(body)
-            second = parentheses[first]
+            first = body.index(pattern) + offset
+            open_close_parentheses = find_parentheses(body)
+            
+            second = None
+            if first in open_close_parentheses:
+                second = open_close_parentheses[first]
+            else:
+                close_open_parentheses = reverse_dict(open_close_parentheses)
+                second = close_open_parentheses[first]
+
+            if second == None:
+                raise EpureParseError()
 
             list_body = list(body)
             list_body[first] = ''
