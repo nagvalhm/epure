@@ -65,3 +65,26 @@ True, '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\', NULL, NULL, NULL, NULL, NULL,
 'str3_value', 6, 2.7, NULL, NULL, NULL, 
 '{"py/object": "pyt1.tests.epure_classes.RegularClass3", "bytearray1": {"py/object": "builtins.bytearray"}, "NoneType1": "NoneType1", "none1": "none1", "generic_dict1": {"4": "5d", "sdf": 7}, "generic_list1": [4, "dff"]}', 
 '92801dea-38a5-4339-bc7d-0f831f460268');
+
+
+
+select * from man where 1 or 0 and 0
+
+select bool(True or false and false)
+
+
+
+SELECT cols.table_schema, cols.table_name, 
+                        cols.column_name, cols.is_nullable, cols.data_type, cols.column_default,
+                        cols_constr.table_schema AS foreign_schema,
+                        cols_constr.table_name AS foreign_table,
+                        cols_constr.column_name AS foreign_column,
+                        constr.constraint_type
+                        FROM information_schema.columns cols
+                        left join information_schema.constraint_column_usage cols_constr
+                            on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
+                            and cols.column_name = cols_constr.column_name
+                        left join information_schema.table_constraints constr
+                            on cols_constr.constraint_name = constr.constraint_name WHERE
+                        cols.table_schema = 'public' AND
+                        cols.table_name = 'default_epure' 

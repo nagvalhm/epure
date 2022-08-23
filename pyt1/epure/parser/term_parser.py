@@ -1,7 +1,7 @@
 from typing import List, Dict
 from .term import Term
 from .leaf import QueryingProxy
-from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST
+from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST
 import re
 # import astor
 from ..helpers.string_helper import find_parentheses
@@ -42,7 +42,7 @@ class TermParser(NodeTransformer):
     def parse(self, header:List[QueryingProxy], body:object, full_names=True) -> str:
         check_type('body', body, [Term, str])
 
-        if isinstance(body, Term) and full_names:
+        if isinstance(body, Term) and not full_names:
             body = body.str(True, full_names)
         else:
             body = str(body)
@@ -69,6 +69,12 @@ class TermParser(NodeTransformer):
             body = body.replace(join.join_id, '')
 
         #needed?
+        # match = re.search(pattern, repl)
+        body = body.replace(' ^ ', '')
+        body = body.replace('^ ', '')
+        body = body.replace(' ^', '')
+        body = body.replace('^', '')
+
         while '()' in body:
             body = body.replace('()', '')
 
@@ -83,7 +89,7 @@ class TermParser(NodeTransformer):
         body = self.clear_parentheses(body, 'or)', 2)
         #needed?
 
-        body = body.replace('^', '')
+        # body = body.replace('^', '')
 
         return body
 
