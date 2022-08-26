@@ -210,6 +210,9 @@ class GresDb(Db):
 
         json = self.json_serializer.serialize_for_update(val)
         return f"'{json}'"
+
+    def cast_db_py_val(self, py_type:type, val:Any) -> Any:
+        pass
         
     py_db_types:Dict[type, str] = {
         str: 'text',

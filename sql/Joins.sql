@@ -88,3 +88,10 @@ SELECT cols.table_schema, cols.table_name,
                             on cols_constr.constraint_name = constr.constraint_name WHERE
                         cols.table_schema = 'public' AND
                         cols.table_name = 'default_epure' 
+                        
+                        
+SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns 
+ LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)
+LEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name
+ WHERE 
+ (information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure')  (  )

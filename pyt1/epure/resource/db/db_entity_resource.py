@@ -42,3 +42,6 @@ class DbEntityResource(Resource):
 
     def cast_py_db_val(self, py_type:type, val:Any) -> str:
         raise NotImplementedError
+
+    def cast_db_py_val(self, db_type:type, val:Any) -> str:
+        raise NotImplementedError

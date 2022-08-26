@@ -1,23 +1,23 @@
 # from .test_epure import default_epure
-# from .epure_classes import DefaultEpure
+from .epure_classes import DefaultEpure
 # from ..epure.epure import Epure
 # from typing import cast
 
-# def test_read_default_epure_lambda(default_epure):
+def test_read_default_epure_lambda(default_epure):
 
-#     DefaultEpure.resource.read(lambda tp, dbp: 
-#         [tp.float3, tp.range0, tp.epure_class, dbp['epure_class3'].node_id,
+    DefaultEpure.resource.read(lambda tp, dbp: 
+        [tp.float3, tp.range0, tp.epure_class, dbp['epure_class3'].node_id,
 
-#         dbp['epure_class3'] << (tp.epure_class == dbp['epure_class3'].node_id
-#         | tp.generic_list0 == dbp['epure_class3'].generic_list2) ^
+        dbp['epure_class3'] << (tp.epure_class == dbp['epure_class3'].node_id
+        | tp.generic_list0 == dbp['epure_class3'].generic_list2) ^
 
-#         tp.str3 == 'str3_value' 
-#         & (tp.int3 > 3 | tp.float3 < 0.8)
+        tp.str3 == 'str3_value' 
+        & (tp.int3 > 3 | tp.float3 < 0.8)
 
-#         ^dbp['epure_class1'] << tp.epure_class1 == dbp['epure_class1'].node_id
+        ^dbp['epure_class1'] << tp.epure_class1 == dbp['epure_class1'].node_id
 
-#         & tp.int0 < dbp['epure_class1'].int2]
-#     )
+        & tp.int0 < dbp['epure_class1'].int2]
+    )
 
 
 

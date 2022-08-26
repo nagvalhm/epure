@@ -12,6 +12,7 @@ from ..epure.resource.node.node import TableNode
 from .resource.savable import Savable
 from .resource.db.db import Db
 from .resource.db.db_entity import DbEntity
+import functools
 
 
 
@@ -35,6 +36,31 @@ class Epure(type, Savable):
             self.is_saved = True
             
         return super(Epure, self).__call__(*args, **kwargs)
+
+    #decorator
+    @classmethod
+    def read(cls, method):
+        querying_proxy = None
+        resource_proxy = None
+        if getattr(cls, 'resource', None):
+            querying_proxy = getattr(cls.resource, 'querying_proxy', None)
+            resource_proxy = getattr(cls.resource, 'resource_proxy', None)
+        @functools.wraps(method)
+        def wrap(self, *args, **kwargs):
+            if querying_proxy and resource_proxy:
+                return method(self, querying_proxy, resource_proxy, *args, **kwargs)
+            if querying_proxy:
+                return method(self, querying_proxy, *args, **kwargs)
+            if resource_proxy:
+                return method(self, resource_proxy, *args, **kwargs)
+            return method(self, *args, **kwargs)
+        return wrap
+        # def reader(self:Table, *args, **kwargs):
+        #     pseudo_self = PresudoTable(self)
+        #     pseudo_db = PseudoDb(self.db)
+        #     script = selector(pseudo_self, pseudo_db, *args, **kwargs)
+        #     return self.execute(selector)
+        # setattr(self, selector.__name__, reader)
 
     def prepare_save(self, resource:object):        
         self.__class__.epures.append(self)
