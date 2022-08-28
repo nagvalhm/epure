@@ -1,27 +1,29 @@
 from __future__ import annotations
 from types import NoneType
-from typing import cast, Callable, List, Any, get_type_hints, Dict
+from typing import cast, Callable, List, Any, get_type_hints, Dict, TYPE_CHECKING
 from .resource.resource import Resource
 from .helpers.type_helper import check_type
 from .errors import EpureError, DefaultConstraintError
 from .resource.db.constraint import Foreign, Default, Constraint
 
-from .resource.db.table import Table
+
 # from types import FunctionType
 from ..epure.resource.node.node import TableNode
 from .resource.savable import Savable
-from .resource.db.db import Db
+if TYPE_CHECKING:
+    from .resource.db.table_storage import TableStorage
+    from .resource.db.table import Table
 from .resource.db.db_entity import DbEntity
 import functools
 
 
 
-def connect(edb:Db) -> None:
+def connect(edb:TableStorage) -> None:
     Epure.EDb = edb
 
 class Epure(type, Savable):
     
-    EDb:Db
+    EDb:TableStorage
     epures:List[Epure] = []
     # annotations:Dict[str,Any]
     resource:Savable
@@ -87,6 +89,7 @@ class Epure(type, Savable):
         
 
     def _create_or_update(self, table_name:str) -> Table:
+        from .resource.db.table import Table
         table:Table = self._get_table(table_name)
         res:DbEntity
         if table_name in self.EDb:
@@ -110,6 +113,7 @@ class Epure(type, Savable):
         
 
     def _get_table(self, table_name: str = '') -> Table:
+        from .resource.db.table import Table
         table:Table
         
         full_name = self.EDb._get_full_table_name(table_name)        

@@ -12,7 +12,7 @@ class Savable(Resource):
     
 
     def __init__(self, name: str = '', namespace: str = '', resource:Resource=None) -> None:
-        if resource:
+        if resource != None:
             self.resource = resource
         super().__init__(name, namespace)
 

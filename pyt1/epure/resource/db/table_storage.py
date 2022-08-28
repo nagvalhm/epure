@@ -1,6 +1,8 @@
 from __future__ import annotations
 from abc import abstractmethod
 from typing import Dict, Any, Type, cast
+
+from epure.errors import DbError
 from .table_column import TableColumn
 
 from ..resource import FullName, SnakeCaseNamed
@@ -8,12 +10,14 @@ from ..savable import Savable
 from .table import Table
 from .db_entity_resource import DbEntityResource
 from ...helpers.type_helper import check_subclass, check_type
+from ...epure import Epure
 
 class TableStorage(DbEntityResource):
 
     tables:Dict[str,Table]
     default_table_type:Type[Table] = Table
     migrate_on_delete:bool = False
+    _epures: Dict[str, type] = None
 
     @abstractmethod
     def __init__(self, name:str='', default_table_type:Type[Table]=None, 
@@ -99,6 +103,34 @@ class TableStorage(DbEntityResource):
             table.header._set_column(column)
         
         return table
+
+
+    def get_epure_by_table_name(self, table_name: str):
+        if self._epures == None:            
+            self._epures = self._get_epures_dict()
+        if table_name not in self._epures:
+            from ...epure import Epure
+            self._epures[table_name] = self._get_epure_by_table_name()
+        if table_name not in self._epures:
+            return None
+            # raise DbError('no one epure has this table as resource')
+        return self._epures[table_name]
+    
+    def _get_epures_dict(self):        
+        res = {}
+        for ep in Epure.epures:
+            table_name = ep.resource.full_name
+            if table_name in self:
+                res[table_name] = ep
+        # if not res:
+        #     raise DbError('no one epure has table as resource')
+        return res
+    
+    def _get_epure_by_table_name(self, table_name: str):
+        for ep in Epure.epures:
+            if ep.resource.full_name in self:
+                return ep
+        return None
         
     def _get_table_type(self, table_columns:list):
         return self.default_table_type

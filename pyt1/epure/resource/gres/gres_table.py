@@ -42,6 +42,7 @@ class GresTable(Table, GresEntity):
 
 
     def serialize_read(self, header, joins, where_clause, full_names) -> str:
+        self._add_node_id_fields(header)
         res_header = self.serialize_select_header(header, full_names)
         res_joins = self.serialize_joins(joins)        
 
@@ -51,7 +52,7 @@ class GresTable(Table, GresEntity):
 
 
 
-    def serialize_select_header(self, header:List[QueryingProxy], full_names):
+    def serialize_select_header(self, header:List[QueryingProxy], full_names:bool):
         res = 'SELECT'
         for item in header:
             if isinstance(item, ColumnProxy):
@@ -70,6 +71,7 @@ class GresTable(Table, GresEntity):
             table_name = str(first_item)
         res = res + f' FROM {table_name}'
         return res
+
 
 
     def replace_operators(self, where_clause:str):

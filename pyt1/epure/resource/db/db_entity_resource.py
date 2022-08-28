@@ -40,8 +40,8 @@ class DbEntityResource(Resource):
         res = self.get_db_type(first) == self.get_db_type(second)
         return res
 
-    def cast_py_db_val(self, py_type:type, val:Any) -> str:
+    def cast_py_db_val(self, val:Any, py_type:type) -> str:
         raise NotImplementedError
 
-    def cast_db_py_val(self, db_type:type, val:Any) -> str:
+    def cast_db_py_val(self, val:Any, py_type:type) -> str:
         raise NotImplementedError

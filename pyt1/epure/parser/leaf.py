@@ -52,12 +52,17 @@ class QueryingProxy(Leaf):
 class ColumnProxy(QueryingProxy, Name):
     if TYPE_CHECKING:
         __table__:Table
-        __column__:TableColumn        
+        __column__:TableColumn
+        __table_proxy__ = None
 
-    def __init__(self, db, table, column):
+    def __init__(self, db, table, column, table_proxy=None):
         self.__db__ = db
         self.__table__ = table
         self.__column__ = column
+
+        if table_proxy == None:
+            table_proxy = TableProxy(db, table)
+        self.__table_proxy__ = table_proxy
         super().__init__()
 
 
@@ -74,7 +79,7 @@ class ColumnProxy(QueryingProxy, Name):
 
 
     def _copy(self):
-        res = ColumnProxy(self.__db__, self.__table__, self.__column__)
+        res = ColumnProxy(self.__db__, self.__table__, self.__column__, self.__table_proxy__)
         res.is_copy = True
         return res
 
@@ -94,7 +99,7 @@ class TableProxy(QueryingProxy, Name):
         if attr_name not in self.__table__.header:
             raise DbError(f'column {attr_name} not in header of table {self.__table__.full_name}')
         column = self.__table__.header[attr_name]
-        res = ColumnProxy(self.__db__, self.__table__, column)
+        res = ColumnProxy(self.__db__, self.__table__, column, self)
         return res
 
     def serialize(self, parentheses=True, full_names=True) -> str:

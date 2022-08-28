@@ -9,23 +9,26 @@ from .constraint import Constraint
 from ..resource import Resource
 from ..node.node import Node
 from ...parser.term import Term
-from ...parser.leaf import TableProxy, TableColumn, QueryingProxy, DbProxy
+from ...parser.leaf import TableProxy, QueryingProxy, DbProxy, ColumnProxy
+from ..db.table_column import TableColumn
 from collections.abc import Sequence
 from collections import OrderedDict
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
+    from ...parser.term_parser import TermParser
 from .db_entity import DbEntity
 from ...helpers.type_helper import check_type
 from ...errors import EpureError, DbError
 from .table_header import TableHeader
-from ...parser.term_parser import TermParser
-from ..field_promise import FieldPromise
+from ..field_promise import FieldPromise, NodePromise
+from ...epure import Epure
 
 
 class Table(DbEntity):
     header:TableHeader
-    parser: TermParser
+    if TYPE_CHECKING:
+        parser: TermParser
     querying_proxy: QueryingProxy
     resource_proxy: DbProxy
 
@@ -39,14 +42,15 @@ class Table(DbEntity):
     def __init__(self, name: str,
             header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '') -> None:        
         check_type('header', header, [TableHeader, dict, NoneType])
-        
+        from ...parser.term_parser import TermParser
 
         self._set_header(header)
+        super().__init__(name, namespace, resource)
+
         self.parser = TermParser(self)
         self.querying_proxy = TableProxy(self.db, self)
         self.resource_proxy = DbProxy(self.db)
-
-        super().__init__(name, namespace, resource)
+        
 
 
     def _serialize(self, node: Savable) -> Dict[str, str]:
@@ -66,7 +70,7 @@ class Table(DbEntity):
                 field_type = field_val.annotations['node_id']
                 field_val = field_val.save(True).node_id
                 
-            field_val = self.db.cast_py_db_val(field_type, field_val)
+            field_val = self.db.cast_py_db_val(field_val, field_type)
 
             res[field_name] = field_val
         
@@ -136,71 +140,87 @@ class Table(DbEntity):
         res = self.deserialize(res)
         return res
 
-    def deserialize(self, rows: dict):
-        # from ...epure import Epure
+    def deserialize(self, rows: dict, lazy_read:bool=True):
         full_name_epure_dict = self._column_full_name_epure_dict(rows[0])
         res = []
         for node_dict in rows:
-            res_row = self._init_epures_row(node_dict, full_name_epure_dict)
+            res_row = self._init_epures_row(node_dict, full_name_epure_dict, lazy_read)
             res.append(res_row)
         return res
 
-    def _init_epures_row(self, node_dict, full_name_epure_dict) -> Dict[type, dict]:
+
+    def _init_epures_row(self, node_dict, full_name_epure_dict, lazy_read) -> Dict[type, dict]:
         epure_kwargs_dict = OrderedDict()
         for full_name in node_dict:
-            tpl = full_name_epure_dict[full_name]
-            epure_cls = tpl[0]
-            field_name = tpl[1]
+            column_tuple = full_name_epure_dict[full_name]
+            epure_cls = column_tuple[0]
+            column = column_tuple[1]
             if epure_cls not in epure_kwargs_dict:
                 epure_kwargs_dict[epure_cls] = {}
-            kwargs = epure_kwargs_dict[epure_cls]
-            kwargs[field_name] = node_dict[full_name]
-        
+
+            kwargs = epure_kwargs_dict[epure_cls]            
+            db_val = node_dict[full_name]
+            if isinstance(column, TableColumn):
+                val = self.db.cast_db_py_val(db_val, column.py_type)
+                kwargs[column.name] = val
+            else:
+                val = self.db.cast_db_py_val(db_val)
+                kwargs[column] = val
+
         res = []
-        for epure_cls, kwargs in epure_kwargs_dict.items():             
-            epure_obj = self._init_epure(epure_cls, kwargs)
+        for epure_cls, kwargs in epure_kwargs_dict.items():
+            epure_obj = self._init_epure(epure_cls, kwargs, lazy_read)
             res.append(epure_obj)
         return res
 
-    def _init_epure(self, epure_cls, kwargs):
-        res = epure_cls(kwargs)
-        epure_table = getattr(epure_cls, 'resource', None)
-        for field_name, field_val in kwargs:
-            db_type = None
-            if epure_table != None:
-                column = epure_table.header[field_name]
-                py_type = column.py_type
-                db_type = self.db.get_db_type(py_type)
-            val = self.db.cast_db_py_val(field_val, db_type)
-            setattr(res, field_name, val)
 
-        for field_name in res.annotations():
+    def _init_epure(self, epure_cls:Epure, kwargs:dict, lazy_read):
+        # if 'node_id' not in kwargs:
+        #     raise DbError('node_id must be readed from resource')
+
+        res = epure_cls(kwargs)
+        
+        for field_name, field_val in kwargs:
+            setattr(res, field_name, field_val)
+
+        if not (hasattr(res, 'annotations') and 'node_id' in kwargs):
+            return res
+
+        for field_name, field_type in res.annotations().items():
             if field_name not in kwargs:
-                promise = FieldPromise(self, field_name)
+                node_id = kwargs['node_id']
+                promise = FieldPromise(epure_cls.resource, field_name, node_id)
                 setattr(res, field_name, promise)
+
+            elif isinstance(field_type, Epure) and lazy_read:
+                node_id = kwargs[field_name]
+                promise = NodePromise(field_type.resource, node_id)
+                setattr(res, field_name, promise)
+            elif isinstance(field_type, Epure) and not lazy_read:
+                node_id = kwargs[field_name]
+                node = field_type.resource.read(node_id=node_id)
+                setattr(res, field_name, node)
+
         return res
 
-        # tab_col: Dict[str, list] = OrderedDict()
-        # for full_name in node_dict:
-        #     split = full_name.rsplit('.', 1)
-        #     table_name = split[0]
-        #     col_name = split[1]
-        #     epure_cls = self.db.get_epure_by_table_name(table_name)
-        #     if table_name not in tab_col:
-        #         tab_col[table_name] = []
-        #     tab_col[table_name].append(col_name)
-        
-        # for table_name in tab_col: 
-        #     epure_cls = self.db.get_epure_by_table_name(table_name)
+
 
     def _column_full_name_epure_dict(self, node_dict) -> Dict[str, tuple]:
         res = OrderedDict()
         for full_name in node_dict:
             split = full_name.rsplit('.', 1)
             table_name = split[0]
-            field_name = split[1]
+            field_name = split[1]            
             epure_cls = self.db.get_epure_by_table_name(table_name)
-            res[full_name] = (epure_cls, field_name)
+            if not epure_cls:
+                res[full_name] = (object, field_name)
+                continue
+
+            epure_table = getattr(epure_cls, 'resource', None)
+            if epure_table == None or not isinstance(epure_table, Table):
+                raise DbError('this epure must have table as resourse')
+            column = epure_table.header[field_name]
+            res[full_name] = (epure_cls, column)
         return res
 
     def read_by_function(self, func):
@@ -270,3 +290,23 @@ class Table(DbEntity):
             }
             res.append(serialized)
         return res
+
+    def _add_node_id_fields(self, header:List[QueryingProxy]):
+        tables = []
+        columns = []
+        for item in header:
+            if isinstance(item, TableProxy):
+                table_name = item.str(False, True)
+                tables.append(table_name)
+            if isinstance(item, ColumnProxy):
+                column_name = item.str(False, True)
+                columns.append(column_name)
+
+        for item in header:
+            if isinstance(item, ColumnProxy):
+                tp = item.__table_proxy__
+                table_name = tp.str(False, True)
+                if (not table_name in tables) and\
+                        hasattr(tp, 'node_id') and\
+                        tp.node_id.str(False, True) not in columns:
+                    header.append(tp.node_id)

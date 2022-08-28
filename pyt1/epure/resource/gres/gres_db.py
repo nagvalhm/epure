@@ -175,7 +175,7 @@ class GresDb(Db):
         _default = getattr(constraint, 'default', '')
         default = ''
         if _default:
-            default = self.cast_py_db_val(constraint.py_type, _default)
+            default = self.cast_py_db_val(_default, constraint.py_type)
         
         origin = constraint.__origin__
         
@@ -192,7 +192,7 @@ class GresDb(Db):
                 
         raise DbError('unknown constraint')
         
-    def cast_py_db_val(self, py_type:type, val:Any) -> str:
+    def cast_py_db_val(self, val:Any, py_type:type) -> str:
         if val == None:
             return 'NULL'
         if py_type in (int, float, bool):
@@ -211,8 +211,8 @@ class GresDb(Db):
         json = self.json_serializer.serialize_for_update(val)
         return f"'{json}'"
 
-    def cast_db_py_val(self, py_type:type, val:Any) -> Any:
-        pass
+    def cast_db_py_val(self, val:Any, py_type:type) -> Any:
+        return val
         
     py_db_types:Dict[type, str] = {
         str: 'text',
