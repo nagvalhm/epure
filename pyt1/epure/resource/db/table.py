@@ -122,6 +122,7 @@ class Table(DbEntity):
                 term = term | getattr(tp, key) == val
             else:
                 term = term & getattr(tp, key) == val
+        return self.read(term)
 
     def read_by_sql(self, selector):
         res = self.execute(selector)

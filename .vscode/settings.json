@@ -10,6 +10,7 @@
     
 }
 
+//python 3.10.1
 //pip install virtualenv
 //python -m virtualenv pyt1/env310 -p D:\python\python310\python.exe
 //set-executionpolicy remotesigned
@@ -19,5 +20,9 @@
 
 //pip install poetry=1.1.13
 //poetry install
+
+//how to install module, -D nedded if dev dependency:
 //poetry add module_name=version -D
 
+//postgres database_name, username, pasword, port:
+// postgres, postgres, postgres, 5432 

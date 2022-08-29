@@ -1,8 +1,7 @@
 from __future__ import annotations
-from msilib.schema import Error
-from turtle import left, right
 from typing import Dict, List, TYPE_CHECKING
 from uuid import UUID, uuid4
+from ..errors import EpureParseError
 if TYPE_CHECKING:
     from ..resource.db.db import Db
 
@@ -13,6 +12,7 @@ class Term:
     left_parent:Term = None
     right_parent:Term = None
     val:str
+    header:list
 
     def __init__(self) -> None:
         self.id = str(uuid4())
@@ -148,7 +148,7 @@ class Term:
     def index_of(self, terms: List[Term]):
         indexes = [index for (index, item) in enumerate(terms) if item.id == self.id]
         if len(indexes) > 1:
-            raise Error('term occurred in a list more then once')
+            raise EpureParseError('term occurred in a list more then once')
         if len(indexes) == 0:
             return None
         return indexes[0]
@@ -179,7 +179,15 @@ class Term:
         return iterat
 
 
-
+    def merge_headers(self, left_header, right_header):
+        left_header = list(left_header)
+        right_header = list(right_header)
+        res = []
+        for qp in right_header:
+            if not qp.in_header(left_header):
+                res.append(qp)
+        res = left_header + res
+        return res
 
     # def go_until_hasattr(self, attr_names: List[str], terms: List[Term]=None) -> Term:
     #     next = self

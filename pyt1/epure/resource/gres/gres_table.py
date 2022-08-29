@@ -91,7 +91,7 @@ class GresTable(Table, GresEntity):
         return res
 
     def serialize_join(self, join:JoinOperation):
-        return f'{join.join_type} JOIN {join.table} on {join.on_clause}\n'
+        return f'{join.join_type} JOIN {join.table} on {join.on_clause} \n'
 
         
 
