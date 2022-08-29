@@ -3,7 +3,7 @@ from .epure_classes import DefaultEpure
 # from ..epure.epure import Epure
 # from typing import cast
 
-def test_read_default_epure_lambda(default_epure):
+def test_read_default_epure_lambda():
 
     DefaultEpure.resource.read(lambda tp, dbp: 
         [tp.float3, tp.range0, tp.epure_class, dbp['epure_class3'].node_id,
@@ -23,7 +23,7 @@ def test_read_default_epure_lambda(default_epure):
 
 # def test_read_default_epure_kwargs(default_epure):
 
-#     DefaultEpure.resource.read(complex0=5+7j, float3=750479.0714551052)
+    # DefaultEpure.resource.read('and', complex0=5+7j, float3=750479.0714551052)
 
 
 

@@ -42,7 +42,7 @@ class GresTable(Table, GresEntity):
 
 
     def serialize_read(self, header, joins, where_clause, full_names) -> str:
-        self._add_node_id_fields(header)
+        header = list(header) + self._get_extra_node_id_fields(header)
         res_header = self.serialize_select_header(header, full_names)
         res_joins = self.serialize_joins(joins)        
 

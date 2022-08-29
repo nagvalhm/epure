@@ -39,6 +39,14 @@ class Epure(type, Savable):
             
         return super(Epure, self).__call__(*args, **kwargs)
 
+
+    def __getattr__(self, attr_name: str) -> Any:
+        if self.is_saved:
+            raise AttributeError(f"'{type(self)}' object has no attribute '{attr_name}'")
+        self.is_saved = True
+        self.save_epure()        
+        return getattr(self, attr_name)
+
     #decorator
     @classmethod
     def read(cls, method):

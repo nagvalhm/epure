@@ -203,3 +203,14 @@ class CustomSaveEpure:
 
 def test_test():
     pass
+
+
+@epure()
+class CrosEpure1:
+    str1:str
+    epure_cls:CrosEpure2
+
+@epure()
+class CrosEpure2:
+    str2:str
+    epure_cls:CrosEpure1

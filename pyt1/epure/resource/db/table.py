@@ -2,9 +2,6 @@ from __future__ import annotations
 from types import LambdaType, NoneType
 from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Callable, cast
 from ..savable import Savable
-import inspect
-# from .pseudo_table import PresudoTable, PseudoDb
-# from .select_query import SelectQuery
 from .constraint import Constraint
 from ..resource import Resource
 from ..node.node import Node
@@ -21,7 +18,7 @@ from .db_entity import DbEntity
 from ...helpers.type_helper import check_type
 from ...errors import EpureError, DbError
 from .table_header import TableHeader
-from ..field_promise import FieldPromise, NodePromise
+from ..node_promise import FieldPromise, NodePromise
 from ...epure import Epure
 
 
@@ -88,16 +85,15 @@ class Table(DbEntity):
         return node
 
     
-    def read(self, *args, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
-        pass
-        if not (args or kwargs):
-            return self.read_by_fields(**kwargs)
+    def read(self, *args, **kwargs) -> Any:        
+        # if not (args or kwargs):
+        #     return self.read_by_fields(**kwargs)
         
         if kwargs:
-            return self.read_by_kwargs(**kwargs)
+            return self.read_by_kwargs(*args, **kwargs)
 
         selector = args[0]
-        if isinstance(args[0], str):
+        if isinstance(selector, str):
             return self.read_by_sql(selector)
 
         if callable(selector):
@@ -109,36 +105,41 @@ class Table(DbEntity):
 
         raise NotImplementedError(f'couldn read by object of type {type(selector)}')
 
-        # if isinstance(selector, str):
-        #     return self.execute(selector)
-        # if not callable(selector):
-        #     raise NotImplementedError(f'couldn read by object of type {type(selector)}')
 
+    # def read_by_fields(self):
+    #     raise NotImplementedError
 
-        # if inspect.ismethod(selector):
-        #     def reader(self:Table, *args, **kwargs):
-        #         pseudo_self = PresudoTable(self)
-        #         pseudo_db = PseudoDb(self.db)
-        #         script = selector(pseudo_self, pseudo_db, *args, **kwargs)
-        #         return self.execute(selector)
-        #     setattr(self, selector.__name__, reader)
-
-        # pseudo_self = PresudoTable(self)
-        # pseudo_db = PseudoDb(self.db)
-        # script = selector(pseudo_self, pseudo_db)
-        # res = self.execute(script)
-        # return res
-
-    def read_by_fields(self):
-        raise NotImplementedError
-
-    def read_by_kwargs(self):
-        raise NotImplementedError
+    def read_by_kwargs(self, header:List[str], operator:str, **kwargs):
+        term_header = []
+        tp = self.querying_proxy
+        for col_name in header:
+            column = getattr(tp, col_name)
+            term_header.append(column)
+        
+        term = term_header
+        for key, val in kwargs.items():
+            if operator == 'or':
+                term = term | getattr(tp, key) == val
+            else:
+                term = term & getattr(tp, key) == val
 
     def read_by_sql(self, selector):
         res = self.execute(selector)
         res = self.deserialize(res)
         return res
+
+    def read_by_function(self, func):
+        selector = func(self.querying_proxy, self.resource_proxy)
+        if isinstance(selector, Sequence):
+            return self.read(*selector)
+        return self.read(selector)
+
+    def read_by_term(self, header, selector:Term):
+        sql = self.parser.parse(header, selector)
+        res = self.read(sql)
+        return res
+
+        
 
     def deserialize(self, rows: dict, lazy_read:bool=True):
         full_name_epure_dict = self._column_full_name_epure_dict(rows[0])
@@ -175,8 +176,6 @@ class Table(DbEntity):
 
 
     def _init_epure(self, epure_cls:Epure, kwargs:dict, lazy_read):
-        # if 'node_id' not in kwargs:
-        #     raise DbError('node_id must be readed from resource')
 
         res = epure_cls(kwargs)
         
@@ -189,7 +188,7 @@ class Table(DbEntity):
         for field_name, field_type in res.annotations().items():
             if field_name not in kwargs:
                 node_id = kwargs['node_id']
-                promise = FieldPromise(epure_cls.resource, field_name, node_id)
+                promise = FieldPromise(epure_cls.resource, node_id, field_name)
                 setattr(res, field_name, promise)
 
             elif isinstance(field_type, Epure) and lazy_read:
@@ -221,17 +220,6 @@ class Table(DbEntity):
                 raise DbError('this epure must have table as resourse')
             column = epure_table.header[field_name]
             res[full_name] = (epure_cls, column)
-        return res
-
-    def read_by_function(self, func):
-        selector = func(self.querying_proxy, self.resource_proxy)
-        if isinstance(selector, Sequence):
-            return self.read(*selector)
-        return self.read(selector)
-
-    def read_by_term(self, header, selector:Term):
-        sql = self.parser.parse(header, selector)
-        res = self.read(sql)
         return res
 
 
@@ -291,7 +279,7 @@ class Table(DbEntity):
             res.append(serialized)
         return res
 
-    def _add_node_id_fields(self, header:List[QueryingProxy]):
+    def _get_extra_node_id_fields(self, header:List[QueryingProxy]):
         tables = []
         columns = []
         for item in header:
@@ -302,6 +290,7 @@ class Table(DbEntity):
                 column_name = item.str(False, True)
                 columns.append(column_name)
 
+        res = []
         for item in header:
             if isinstance(item, ColumnProxy):
                 tp = item.__table_proxy__
@@ -309,4 +298,6 @@ class Table(DbEntity):
                 if (not table_name in tables) and\
                         hasattr(tp, 'node_id') and\
                         tp.node_id.str(False, True) not in columns:
-                    header.append(tp.node_id)
+                    res.append(tp.node_id)
+                    columns.append(tp.node_id.str(False, True))
+        return res

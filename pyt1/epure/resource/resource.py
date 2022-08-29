@@ -41,7 +41,7 @@ class Resource():
     def serialize_for_create(self, savable:Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def read(self, selector:object=None, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
+    def read(self, *args, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
         raise NotImplementedError
 
     def serialize_for_read(self, savable:Savable, **kwargs) -> object:

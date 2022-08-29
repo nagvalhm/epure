@@ -126,167 +126,169 @@ def test_term_parser():
     query = parser.parse([x, y], x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3, False)
     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
     
-    query = parser.parse([x.str0, x.int0, y.test_field2, y], (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3, False)
-    assert query == 'SELECT str0, int0, test_field2, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
-
-    query = parser.parse([x, y], x.str0 == y.test_field1 | x.int0 == y.test_field2, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or int0 = test_field2'
-
-    query = parser.parse([x, y], (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0 | x.complex0 == y.test_field3, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or int0 = test_field2) and 5 = float0 or complex0 = test_field3'
-
-    query = parser.parse([x, y], (x.str0 == y.test_field1 | x.int0 == y.test_field2) | x.complex0 == y.test_field3 & 5 == x.float0, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or int0 = test_field2) or (complex0 = test_field3 and 5 = float0)'
-
-    query = parser.parse([x, y], x.complex0 == y.test_field3 | (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n complex0 = test_field3 or ((str0 = test_field1 or int0 = test_field2) and 5 = float0)'
-
-    query = parser.parse([x, y], (x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0)) | x.complex0 == y.test_field3, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or (int0 = test_field2 and 5 = float0)) or complex0 = test_field3'
-    
-    term = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
-    term_str = term.str(True)
-    assert term_str == '(((str0 == test_field1) or ((int0 == test_field2) and (float0 == 5))) or (complex0 == test_field3))'
-    query = parser.parse([x, y], term_str, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or (int0 = test_field2 and float0 = 5)) or complex0 = test_field3'
-    
-    
-    term = (x.int0 == y.test_field2) ^ y << (x.str0 == y.test_field1) & (5 == x.float0) | (x.complex0 == y.test_field3)
-    term_str = term.str(True)
-    assert term_str == '(((int0 == test_field2) ^ oraculs_domain.test_clssasdas << (str0 == test_field1) and (float0 == 5)) or (complex0 == test_field3))'
-    query = parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n (int0 = test_field2) and float0 = 5 or complex0 = test_field3'
+    term = (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
+    header = [x.str0, x.int0, y.test_field2, y]
+    query = parser.parse(header, term, False)
+    assert query == 'SELECT str0, int0, test_field2, oraculs_domain.test_clssasdas.*, node_id FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
                     
-    term = y << x.str0 == y.test_field1 ^ (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
-    term_str = term.str(True)
-    assert term_str == '(oraculs_domain.test_clssasdas << (str0 == test_field1) ^ ((int0 == test_field2) and (float0 == 5)) or (complex0 == test_field3))'
-    query = parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n (int0 = test_field2 and float0 = 5) or complex0 = test_field3'
+#     query = parser.parse([x, y], x.str0 == y.test_field1 | x.int0 == y.test_field2, False)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or int0 = test_field2'
+
+#     query = parser.parse([x, y], (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0 | x.complex0 == y.test_field3, False)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or int0 = test_field2) and 5 = float0 or complex0 = test_field3'
+
+#     query = parser.parse([x, y], (x.str0 == y.test_field1 | x.int0 == y.test_field2) | x.complex0 == y.test_field3 & 5 == x.float0, False)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or int0 = test_field2) or (complex0 = test_field3 and 5 = float0)'
+
+#     query = parser.parse([x, y], x.complex0 == y.test_field3 | (x.str0 == y.test_field1 | x.int0 == y.test_field2) & 5 == x.float0, False)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n complex0 = test_field3 or ((str0 = test_field1 or int0 = test_field2) and 5 = float0)'
+
+#     query = parser.parse([x, y], (x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0)) | x.complex0 == y.test_field3, False)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or (int0 = test_field2 and 5 = float0)) or complex0 = test_field3'
+    
+#     term = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
+#     term_str = term.str(True)
+#     assert term_str == '(((str0 == test_field1) or ((int0 == test_field2) and (float0 == 5))) or (complex0 == test_field3))'
+#     query = parser.parse([x, y], term_str, False)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n (str0 = test_field1 or (int0 = test_field2 and float0 = 5)) or complex0 = test_field3'
+    
+    
+#     term = (x.int0 == y.test_field2) ^ y << (x.str0 == y.test_field1) & (5 == x.float0) | (x.complex0 == y.test_field3)
+#     term_str = term.str(True)
+#     assert term_str == '(((int0 == test_field2) ^ oraculs_domain.test_clssasdas << (str0 == test_field1) and (float0 == 5)) or (complex0 == test_field3))'
+#     query = parser.parse([x, y], term_str)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n (int0 = test_field2) and float0 = 5 or complex0 = test_field3'
+                    
+#     term = y << x.str0 == y.test_field1 ^ (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
+#     term_str = term.str(True)
+#     assert term_str == '(oraculs_domain.test_clssasdas << (str0 == test_field1) ^ ((int0 == test_field2) and (float0 == 5)) or (complex0 == test_field3))'
+#     query = parser.parse([x, y], term_str)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1\n WHERE \n (int0 = test_field2 and float0 = 5) or complex0 = test_field3'
     
 
-    term = (x.int0 == y.test_field2) ^ y << (x.str0 == y.test_field1 & (x.float0 == 5 | x.int0 == 4)) | (x.complex0 == y.test_field3)
-    term_str = term.str(True)
-    assert term_str == '((int0 == test_field2) ^ oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5 or int0 == 4)) or (complex0 == test_field3))'
-    query =  parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and (float0 = 5 or int0 = 4)\n WHERE \n (int0 = test_field2) or complex0 = test_field3'
+#     term = (x.int0 == y.test_field2) ^ y << (x.str0 == y.test_field1 & (x.float0 == 5 | x.int0 == 4)) | (x.complex0 == y.test_field3)
+#     term_str = term.str(True)
+#     assert term_str == '((int0 == test_field2) ^ oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5 or int0 == 4)) or (complex0 == test_field3))'
+#     query =  parser.parse([x, y], term_str)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and (float0 = 5 or int0 = 4)\n WHERE \n (int0 = test_field2) or complex0 = test_field3'
                    
-    # wrong serialize
-    term = (x.int0 == y.test_field2) & y << (x.str0 == y.test_field1 & (5 == x.float0)) ^ (x.complex0 == y.test_field3)
-    term_str = term.str(True)
-    assert term_str == '((int0 == test_field2) and oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5)) ^ (complex0 == test_field3))'
-    query =  parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and float0 = 5\n WHERE \n int0 = test_field2 and (complex0 = test_field3)'
+#     # wrong serialize
+#     term = (x.int0 == y.test_field2) & y << (x.str0 == y.test_field1 & (5 == x.float0)) ^ (x.complex0 == y.test_field3)
+#     term_str = term.str(True)
+#     assert term_str == '((int0 == test_field2) and oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5)) ^ (complex0 == test_field3))'
+#     query =  parser.parse([x, y], term_str)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and float0 = 5\n WHERE \n int0 = test_field2 and (complex0 = test_field3)'
                     
-    term = (x.int0 == y.test_field2) &  (x.complex0 == y.test_field3) ^ y << (x.str0 == y.test_field1 & (5 == x.float0))
-    term_str = term.str(True)
-    assert term_str == '((int0 == test_field2) and (complex0 == test_field3)) ^ oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5))'
-    query =  parser.parse([x, y], term_str)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and float0 = 5\n WHERE \n (int0 = test_field2 and complex0 = test_field3)'
+#     term = (x.int0 == y.test_field2) &  (x.complex0 == y.test_field3) ^ y << (x.str0 == y.test_field1 & (5 == x.float0))
+#     term_str = term.str(True)
+#     assert term_str == '((int0 == test_field2) and (complex0 == test_field3)) ^ oraculs_domain.test_clssasdas << (str0 == test_field1 and (float0 == 5))'
+#     query =  parser.parse([x, y], term_str)
+#     assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 and float0 = 5\n WHERE \n (int0 = test_field2 and complex0 = test_field3)'
                     
 
-    term = (y << (x.str0 == y.test_field1 | x.int0 == y.test_field2\
-    & x.float0 ==  5 | x.complex0 == y.test_field3)) ^\
-        z >> y.test_field1 == z.test_field\
-        ^ x.complex0 == 'vse'\
-        | y << (x.int3 == y.test_field3)\
-        ^ (x.list0 > 100500 | x.tuple0 < False)\
-        & x.float3 < y.test_field3\
-        | x.complex3 == 4\
-        ^ z >> True
-    term_str = term.str(True)
-    assert term_str == "oraculs_domain.test_clssasdas << (str0 == test_field1 or int0 == test_field2 and float0 == 5 or complex0 == test_field3) ^ oraculs_domain.oraculs >> (test_field1 == test_field) ^ complex0 == 'vse' or oraculs_domain.test_clssasdas << (int3 == test_field3) ^ (list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 == 4 ^ oraculs_domain.oraculs >> True"
-    query = parser.parse([x.complex0, y.test_field3], term_str, False)
+#     term = (y << (x.str0 == y.test_field1 | x.int0 == y.test_field2\
+#     & x.float0 ==  5 | x.complex0 == y.test_field3)) ^\
+#         z >> y.test_field1 == z.test_field\
+#         ^ x.complex0 == 'vse'\
+#         | y << (x.int3 == y.test_field3)\
+#         ^ (x.list0 > 100500 | x.tuple0 < False)\
+#         & x.float3 < y.test_field3\
+#         | x.complex3 == 4\
+#         ^ z >> True
+#     term_str = term.str(True)
+#     assert term_str == "oraculs_domain.test_clssasdas << (str0 == test_field1 or int0 == test_field2 and float0 == 5 or complex0 == test_field3) ^ oraculs_domain.oraculs >> (test_field1 == test_field) ^ complex0 == 'vse' or oraculs_domain.test_clssasdas << (int3 == test_field3) ^ (list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 == 4 ^ oraculs_domain.oraculs >> True"
+#     query = parser.parse([x.complex0, y.test_field3], term_str, False)
 
-    assert(query) == "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3) or complex3 = 4"
+#     assert(query) == "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3) or complex3 = 4"
                      
 
-    term = (y << (x.str0 == y.test_field1 | x.int0 == y.test_field2\
-    & x.float0 ==  5 | x.complex0 == y.test_field3)) ^\
-        z >> y.test_field1 == z.test_field\
-        ^ x.complex0 == 'vse'\
-        | y << (x.int3 == y.test_field3)\
-        ^ ((x.list0 > 100500 | x.tuple0 < False)\
-        & x.float3 < y.test_field3\
-        | x.complex3 == 4)\
-        ^ z >> True
-    term_str = term.str(True)
-    assert term_str == "oraculs_domain.test_clssasdas << (str0 == test_field1 or int0 == test_field2 and float0 == 5 or complex0 == test_field3) ^ oraculs_domain.oraculs >> (test_field1 == test_field) ^ complex0 == 'vse' or oraculs_domain.test_clssasdas << (int3 == test_field3) ^ ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 == 4) ^ oraculs_domain.oraculs >> True"
-    query = parser.parse([x.complex0, y.test_field3], term_str, False)
+#     term = (y << (x.str0 == y.test_field1 | x.int0 == y.test_field2\
+#     & x.float0 ==  5 | x.complex0 == y.test_field3)) ^\
+#         z >> y.test_field1 == z.test_field\
+#         ^ x.complex0 == 'vse'\
+#         | y << (x.int3 == y.test_field3)\
+#         ^ ((x.list0 > 100500 | x.tuple0 < False)\
+#         & x.float3 < y.test_field3\
+#         | x.complex3 == 4)\
+#         ^ z >> True
+#     term_str = term.str(True)
+#     assert term_str == "oraculs_domain.test_clssasdas << (str0 == test_field1 or int0 == test_field2 and float0 == 5 or complex0 == test_field3) ^ oraculs_domain.oraculs >> (test_field1 == test_field) ^ complex0 == 'vse' or oraculs_domain.test_clssasdas << (int3 == test_field3) ^ ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 == 4) ^ oraculs_domain.oraculs >> True"
+#     query = parser.parse([x.complex0, y.test_field3], term_str, False)
 
-    assert(query) == "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)"
-                    #  "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)"
+#     assert(query) == "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)"
+#                     #  "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)"
 
-def test_columns_select():
-    db = DbProxy(real_db)    
-    real_x = real_db['default_epure']
-    parser = TermParser(real_x)
+# def test_columns_select():
+#     db = DbProxy(real_db)    
+#     real_x = real_db['default_epure']
+#     parser = TermParser(real_x)
 
-    '''SELECT cols.table_schema, cols.table_name, 
-                        cols.column_name, cols.is_nullable, cols.data_type, cols.column_default,
+#     '''SELECT cols.table_schema, cols.table_name, 
+#                         cols.column_name, cols.is_nullable, cols.data_type, cols.column_default,
 
-                        cols_constr.table_schema AS foreign_schema,
-                        cols_constr.table_name AS foreign_table,
-                        cols_constr.column_name AS foreign_column,
+#                         cols_constr.table_schema AS foreign_schema,
+#                         cols_constr.table_name AS foreign_table,
+#                         cols_constr.column_name AS foreign_column,
 
-                        constr.constraint_type
+#                         constr.constraint_type
 
-                        FROM information_schema.columns cols
-                        left join information_schema.constraint_column_usage cols_constr
-                            on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
-                            and cols.column_name = cols_constr.column_name
-                        left join information_schema.table_constraints constr
-                            on cols_constr.constraint_name = constr.constraint_name WHERE
-                        cols.table_schema = \'public\' AND
-                        cols.table_name = \'default_epure\' '''
+#                         FROM information_schema.columns cols
+#                         left join information_schema.constraint_column_usage cols_constr
+#                             on cols.table_schema = cols_constr.table_schema and cols.table_name = cols_constr.table_name
+#                             and cols.column_name = cols_constr.column_name
+#                         left join information_schema.table_constraints constr
+#                             on cols_constr.constraint_name = constr.constraint_name WHERE
+#                         cols.table_schema = \'public\' AND
+#                         cols.table_name = \'default_epure\' '''
 
-    cols = db['information_schema.columns']
-    cols_constr = db['information_schema.constraint_column_usage']
-    constr = db['information_schema.table_constraints']
+#     cols = db['information_schema.columns']
+#     cols_constr = db['information_schema.constraint_column_usage']
+#     constr = db['information_schema.table_constraints']
 
-    header = (cols.table_schema, cols.table_name, cols.column_name, cols.is_nullable, 
-                cols.data_type, cols.column_default,
-            cols_constr.table_schema, cols_constr.table_name, cols_constr.column_name, 
-            constr.constraint_type)
+#     header = (cols.table_schema, cols.table_name, cols.column_name, cols.is_nullable, 
+#                 cols.data_type, cols.column_default,
+#             cols_constr.table_schema, cols_constr.table_name, cols_constr.column_name, 
+#             constr.constraint_type)
 
-    term = cols_constr << (cols.table_schema == cols_constr.table_schema 
-                            & cols.table_name == cols_constr.table_name 
-                            & cols.column_name == cols_constr.column_name) \
-            ^ constr << cols_constr.constraint_name == constr.constraint_name \
-                \
-            ^ cols.table_schema == 'public' \
-            & cols.table_name == 'default_epure'
+#     term = cols_constr << (cols.table_schema == cols_constr.table_schema 
+#                             & cols.table_name == cols_constr.table_name 
+#                             & cols.column_name == cols_constr.column_name) \
+#             ^ constr << cols_constr.constraint_name == constr.constraint_name \
+#                 \
+#             ^ cols.table_schema == 'public' \
+#             & cols.table_name == 'default_epure'
 
-    query = parser.parse(header, term)
+#     query = parser.parse(header, term)
 
-    assert query == "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
-                    # "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
+#     assert query == "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
+#                     # "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
 
-    # mixed
-    term =  cols.table_schema == 'public' \
-            & cols.table_name == 'default_epure'\
-                \
-            ^ cols_constr << (cols.table_schema == cols_constr.table_schema 
-                            & cols.table_name == cols_constr.table_name 
-                            & cols.column_name == cols_constr.column_name) \
-            ^ constr << cols_constr.constraint_name == constr.constraint_name
+#     # mixed
+#     term =  cols.table_schema == 'public' \
+#             & cols.table_name == 'default_epure'\
+#                 \
+#             ^ cols_constr << (cols.table_schema == cols_constr.table_schema 
+#                             & cols.table_name == cols_constr.table_name 
+#                             & cols.column_name == cols_constr.column_name) \
+#             ^ constr << cols_constr.constraint_name == constr.constraint_name
 
 
-    query = parser.parse(header, term)
+#     query = parser.parse(header, term)
 
-    assert query == "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
-                    # "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
-    # splited
-    term1 =  cols.table_schema == 'public' \
-            & cols.table_name == 'default_epure'
+#     assert query == "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
+#                     # "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure'"
+#     # splited
+#     term1 =  cols.table_schema == 'public' \
+#             & cols.table_name == 'default_epure'
                 
-    term2 = cols_constr << (cols.table_schema == cols_constr.table_schema 
-                            & cols.table_name == cols_constr.table_name 
-                            & cols.column_name == cols_constr.column_name) \
-            ^ constr << cols_constr.constraint_name == constr.constraint_name
+#     term2 = cols_constr << (cols.table_schema == cols_constr.table_schema 
+#                             & cols.table_name == cols_constr.table_name 
+#                             & cols.column_name == cols_constr.column_name) \
+#             ^ constr << cols_constr.constraint_name == constr.constraint_name
 
-    term = term1 ^ term2
+#     term = term1 ^ term2
 
-    query = parser.parse(header, term)
+#     query = parser.parse(header, term)
 
-    assert query == "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n (information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure')"
+#     assert query == "SELECT information_schema.columns.table_schema, information_schema.columns.table_name, information_schema.columns.column_name, information_schema.columns.is_nullable, information_schema.columns.data_type, information_schema.columns.column_default, information_schema.constraint_column_usage.table_schema, information_schema.constraint_column_usage.table_name, information_schema.constraint_column_usage.column_name, information_schema.table_constraints.constraint_type FROM information_schema.columns \n LEFT JOIN information_schema.constraint_column_usage on information_schema.columns.table_schema = information_schema.constraint_column_usage.table_schema and information_schema.columns.table_name = information_schema.constraint_column_usage.table_name and (information_schema.columns.column_name = information_schema.constraint_column_usage.column_name)\nLEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name\n WHERE \n (information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure')"
                     
