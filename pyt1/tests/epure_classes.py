@@ -6,6 +6,8 @@ from typing import List, Dict, Tuple, Callable
 from datetime import datetime
 import pytest
 import types
+# from uuid import UUID
+from ..epure.resource.gres.jsonb_table import JsonbTable
 
 try:
     connect(GresDb('postgres://user_name:pass@host:5432'))
@@ -214,3 +216,8 @@ class CrosEpure1:
 class CrosEpure2:
     str2:str
     epure_cls:CrosEpure1
+
+# @epure(JsonbTable('oraculs_domain.competitions', resource=db))
+# class Competitions:
+#     res_id:UUID
+#     data:object
