@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from .resource.db.table import Table
 from .resource.db.db_entity import DbEntity
 import functools
+from .parser.term import Term
+from .resource.node.proto import Proto
 
 
 
@@ -55,15 +57,21 @@ class Epure(type, Savable):
         if getattr(cls, 'resource', None):
             querying_proxy = getattr(cls.resource, 'querying_proxy', None)
             resource_proxy = getattr(cls.resource, 'resource_proxy', None)
+
         @functools.wraps(method)
         def wrap(self, *args, **kwargs):
+            res = None
             if querying_proxy and resource_proxy:
-                return method(self, querying_proxy, resource_proxy, *args, **kwargs)
+                res = method(self, querying_proxy, resource_proxy, *args, **kwargs)
             if querying_proxy:
-                return method(self, querying_proxy, *args, **kwargs)
+                res = method(self, querying_proxy, *args, **kwargs)
             if resource_proxy:
-                return method(self, resource_proxy, *args, **kwargs)
-            return method(self, *args, **kwargs)
+                res = method(self, resource_proxy, *args, **kwargs)
+            else:
+                res = method(self, *args, **kwargs)
+            if isinstance(res, Term):
+                return self.resource.read(res)
+            return res
         return wrap
         # def reader(self:Table, *args, **kwargs):
         #     pseudo_self = PresudoTable(self)
@@ -200,3 +208,6 @@ def _create_epure(cls, saver, _Epure):
     bases.append(saver)
     return _Epure(cls.__name__, tuple(bases), cls_dict)
 
+
+def proto(resource:object='', saver:type=Proto, epure_metaclass:type=Epure) -> Callable:
+    return epure(resource, saver, epure_metaclass)

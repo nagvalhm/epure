@@ -30,3 +30,6 @@ class DefaultConstraintError(AttributeError):
             else:
                 self.message = self.get_message(class_name, field_name)
             super().__init__(self.message)
+
+class MultipleInheritanceError(Exception):
+    pass

@@ -9,6 +9,7 @@ from ...parser.term import Term
 from ...parser.leaf import TableProxy, QueryingProxy, DbProxy, ColumnProxy
 from ..db.table_column import TableColumn
 from collections import OrderedDict
+from ..node.proto import Proto
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -191,15 +192,17 @@ class Table(DbEntity):
                 promise = FieldPromise(epure_cls.resource, node_id, field_name)
                 setattr(res, field_name, promise)
 
-            elif isinstance(field_type, Epure) and lazy_read:
+            elif isinstance(field_type, Epure):
                 node_id = kwargs[field_name]
-                promise = NodePromise(field_type.resource, node_id)
-                setattr(res, field_name, promise)
-            elif isinstance(field_type, Epure) and not lazy_read:
-                node_id = kwargs[field_name]
-                node = field_type.resource.read(node_id=node_id)
-                setattr(res, field_name, node)
-
+                if issubclass(res, Proto) and field_name == '__proto__':
+                    proto = field_type.resource.read(node_id=node_id)
+                    res.set_proto_fields(proto)
+                elif lazy_read:
+                    promise = NodePromise(field_type.resource, node_id)
+                    setattr(res, field_name, promise)
+                elif not lazy_read:
+                    node = field_type.resource.read(node_id=node_id)
+                    setattr(res, field_name, node)
         return res
 
 
