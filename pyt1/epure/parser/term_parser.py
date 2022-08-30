@@ -1,5 +1,5 @@
-from typing import List, Dict
-from .term import Term
+from typing import List, Dict, Union
+from .term import Term, TermHeader
 from .leaf import QueryingProxy
 from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST
 import re
@@ -41,7 +41,7 @@ class TermParser(NodeTransformer):
     
     def parse(self, *args) -> str:
         #args
-        header:List[QueryingProxy] = None
+        header:Union[List[QueryingProxy], TermHeader] = None
         body:object = None
         full_names=True
 
@@ -58,6 +58,8 @@ class TermParser(NodeTransformer):
                 full_names = args[1]
 
         check_type('body', body, [Term, str])
+        if isinstance(header, TermHeader):
+            header = header.val
 
         if isinstance(body, Term):
             header = body.merge_headers(header, body.__header__)

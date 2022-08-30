@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from ..resource.db.table import Table
     from ..resource.db.db import Db
 from ..errors import DbError
-from .term import Term
+from .term import Term, TermHeader
 from ast import Name
 from ast import Name, Constant
 from ..errors import EpureParseError
@@ -41,11 +41,6 @@ class Primitive(Leaf, Constant):
         return res
 
 
-class TermHeader(Leaf, Constant):    
-    def __init__(self, val:list) -> None:
-        self.val = val
-        super().__init__()
-
 
 class QueryingProxy(Leaf):
     if TYPE_CHECKING:
@@ -79,13 +74,6 @@ class ColumnProxy(QueryingProxy, Name):
         super().__init__()
 
 
-    # def __getitem__(self, *args) -> Any:
-    #     res = TermHeader(header)
-    #     return res
-
-    # def __call__(self, *args) -> Any:
-    #     res = TermHeader(header)
-    #     return res
 
     def serialize(self, parentheses=True, full_names=True) -> str:
         res = self.__column__.full_name
@@ -135,6 +123,14 @@ class TableProxy(QueryingProxy, Name):
             raise AttributeError(f'column {attr_name} not in header of table {self.__table__.full_name}')
         column = self.__table__.header[attr_name]
         res = ColumnProxy(self.__db__, self.__table__, column, self)
+        return res
+
+    def __getitem__(self, *args) -> Any:
+        res = TermHeader(list(*args))
+        return res
+
+    def __call__(self, *args) -> Any:
+        res = TermHeader(list(*args))
         return res
 
     def serialize(self, parentheses=True, full_names=True) -> str:

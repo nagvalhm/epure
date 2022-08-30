@@ -71,11 +71,21 @@ class Term:
 
     def operation(self, left:Term, right:Term, operator:str):
         from .bin_operation import BinOperation
+        if isinstance(right, TermHeader):
+            right = right.val
         if isinstance(right, list):
+            if not isinstance(left, Term):
+                from .leaf import Primitive
+                left = Primitive(left)
             left.__header__ = self.merge_headers(left.__header__, right)
             return left
             
+        if isinstance(left, TermHeader):
+            left = left.val
         if isinstance(left, list):
+            if not isinstance(right, Term):
+                from .leaf import Primitive
+                right = Primitive(right)
             right.__header__ = self.merge_headers(left, right.__header__)
             return right
         res = BinOperation(left, right, operator)
@@ -196,6 +206,12 @@ class Term:
                 res.append(qp)
         res = left_header + res
         return res
+
+
+class TermHeader(Term):
+    def __init__(self, val:list) -> None:
+        self.val = val
+
 
     # def go_until_hasattr(self, attr_names: List[str], terms: List[Term]=None) -> Term:
     #     next = self
