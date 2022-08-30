@@ -20,12 +20,12 @@ class Binary(Term):
 
         if not isinstance(left, Term):
             left = Primitive(left)
-        elif isinstance(left, QueryingProxy) and not left.is_copy:
+        elif isinstance(left, QueryingProxy) and not left.__is_copy__:
             left = left._copy()
 
         if not isinstance(right, Term):
             right = Primitive(right)
-        elif isinstance(right, QueryingProxy) and not right.is_copy:
+        elif isinstance(right, QueryingProxy) and not right.__is_copy__:
             right = right._copy()
 
         left.right_parent = self
@@ -96,7 +96,7 @@ class Binary(Term):
         return left_leaf
 
     def get_last_left_term(self, terms: List[Term]=None):
-        if terms == None:
+        if terms is None:
             terms = list(self.terms_graph.values())
         top = self.get_top(terms)
 
@@ -105,7 +105,7 @@ class Binary(Term):
 
 
     def get_last_right_term(self, terms: List[Term] = None):        
-        if terms == None:
+        if terms is None:
             terms = list(self.terms_graph.values())
         iterat = self.get_top(terms)
 
@@ -113,7 +113,7 @@ class Binary(Term):
         return res
 
     def get_top(self, terms: List[Term]=None) -> Term:
-        if terms == None:
+        if terms is None:
             terms = list(self.terms_graph.values())
         iterat = terms[0]
 
@@ -123,13 +123,21 @@ class Binary(Term):
 
     def merge_graphs(self):
         terms_graph = {}
-        terms_graph.update(self.terms_graph)        
-        terms_graph.update(self.left.terms_graph)        
-        terms_graph.update(self.right.terms_graph)
+        left = self.left
+        right = self.right
 
+        if left.__header__ or right.__header__:
+            header = self.merge_headers(left.__header__, right.__header__)
+            left.__header__ = header
+            right.__header__ = header
+            self.__header__ = header
+            
+        terms_graph.update(self.terms_graph)        
+        terms_graph.update(left.terms_graph)        
+        terms_graph.update(right.terms_graph)
         
-        self.left.terms_graph = terms_graph        
-        self.right.terms_graph = terms_graph
+        left.terms_graph = terms_graph
+        right.terms_graph = terms_graph
         self.terms_graph = terms_graph
 
         return terms_graph

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Union, Sequence, List
+from typing import TYPE_CHECKING, Any, List
 if TYPE_CHECKING:
     from .savable import Savable
 from inflection import underscore
@@ -41,7 +41,7 @@ class Resource():
     def serialize_for_create(self, savable:Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def read(self, *args, **kwargs) -> Any: #Union[Resource, Sequence[Resource]]:
+    def read(self, *args, **kwargs) -> Any:
         raise NotImplementedError
 
     def serialize_for_read(self, savable:Savable, **kwargs) -> object:

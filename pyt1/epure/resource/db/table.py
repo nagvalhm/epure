@@ -8,7 +8,6 @@ from ..node.node import Node
 from ...parser.term import Term
 from ...parser.leaf import TableProxy, QueryingProxy, DbProxy, ColumnProxy
 from ..db.table_column import TableColumn
-from collections.abc import Sequence
 from collections import OrderedDict
 
 if TYPE_CHECKING:
@@ -131,7 +130,7 @@ class Table(DbEntity):
 
     def read_by_function(self, func):
         selector = func(self.querying_proxy, self.resource_proxy)
-        if isinstance(selector, Sequence):
+        if isinstance(selector, list) or isinstance(selector, tuple):
             return self.read(*selector)
         return self.read(selector)
 
@@ -280,25 +279,34 @@ class Table(DbEntity):
             res.append(serialized)
         return res
 
-    def _get_extra_node_id_fields(self, header:List[QueryingProxy]):
-        tables = []
-        columns = []
-        for item in header:
-            if isinstance(item, TableProxy):
-                table_name = item.str(False, True)
-                tables.append(table_name)
-            if isinstance(item, ColumnProxy):
-                column_name = item.str(False, True)
-                columns.append(column_name)
-
+    def _add_node_id_fields(self, header:List[QueryingProxy]):
         res = []
         for item in header:
             if isinstance(item, ColumnProxy):
                 tp = item.__table_proxy__
-                table_name = tp.str(False, True)
-                if (not table_name in tables) and\
-                        hasattr(tp, 'node_id') and\
-                        tp.node_id.str(False, True) not in columns:
-                    res.append(tp.node_id)
-                    columns.append(tp.node_id.str(False, True))
-        return res
+                node_id = getattr(tp, 'node_id', None)
+                if node_id is not None and not node_id.in_header(header + res):
+                    res.append(node_id)
+        return header + res
+
+        # tables = []
+        # columns = []
+        # for item in header:
+        #     if isinstance(item, TableProxy):
+        #         table_name = item.str(False, True)
+        #         tables.append(table_name)
+        #     if isinstance(item, ColumnProxy):
+        #         column_name = item.str(False, True)
+        #         columns.append(column_name)
+
+        # res = []
+        # for item in header:
+        #     if isinstance(item, ColumnProxy):
+        #         tp = item.__table_proxy__
+        #         table_name = tp.str(False, True)
+        #         if (not table_name in tables) and\
+        #                 hasattr(tp, 'node_id') and\
+        #                 tp.node_id.str(False, True) not in columns:
+        #             res.append(tp.node_id)
+        #             columns.append(tp.node_id.str(False, True))
+        # return res

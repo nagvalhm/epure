@@ -1,5 +1,4 @@
-from msilib.schema import Error
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 if TYPE_CHECKING:
     from ..resource.db.table_column import TableColumn
     from ..resource.db.table import Table
@@ -9,6 +8,7 @@ from .term import Term
 from ast import Name
 from ast import Name, Constant
 from ..errors import EpureParseError
+from ..helpers.type_helper import check_type
 
 class Leaf(Term):
     left_parentheses_count = 0
@@ -41,13 +41,25 @@ class Primitive(Leaf, Constant):
         return res
 
 
+class TermHeader(Leaf, Constant):    
+    def __init__(self, val:list) -> None:
+        self.val = val
+        super().__init__()
+
+
 class QueryingProxy(Leaf):
     if TYPE_CHECKING:
         __db__:Db
-    is_copy = False
+    __is_copy__ = False
+    __qp_name__:str
+    
 
     def _copy(self):
         raise NotImplementedError
+
+    def in_header(self, header:Union[list,tuple]):
+        raise NotImplementedError
+
 
 class ColumnProxy(QueryingProxy, Name):
     if TYPE_CHECKING:
@@ -59,12 +71,21 @@ class ColumnProxy(QueryingProxy, Name):
         self.__db__ = db
         self.__table__ = table
         self.__column__ = column
+        self.__qp_name__ = self.serialize(parentheses=False, full_names=True)
 
-        if table_proxy == None:
+        if table_proxy is None:
             table_proxy = TableProxy(db, table)
         self.__table_proxy__ = table_proxy
         super().__init__()
 
+
+    # def __getitem__(self, *args) -> Any:
+    #     res = TermHeader(header)
+    #     return res
+
+    # def __call__(self, *args) -> Any:
+    #     res = TermHeader(header)
+    #     return res
 
     def serialize(self, parentheses=True, full_names=True) -> str:
         res = self.__column__.full_name
@@ -80,8 +101,21 @@ class ColumnProxy(QueryingProxy, Name):
 
     def _copy(self):
         res = ColumnProxy(self.__db__, self.__table__, self.__column__, self.__table_proxy__)
-        res.is_copy = True
+        res.__header__ = self.__header__
+        res.__is_copy__ = True
         return res
+
+    def in_header(self, header:Union[list,tuple]) -> bool:
+        table_name = self.__table__.full_name
+        for qp in header:
+            check_type('qp', qp, [TableProxy, ColumnProxy])
+            if isinstance(qp, ColumnProxy):
+                if self.__qp_name__ == qp.__qp_name__:
+                    return True
+            if isinstance(qp, TableProxy):
+                if qp.__qp_name__ == table_name:
+                    return True
+        return False
 
 
 class TableProxy(QueryingProxy, Name):
@@ -91,13 +125,14 @@ class TableProxy(QueryingProxy, Name):
     def __init__(self, db, table):
         self.__db__ = db
         self.__table__ = table
+        self.__qp_name__ = self.serialize(parentheses=False, full_names=True)
         super().__init__()
 
     def __getattr__(self, attr_name: str) -> Any:
-        if self.is_copy:
+        if self.__is_copy__:
             raise AttributeError
         if attr_name not in self.__table__.header:
-            raise DbError(f'column {attr_name} not in header of table {self.__table__.full_name}')
+            raise AttributeError(f'column {attr_name} not in header of table {self.__table__.full_name}')
         column = self.__table__.header[attr_name]
         res = ColumnProxy(self.__db__, self.__table__, column, self)
         return res
@@ -111,8 +146,16 @@ class TableProxy(QueryingProxy, Name):
 
     def _copy(self):
         res = TableProxy(self.__db__, self.__table__)
-        res.is_copy = True
+        res.__header__ = self.__header__
+        res.__is_copy__ = True
         return res
+
+    def in_header(self, header:Union[list,tuple]) -> bool:
+        for qp in header:
+            check_type('qp', qp, [TableProxy, ColumnProxy])
+            if isinstance(qp, TableProxy) and self.__qp_name__ == qp.__qp_name__:
+                return True
+        return False
 
 class DbProxy(QueryingProxy):
 

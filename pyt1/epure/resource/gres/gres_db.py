@@ -2,7 +2,7 @@ from uuid import UUID
 from ..db.db import Db
 import psycopg2
 import psycopg2.extras
-from typing import Sequence, Union, cast, Type, Dict, Any, Callable, List, Tuple
+from typing import cast, Type, Dict, Any, Callable, List, Tuple
 from types import NoneType, LambdaType
 from itertools import groupby
 from .gres_table import GresTable
@@ -55,7 +55,7 @@ class GresDb(Db):
         self.json_serializer = JsonFile('')
 
 
-    def read(self, selector:object=None, **kwargs) -> Any:#Union[Resource, Sequence[Resource]]:
+    def read(self, selector:object=None, **kwargs) -> Any:
         
         table_name = str(selector)
         full_table_name = self._get_full_table_name(table_name)

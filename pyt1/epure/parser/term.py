@@ -12,11 +12,12 @@ class Term:
     left_parent:Term = None
     right_parent:Term = None
     val:str
-    header:list
+    __header__:list
 
     def __init__(self) -> None:
         self.id = str(uuid4())
         self.terms_graph = {self.id: self}
+        self.__header__ = []
 
     #primitive operators:
     def __and__(self, other): #&
@@ -70,6 +71,13 @@ class Term:
 
     def operation(self, left:Term, right:Term, operator:str):
         from .bin_operation import BinOperation
+        if isinstance(right, list):
+            left.__header__ = self.merge_headers(left.__header__, right)
+            return left
+            
+        if isinstance(left, list):
+            right.__header__ = self.merge_headers(left, right.__header__)
+            return right
         res = BinOperation(left, right, operator)
         res.merge_graphs()
         return res
@@ -89,7 +97,7 @@ class Term:
         
 
     def _simple_copy_terms(self, terms: List[Term]=None):
-        if terms == None:
+        if terms is None:
             terms = list(self.terms_graph.values())
 
         copies = []
@@ -159,7 +167,7 @@ class Term:
 
 
     def go_until_hasattr(self, first_attr: str, second_attr: str, terms: List[Term]=None) -> Term:
-        if terms == None:
+        if terms is None:
             terms = list(self.terms_graph.values())
 
         iterat = self

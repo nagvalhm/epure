@@ -39,17 +39,37 @@ class TermParser(NodeTransformer):
         self.joins = []
 
     
-    def parse(self, header:List[QueryingProxy], body:object, full_names=True) -> str:
+    def parse(self, *args) -> str:
+        #args
+        header:List[QueryingProxy] = None
+        body:object = None
+        full_names=True
+
+        first = args[0]
+        if isinstance(first, list):
+            header = args[0]
+            body = args[1]
+            if len(args) > 2:
+                full_names = args[2]
+        else:
+            header = []
+            body = args[0]
+            if len(args) > 1:
+                full_names = args[1]
+
         check_type('body', body, [Term, str])
 
-        if isinstance(body, Term) and not full_names:
-            body = body.str(True, full_names)
-        else:
-            body = str(body)
+        if isinstance(body, Term):
+            header = body.merge_headers(header, body.__header__)
 
-        self.joins = []        
+        if not header:
+            raise EpureParseError('header not defined')
+
+        body = body.str(True, full_names)
+        self.joins = []
         body = self.collect_joins(body)
         where_clause = self.remove_join_ids(body)
+
         
         res = self.resource.serialize_read(header, self.joins, where_clause, full_names)
         self.joins = []

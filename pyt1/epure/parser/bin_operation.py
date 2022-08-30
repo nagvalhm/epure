@@ -1,21 +1,11 @@
 from .binary import Binary
 from ast import BinOp, Compare
 from ..errors import UserInputError
-from collections.abc import Sequence
 
 
 class BinOperation(Binary, BinOp):
     def __init__(self, left, right, operator='') -> None:        
         from .leaf import TableProxy
-
-        if isinstance(right, Sequence):
-            left.header = self.merge_headers(left.header, right)
-            return left
-            
-        if isinstance(left, Sequence):
-            right.header = self.merge_headers(left, right.header)
-            return right
-
         super().__init__(left, right, operator)
 
         left = self.left
