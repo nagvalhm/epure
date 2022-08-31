@@ -11,6 +11,8 @@ from ..db.table_column import TableColumn
 from collections import OrderedDict
 from ..node.proto import Proto
 
+from ...errors import DeserializeError
+
 if TYPE_CHECKING:
     from .table_storage import TableStorage
     from ...parser.term_parser import TermParser
@@ -101,7 +103,7 @@ class Table(DbEntity):
 
         if isinstance(args[-1], Term):
             selector = args[-1]
-            return self.read_by_term(args[0:-2], selector)
+            return self.read_by_term(args[0:-1], selector)
 
         raise NotImplementedError(f'couldn read by object of type {type(selector)}')
 
@@ -143,8 +145,10 @@ class Table(DbEntity):
         
 
     def deserialize(self, rows: dict, lazy_read:bool=True):
-        full_name_epure_dict = self._column_full_name_epure_dict(rows[0])
         res = []
+        if not rows:
+            return res
+        full_name_epure_dict = self._column_full_name_epure_dict(rows[0])        
         for node_dict in rows:
             res_row = self._init_epures_row(node_dict, full_name_epure_dict, lazy_read)
             res.append(res_row)
@@ -152,49 +156,65 @@ class Table(DbEntity):
 
 
     def _init_epures_row(self, node_dict, full_name_epure_dict, lazy_read) -> Dict[type, dict]:
-        epure_kwargs_dict = OrderedDict()
-        for full_name in node_dict:
+        epure_attrs_dict = OrderedDict()
+        for full_name, db_val in node_dict.items():
             column_tuple = full_name_epure_dict[full_name]
             epure_cls = column_tuple[0]
             column = column_tuple[1]
-            if epure_cls not in epure_kwargs_dict:
-                epure_kwargs_dict[epure_cls] = {}
+            if epure_cls not in epure_attrs_dict:
+                epure_attrs_dict[epure_cls] = {}
 
-            kwargs = epure_kwargs_dict[epure_cls]            
-            db_val = node_dict[full_name]
+            attrs = epure_attrs_dict[epure_cls]            
+            # db_val = node_dict[full_name]
             if isinstance(column, TableColumn):
-                val = self.db.cast_db_py_val(db_val, column.py_type)
-                kwargs[column.name] = val
+                field_type = column.py_type
+                if isinstance(field_type, Constraint):
+                    field_type = field_type.py_type
+                val = self.db.cast_db_py_val(db_val, field_type)
+                attrs[column.name] = val
             else:
                 val = self.db.cast_db_py_val(db_val)
-                kwargs[column] = val
+                attrs[column] = val
 
         res = []
-        for epure_cls, kwargs in epure_kwargs_dict.items():
-            epure_obj = self._init_epure(epure_cls, kwargs, lazy_read)
+        for epure_cls, attrs in epure_attrs_dict.items():
+            epure_obj = self._init_epure(epure_cls, attrs, lazy_read)
             res.append(epure_obj)
         return res
 
 
-    def _init_epure(self, epure_cls:Epure, kwargs:dict, lazy_read):
+    def _init_epure(self, epure_cls:Epure, attrs:dict, lazy_read):
 
-        res = epure_cls(kwargs)
+        res = None
+        if True in epure_cls.init_params:
+            res = epure_cls(**attrs)
+        else:
+            arguments = {}
+            for name in epure_cls.init_params:
+                if isinstance(name, str) and name in attrs:
+                    arguments[name] = attrs[name]
+            try:
+                res = epure_cls(**arguments)
+            except Exception as ex:
+                raise ex
+        if res is None:
+            raise DeserializeError
         
-        for field_name, field_val in kwargs:
+        for field_name, field_val in attrs.items():
             setattr(res, field_name, field_val)
 
-        if not (hasattr(res, 'annotations') and 'node_id' in kwargs):
+        if not (hasattr(res, 'annotations') and 'node_id' in attrs):
             return res
 
-        for field_name, field_type in res.annotations().items():
-            if field_name not in kwargs:
-                node_id = kwargs['node_id']
+        for field_name, field_type in res.annotations.items():
+            if field_name not in attrs:
+                node_id = attrs['node_id']
                 promise = FieldPromise(epure_cls.resource, node_id, field_name)
                 setattr(res, field_name, promise)
 
             elif isinstance(field_type, Epure):
-                node_id = kwargs[field_name]
-                if issubclass(res, Proto) and field_name == '__proto__':
+                node_id = attrs[field_name]
+                if issubclass(field_type, Proto) and field_name == '__proto__':
                     proto = field_type.resource.read(node_id=node_id)
                     res.set_proto_fields(proto)
                 elif lazy_read:
@@ -209,8 +229,9 @@ class Table(DbEntity):
 
     def _column_full_name_epure_dict(self, node_dict) -> Dict[str, tuple]:
         res = OrderedDict()
-        for full_name in node_dict:
-            split = full_name.rsplit('.', 1)
+        for full_name, val in node_dict.items():
+            dot_name = full_name.replace('___', '.')
+            split = dot_name.rsplit('.', 1)
             table_name = split[0]
             field_name = split[1]            
             epure_cls = self.db.get_epure_by_table_name(table_name)
@@ -220,9 +241,9 @@ class Table(DbEntity):
 
             epure_table = getattr(epure_cls, 'resource', None)
             if epure_table == None or not isinstance(epure_table, Table):
-                raise DbError('this epure must have table as resourse')
+                raise DbError(f'epure {epure_cls} must have table as resourse')
             column = epure_table.header[field_name]
-            res[full_name] = (epure_cls, column)
+            res[full_name] = [epure_cls, column]
         return res
 
 
@@ -291,6 +312,10 @@ class Table(DbEntity):
                 if node_id is not None and not node_id.in_header(header + res):
                     res.append(node_id)
         return header + res
+
+
+    def get_column_header_name(self, column_name:str):
+        raise NotImplementedError
 
         # tables = []
         # columns = []

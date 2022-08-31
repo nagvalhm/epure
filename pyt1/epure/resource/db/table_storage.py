@@ -119,6 +119,8 @@ class TableStorage(DbEntityResource):
     def _get_epures_dict(self):        
         res = {}
         for ep in Epure.epures:
+            if not hasattr(ep, 'resource'):
+                raise DbError(f'epure {ep} not correctly initialized')
             table_name = ep.resource.full_name
             if table_name in self:
                 res[table_name] = ep

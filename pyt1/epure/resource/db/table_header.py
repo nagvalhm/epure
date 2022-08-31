@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 from ..savable import Savable
 from ...helpers.type_helper import check_type
 from ...errors import EpureError
-from uuid import uuid4
+# from uuid import uuid4
 from .table_column import TableColumn
 from ..db.db_entity_resource import DbEntityResource
 from .constraint import Constraint, NotNull, Default, Prim, Foreign, Uniq, Check
@@ -151,8 +151,9 @@ class TableHeader(Savable):
         column = cast(TableColumn, column)
         table_name = self.table.full_name
 
-        random_id = str(uuid4()).replace('-', '')
-        del_column_name = f'{column.name}_deleted_{random_id}'
+        # random_id = str(uuid4()).replace('-', '')
+        # del_column_name = f'{column.name}_deleted_{random_id}'
+        del_column_name = f'{column.name}___del'
 
         pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
 
@@ -177,8 +178,9 @@ class TableHeader(Savable):
         column = cast(TableColumn, column)
         table_name = self.table.full_name
 
-        random_id = str(uuid4()).replace('-', '')
-        del_column_name = f'{column.name}_deleted_{random_id}'
+        # random_id = str(uuid4()).replace('-', '')
+        # del_column_name = f'{column.name}_deleted_{random_id}'
+        del_column_name = f'{column.name}___del'
 
         pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
         return pre_delete_script

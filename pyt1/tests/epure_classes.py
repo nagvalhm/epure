@@ -64,7 +64,7 @@ class SeparatedEpure1:
     str1:str = None
     int1:Default[int] = 7
     float1:NotNull[float] = 3.14
-    complex1:Uniq[complex]
+    complex1:complex
     list1:list
     tuple1:tuple
     no_type = None
@@ -141,8 +141,8 @@ class DefaultEpure(ParentClass3):
     epure_class:EpureClass3
     epure_class1:EpureClass1
 
-    def __init__(self):
-        pass
+    # def __init__(self):
+    #     pass
 
     # @read
     def read_method(self, tp, dbp, int3_param, float3_param, int2_param):
@@ -166,7 +166,22 @@ class DefaultEpure(ParentClass3):
         return (tp.float3, tp.range0, 
             tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
 
-@epure('prefix.AliasedTable')
+# @epure('prefix.AliasedTable')
+# class AliasedEpure:
+#     regular_class:RegularClass3
+#     epure_class:EpureClass3
+
+#     range3:range
+#     dict3:dict
+#     set3:set
+#     frozenset3:frozenset
+#     bool3:bool
+#     bytes3:bytes
+
+#     def __init__(self):
+#         pass
+
+@epure('AliasedTable')
 class AliasedEpure:
     regular_class:RegularClass3
     epure_class:EpureClass3

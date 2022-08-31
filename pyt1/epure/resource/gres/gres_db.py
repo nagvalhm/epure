@@ -18,13 +18,14 @@ from ..db.constraint import Constraint, Default, Foreign, Prim, NotNull, Uniq
 from ...errors import DbError
 from ..file.json_file import JsonFile
 from .jsonb_table import JsonbTable
+from decimal import Decimal
 
 class GresDb(Db):
 
     default_table_type: Type[Table] = GresTable
     default_namespace:str='Public'
     log_level:int = logging.NOTSET
-    json_serializer:Savable
+
 
     def __init__(self, connect_str:str='', database:str='', user:str='', password:str='',
              host:str='', port:str='', default_namespace='', log_level:int = logging.NOTSET,
@@ -211,8 +212,6 @@ class GresDb(Db):
         json = self.json_serializer.serialize_for_update(val)
         return f"'{json}'"
 
-    def cast_db_py_val(self, val:Any, py_type:type) -> Any:
-        return val
         
     py_db_types:Dict[type, str] = {
         str: 'text',

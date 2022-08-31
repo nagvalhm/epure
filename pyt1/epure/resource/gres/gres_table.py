@@ -56,9 +56,9 @@ class GresTable(Table, GresEntity):
         res = 'SELECT'
         for item in header:
             if isinstance(item, ColumnProxy):
-                res += f' {item.str(False, full_names)},'
+                res += f' {item.serialize(False, full_names, False)},'
             elif isinstance(item, TableProxy):
-                res += f' {item.str(False, full_names)}.*,'
+                res += f' {item.serialize(False, full_names, False)},'
             else:
                 raise EpureParseError('select header item must be ColumnProxy or TableProxy')
         res = res[:-1]
@@ -117,3 +117,10 @@ class GresTable(Table, GresEntity):
 
     def generate_id(self, resource: Savable = None):
         return uuid4()
+
+    def get_column_header_name(self, column_name:str):
+        table_name = self.full_name
+        res = f'{table_name}.{column_name}'
+        alias = res.replace('.', '___')
+        res = f'{res} as {alias}'
+        return res

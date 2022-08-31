@@ -75,12 +75,14 @@ class ColumnProxy(QueryingProxy, Name):
 
 
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_body=True) -> str:
         res = self.__column__.full_name
 
-        if full_names:
+        if for_body:
             table = self.__table__.full_name
             res = f'{table}.{res}'
+        else:
+            res = self.__table__.get_column_header_name(res)
         if parentheses:
             res = self.append_parentheses(res)
         
@@ -129,15 +131,21 @@ class TableProxy(QueryingProxy, Name):
         res = TermHeader(list(*args))
         return res
 
-    def __call__(self, *args) -> Any:
-        res = TermHeader(list(*args))
-        return res
+    # def __call__(self, *args) -> Any:
+    #     res = TermHeader(list(*args))
+    #     return res
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
-        res = f'{self.__table__.full_name}'
-        if not parentheses:
-            return res
-        res = self.append_parentheses(res)
+    def serialize(self, parentheses=True, full_names=True, for_body=True) -> str:
+        res = ''
+        if for_body:
+            res = f'{self.__table__.full_name}'
+            if parentheses:
+                res = self.append_parentheses(res)
+        else:
+            for col in self.__table__.header:
+                res += self.__table__.get_column_header_name(col) + ', '
+            res = res[0:-2]
+        
         return res
 
     def _copy(self):

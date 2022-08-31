@@ -33,3 +33,6 @@ class DefaultConstraintError(AttributeError):
 
 class MultipleInheritanceError(Exception):
     pass
+
+class DeserializeError(Exception):
+    pass

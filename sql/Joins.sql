@@ -95,3 +95,14 @@ SELECT information_schema.columns.table_schema, information_schema.columns.table
 LEFT JOIN information_schema.table_constraints on information_schema.constraint_column_usage.constraint_name = information_schema.table_constraints.constraint_name
  WHERE 
  (information_schema.columns.table_schema = 'public' and information_schema.columns.table_name = 'default_epure')  (  )
+ 
+ 
+ 
+ SELECT public.default_epure.float3, public.default_epure.range0, public.default_epure.epure_class, public.epure_class3.node_id, public.default_epure.node_id FROM public.default_epure 
+ LEFT JOIN public.epure_class3 on public.default_epure.epure_class = public.epure_class3.node_id or public.default_epure.generic_list0 = public.epure_class3.generic_list2 
+LEFT JOIN public.epure_class1 on public.default_epure.epure_class1 = public.epure_class1.node_id 
+ WHERE 
+ public.default_epure.str3 = 'str3_value' and (public.default_epure.int3 > 3 or public.default_epure.float3 < 0.8) and (public.default_epure.int3 < public.epure_class1.int2)
+ 
+ 
+ select * from public.default_epure where public.default_epure.int3 > 3

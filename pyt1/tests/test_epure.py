@@ -100,32 +100,32 @@ def default_epure(regular_class3, epure_class3, epure_class1) -> Epure:
     assert res == epure
     return res
 
-# def test_default_epure_table(default_epure):
-#     assert default_epure.table.name == 'default_epure'
-#     assert default_epure.db.name == 'GresDb'
-#     assert table_exists('default_epure')
+def test_default_epure_table(default_epure):
+    assert default_epure.table.name == 'default_epure'
+    assert default_epure.db.name == 'GresDb'
+    assert table_exists('default_epure')
 
-# def test_default_epure_fields(default_epure):
-#     pass
+def test_default_epure_fields(default_epure):
+    pass
 
 
-# def test_default_epure_fields_in_correct_tables():
-#     pass
+def test_default_epure_fields_in_correct_tables():
+    pass
 
-# @pytest.fixture
-# def aliased_epure():
-#     return get_epure(AliasedEpure)
+@pytest.fixture
+def aliased_epure():
+    return get_epure(AliasedEpure)
 
-# def test_aliased_epure_fields(aliased_epure):
-#     pass
+def test_aliased_epure_fields(aliased_epure):
+    pass
 
-# def test_aliased_epure_table(aliased_epure):
-#     assert aliased_epure.table.name == 'prefix.aliasedtable'
-#     assert default_epure.db.name == 'GresDb'
-#     assert table_exists('prefix.aliasedtable')
+def test_aliased_epure_table(aliased_epure):
+    assert aliased_epure.table.name == 'prefix.aliasedtable'
+    assert default_epure.db.name == 'GresDb'
+    assert table_exists('prefix.aliasedtable')
 
-# def test_aliased_epure_fields_in_correct_tables():
-#     pass
+def test_aliased_epure_fields_in_correct_tables():
+    pass
 
 # @pytest.fixture
 # def custom_save_epure():

@@ -46,8 +46,8 @@ class TermParser(NodeTransformer):
         full_names=True
 
         first = args[0]
-        if isinstance(first, list):
-            header = args[0]
+        if isinstance(first, list) or isinstance(first, tuple):
+            header = list(args[0])
             body = args[1]
             if len(args) > 2:
                 full_names = args[2]

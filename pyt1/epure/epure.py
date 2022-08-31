@@ -17,7 +17,7 @@ from .resource.db.db_entity import DbEntity
 import functools
 from .parser.term import Term
 from .resource.node.proto import Proto
-
+from inspect import signature
 
 
 def connect(edb:TableStorage) -> None:
@@ -30,6 +30,7 @@ class Epure(type, Savable):
     # annotations:Dict[str,Any]
     resource:Savable
     prepared_resource:object
+    init_params:object
     
     # def __new__(mcls, name: str, cls_bases: Tuple[type, ...], namespace: dict[str, Any]) -> Epure:
     #     return super().__new__(mcls, name, cls_bases, namespace)    
@@ -38,8 +39,9 @@ class Epure(type, Savable):
         if not self.is_saved:
             self.save_epure()
             self.is_saved = True
-            
-        return super(Epure, self).__call__(*args, **kwargs)
+
+        res = super(Epure, self).__call__(*args, **kwargs)
+        return res
 
 
     def __getattr__(self, attr_name: str) -> Any:
@@ -80,13 +82,46 @@ class Epure(type, Savable):
         #     return self.execute(selector)
         # setattr(self, selector.__name__, reader)
 
-    def prepare_save(self, resource:object):        
+    def prepare_save(self, resource:object):
         self.__class__.epures.append(self)
         self.prepared_resource = resource
 
 
     def save_epure(self):
+        self.set_resource()
+        self.init_params = self.get_init_params()
 
+    def get_init_params(self):
+        res = []
+        sig = signature(self.__init__)
+        for key, val in sig.parameters.items():
+            if val.kind == val.VAR_POSITIONAL:
+                    continue
+            if val.kind == val.VAR_KEYWORD:
+                res.append(True)
+            else:
+                res.append(key)
+        return res[1:]
+        # sig = signature(epure_cls.__init__)
+        # params = sig.parameters
+        # params_vals = params.values()
+        # has_kwargs = any([True for p in params_vals if p.kind == p.VAR_KEYWORD])
+        # if has_kwargs:
+        #     res = epure_cls(**kwargs)
+        # else:
+        #     arguments = {}
+        #     for key, val in params:
+        #         if val.kind == val.VAR_POSITIONAL:
+        #             continue
+        #         if key in kwargs:
+        #             arguments[key] = kwargs[key]
+        #             continue
+        #         if val.default == val.empty:
+        #             raise DeserializeError
+        #     res = epure_cls(**arguments)
+
+
+    def set_resource(self):
         resource = self.prepared_resource
         check_type('resource', resource, [str, Savable, NoneType])
 
@@ -101,7 +136,7 @@ class Epure(type, Savable):
             resource = self._create_or_update(table_name)
 
         self.resource = resource
-        
+
         
 
     def _create_or_update(self, table_name:str) -> Table:
@@ -189,6 +224,7 @@ def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) 
 
     def epure_creator(cls:type) -> Epure:
         epure_cls = _create_epure(cls, saver, epure_metaclass)
+        epure_cls.is_saved = False
         epure_cls.prepare_save(resource)
 
         del cls
