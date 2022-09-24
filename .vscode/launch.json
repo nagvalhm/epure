@@ -55,7 +55,7 @@
             "cwd": "${config:cwd}"
         },
 
-        {
+        /*{
             "name": "pypi publish",
             "type": "python",
             "request": "launch",            
@@ -65,7 +65,7 @@
             "console": "integratedTerminal",
             "python": "${config:python_path}",
             "cwd": "${config:cwd}"
-        },
+        },*/
 
         {
             "name": "Launch via npm",

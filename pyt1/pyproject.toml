@@ -5,7 +5,8 @@ description = "purest architecture"
 authors = ["nagvalhm <nagvalhm@yandex.ru>"]
 license = "MIT"
 packages = [
-    { include = "pypi_stub" },
+    #{ include = "pypi_stub" },
+    { include = "epure" }
 ]
 
 [tool.poetry.dependencies]

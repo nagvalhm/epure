@@ -8,7 +8,7 @@ from .resource.db.constraint import Foreign, Default, Constraint
 
 
 # from types import FunctionType
-from ..epure.resource.node.node import TableNode
+from .resource.node.node import TableNode
 from .resource.savable import Savable
 if TYPE_CHECKING:
     from .resource.db.table_storage import TableStorage
