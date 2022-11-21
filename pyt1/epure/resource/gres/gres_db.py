@@ -226,27 +226,27 @@ class GresDb(Db):
         bytearray: 'bytea',
 
         #jsonb siblings
-        range: 'jsonb',
-        list: 'jsonb',
-        List: 'jsonb',
-        tuple: 'jsonb',
-        Tuple: 'jsonb',
-        object: 'jsonb',
-        Any: 'jsonb',
-        dict: 'jsonb',
-        Dict: 'jsonb',
-        Dict[int,str]: 'jsonb',
-        set: 'jsonb',
-        frozenset: 'jsonb',
-        memoryview: 'jsonb',
-        LambdaType: 'jsonb',
-        Callable: 'jsonb'
+        range: 'json',
+        list: 'json',
+        List: 'json',
+        tuple: 'json',
+        Tuple: 'json',
+        object: 'json',
+        Any: 'json',
+        dict: 'json',
+        Dict: 'json',
+        Dict[int,str]: 'json',
+        set: 'json',
+        frozenset: 'json',
+        memoryview: 'json',
+        LambdaType: 'json',
+        Callable: 'json'
     }
 
     db_py_types:Dict[str, type] = {
         'bigint': int, #-9223372036854775808 to +9223372036854775807
         'text': str,
-        'json': object,
+        # 'json': object,
         'name': str,
         'ARRAY': list,
         'oid': int, #0 to 4294967295
@@ -270,7 +270,7 @@ class GresDb(Db):
         'character varying': str,
         'character': str,
         'point' : complex,
-        'jsonb': Any,
+        'json': Any,
         'uuid' : UUID,
         'bytea': bytes,
 
