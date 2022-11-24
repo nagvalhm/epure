@@ -3,6 +3,7 @@ from typing import Dict, List, Any, Callable
 from .constraint import Constraint
 from ...errors import DbError
 from ..savable import Savable
+from uuid import UUID
 
 
 class DbEntityResource(Resource):
@@ -48,7 +49,7 @@ class DbEntityResource(Resource):
 
     def cast_db_py_val(self, val:Any, py_type:type) -> Any:
         # if type(val) == Decimal:
-        if py_type in (int, float, bool):
+        if py_type in (int, float, bool, UUID):
             return py_type(val)
         if self.same_db_type(py_type, Any):
             return self.json_serializer.deserialize(val)

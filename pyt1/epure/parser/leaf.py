@@ -9,6 +9,7 @@ from ast import Name
 from ast import Name, Constant
 from ..errors import EpureParseError
 from ..helpers.type_helper import check_type
+from uuid import UUID
 
 class Leaf(Term):
     left_parentheses_count = 0
@@ -33,7 +34,7 @@ class Primitive(Leaf, Constant):
 
     def serialize(self, parentheses=True, full_names=True) -> str:
         res = str(self.val)
-        if isinstance(self.val, str):
+        if isinstance(self.val, str) or isinstance(self.val, UUID):
             res = f"'{res}'"
         if not parentheses:
             return res

@@ -111,12 +111,15 @@ class Table(DbEntity):
     # def read_by_fields(self):
     #     raise NotImplementedError
 
-    def read_by_kwargs(self, header:List[str], operator:str, **kwargs):
+    def read_by_kwargs(self, header:List[str]=[], operator:str="", **kwargs):
         term_header = []
         tp = self.querying_proxy
         for col_name in header:
             column = getattr(tp, col_name)
             term_header.append(column)
+        
+        if not term_header:
+            term_header.append(tp)
         
         term = term_header
         for key, val in kwargs.items():

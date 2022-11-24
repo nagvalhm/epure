@@ -96,8 +96,8 @@ def default_epure(regular_class3, epure_class3, epure_class1) -> Epure:
     epure.epure_class1 = epure_class1
 
     id = epure.save().node_id
-    res = epure.table.read(id=id)
-    assert res == epure
+    res = epure.table.read(node_id=id)
+    assert res[0][0].node_id == epure.node_id
     return res
 
 def test_default_epure_table(default_epure):
