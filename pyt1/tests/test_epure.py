@@ -11,9 +11,9 @@ import random
 
 def get_epure(cls):
     epure = cls()
-    id = epure.save()
-    res = epure.table.read(id=id)
-    assert res == epure
+    id = epure.save().node_id
+    res = epure.table.read(node_id=id)
+    assert res[0][0] == epure
     return res
 
 def table_exists(table_name):
@@ -101,8 +101,9 @@ def default_epure(regular_class3, epure_class3, epure_class1) -> Epure:
     return res
 
 def test_default_epure_table(default_epure):
-    assert default_epure.table.name == 'default_epure'
-    assert default_epure.db.name == 'GresDb'
+    assert default_epure[0][0].table.name == 'default_epure'
+    # assert default_epure[0][0].resource.resource.name == 'default_epure'
+    assert default_epure[0][0].db.name == 'GresDb'
     assert table_exists('default_epure')
 
 def test_default_epure_fields(default_epure):
