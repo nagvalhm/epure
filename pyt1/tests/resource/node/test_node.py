@@ -18,8 +18,9 @@ def test_node_from_dict():
         last_name:str = "Dow"
         age:int = 35
 
-    _dict = {key:value for key, value in Human.__dict__.items() if not key.startswith('__') 
-    and not callable(key) and key!='is_saved' and key!='prepared_resource'}
+    # _dict = {key:value for key, value in Human.__dict__.items() if not key.startswith('__') 
+    # and not callable(key) and key!='is_saved' and key!='prepared_resource'}
+    _dict = {key:value for key, value in Human.__dict__.items() if not Human.is_excluded(key)}
     # _dict = dict(name = "John", last_name = "Dow", Age = 35, grandma = epure_class1, grandpa = epure_class2)
     res = Human.from_dict(_dict)
 

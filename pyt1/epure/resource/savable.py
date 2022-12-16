@@ -37,6 +37,8 @@ class Savable(Resource):
             return True
         if atr_name[:2] == "__" and atr_name[-2:] == "__":
             return True
+        if atr_name in ("prepared_resource"):
+            return True
         if type_hint in (NoneType, None):
             return True
         return False
