@@ -15,10 +15,13 @@ from ...errors import EpureError
 from .table_column import TableColumn
 from ..db.db_entity_resource import DbEntityResource
 from .constraint import Constraint, NotNull, Default, Prim, Foreign, Uniq, Check
+import uuid
 
 
 class TableHeader(Savable):
     columns:Dict[str,TableColumn]
+    deleted_columns:Dict[str, TableColumn]
+
     if TYPE_CHECKING:
         table:Table
 
@@ -30,6 +33,7 @@ class TableHeader(Savable):
         if table:
             self.table = table
         self.columns = {}
+        self.deleted_columns = {}
         super().__init__(name)
         if not columns:
             return
@@ -52,7 +56,6 @@ class TableHeader(Savable):
 
     def __len__(self):
         return self.columns.__len__()
-
 
     def __sub__(self, other: TableHeader) -> List[TableColumn]:
         res = []
@@ -86,16 +89,28 @@ class TableHeader(Savable):
             return False
 
         return self.db.same_db_type(self_column.py_type, column.py_type)
-           
-
-
 
     def create(self, column: Savable) -> Any:
         check_type('column', column, TableColumn)
 
-        script = self.serialize_for_create(column)
+        script = ''
+        restored_col_name = ''
+        column_is_for_restore = False
+
+        for restored_col_name, restored_column in self.deleted_columns:
+            if restored_col_name[:-4] == f'{column.name}___del' and restored_column.py_type == column.py_type:
+                script = self.serialize_for_restore(column)
+                column_is_for_restore = True
+                break
+
+        if script == '':
+            script = self.serialize_for_create(column)
+
         script = str(script)
         self.execute(script)
+
+        if column_is_for_restore:
+            self.deleted_columns.pop(restored_col_name)
 
         self.columns[column.name] = column
 
@@ -104,12 +119,18 @@ class TableHeader(Savable):
     def delete(self, column: Savable) -> Any:
         check_type('column', column, TableColumn)
 
-        script = self.serialize_for_delete(column)
+        random_id = str(uuid.uuid4())[0:4]
+        del_column_name = f'{column.name}___del{random_id}'
+
+        script = self.serialize_for_delete(column, del_column_name)
         script = str(script)
         self.execute(script)
 
-        return column
+        self.columns.pop(column.name)
+        self.deleted_columns[del_column_name] = column
+        column.name = del_column_name
 
+        return column
 
     def update(self, py_column: Savable) -> Any:
         check_type('py_column', py_column, TableColumn)
@@ -120,15 +141,34 @@ class TableHeader(Savable):
         if py_column in self:
             return db_column
 
-        script = self.serialize_for_update(py_column)
+        random_id = str(uuid.uuid4())[0:4]
+        del_column_name = f'{py_column.name}___del{random_id}'
+
+        script = ''
+        restored_col_name = ''
+        column_is_for_restore = False
+
+        for restored_col_name, restored_column in self.deleted_columns.items():
+            if restored_col_name[:-4] == f'{py_column.name}___del' and restored_column.py_type == py_column.py_type:
+
+                script = self.serialize_for_restore(py_column, restored_col_name, del_column_name)
+                column_is_for_restore = True
+                break
+        
+        if script == '':
+            script = self.serialize_for_update(py_column, del_column_name)
         script = str(script)
         self.execute(script)
 
+        db_column.name = del_column_name
+        self.deleted_columns[del_column_name] = db_column
+
+        if column_is_for_restore:
+            self.deleted_columns.pop(restored_col_name)
+            
         self.columns[py_column.name] = py_column
 
         return db_column
-
-
 
     def serialize_for_create(self, column: Savable, **kwargs) -> object:
         check_type('column', column, TableColumn)
@@ -144,16 +184,10 @@ class TableHeader(Savable):
         create_script = self._create_column_script(table_name, column, db)
         return create_script
 
-
-
-    def serialize_for_update(self, column: Savable, **kwargs) -> object:
+    def serialize_for_update(self, column: Savable, del_column_name:str, **kwargs) -> object:
         check_type('column', column, TableColumn)
         column = cast(TableColumn, column)
         table_name = self.table.full_name
-
-        # random_id = str(uuid4()).replace('-', '')
-        # del_column_name = f'{column.name}_deleted_{random_id}'
-        del_column_name = f'{column.name}___del'
 
         pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
 
@@ -161,7 +195,7 @@ class TableHeader(Savable):
         if 'db' in kwargs:
             db = kwargs['db']
         else:
-            db = self.table.db        
+            db = self.table.db
 
         create_script = self._create_column_script(table_name, column, db)
 
@@ -171,29 +205,37 @@ class TableHeader(Savable):
 
         return pre_delete_script + create_script + migrate_script
 
-
-
-    def serialize_for_delete(self, column: Savable, **kwargs) -> object:
+    def serialize_for_delete(self, column: Savable, del_column_name:str, **kwargs) -> object:
         check_type('column', column, TableColumn)
         column = cast(TableColumn, column)
         table_name = self.table.full_name
 
-        # random_id = str(uuid4()).replace('-', '')
-        # del_column_name = f'{column.name}_deleted_{random_id}'
-        del_column_name = f'{column.name}___del'
-
         pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
         return pre_delete_script
+    
+    def serialize_for_restore(self, column:Savable, restore_col_name:str, del_column_name:str=None):
+        check_type('column', column, TableColumn)
+        restore_script = ''
+        script = ''
+        pre_delete_script = ''
 
+        table_name = self.table.full_name
+        column = cast(TableColumn, column)
+        restore_script = self._serialize_for_restore(table_name, column, restore_col_name)
+        if del_column_name:
+            pre_delete_script = self._serialize_pre_delete(table_name, column, del_column_name)
+        script = pre_delete_script + restore_script
 
-        
+        return script
 
+    def _serialize_for_restore(self, table_name:str, column:TableColumn, restore_name) -> object:
+        script = self._rename_column_script(table_name, restore_name, column.name)
+        return script
 
     def _serialize_pre_delete(self, table_name:str, column:TableColumn, del_column_name:str) -> str:
         script = self._rename_column_script(table_name, column.name, del_column_name)\
                 + self._set_nullable_script(table_name, del_column_name)
         return script
-
 
     def deserialize(self, column_dict: object, **kwargs) -> Savable:
         check_type('column_dict', column_dict, [dict, list])
@@ -209,7 +251,6 @@ class TableHeader(Savable):
         uniq = column_dict['uniq']
         prim = column_dict['prim']
         foreign = column_dict['foreign']
-
         
 
         db = self._get_db(**kwargs)
@@ -235,8 +276,6 @@ class TableHeader(Savable):
         
         return TableColumn(column_name, column_type)
 
-
-
     def _deserialize(self, column_dict:dict) -> dict:
         return column_dict
 
@@ -254,11 +293,9 @@ class TableHeader(Savable):
             raise EpureError('undefined db for column serialization')
         return db
 
-
     def _rename_column_script(self, table_name:str, old_name:str, new_name:str) -> str:
         raise NotImplementedError
         
-    
     def _set_not_null_script(self, table_name:str, column_name:str) -> str:
         raise NotImplementedError
 
@@ -271,7 +308,9 @@ class TableHeader(Savable):
     def _migrate_columns_script(self, table_name:str, from_column:str, to_column:str) -> str:
         raise NotImplementedError
 
-
     def _set_column(self, column:TableColumn):
         check_type('column', column, TableColumn)
-        self.columns[column.name] = column
+        if column.is_deleted:
+            self.deleted_columns[column.name] = column
+        else:
+            self.columns[column.name] = column

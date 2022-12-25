@@ -13,7 +13,9 @@ class TableColumn(Savable):
     @property
     def is_deleted(self):
         # res = re.match(r'.*deleted_[a-f0-9]{32}', self.name)
-        res = self.name[-6:] == '___del'
+        res = self.name[-10:-4] == '___del'
+        if res:
+            return res
         return res
 
     def __init__(self, name:str, py_type:type=NoneType) -> None:

@@ -141,9 +141,11 @@ class Epure(type, Savable):
 
     def _create_or_update(self, table_name:str) -> Table:
         from .resource.db.table import Table
-        table:Table = self._get_table(table_name)
+        table:Table = self._get_table_by_cls(table_name)
         res:DbEntity
         if table_name in self.EDb:
+            deleted_columns = self.EDb[table_name].header.deleted_columns
+            table.header.deleted_columns = deleted_columns
             res = self.EDb.update(table)
         else:
             res = self.EDb.create(table)
@@ -163,7 +165,7 @@ class Epure(type, Savable):
 
         
 
-    def _get_table(self, table_name: str = '') -> Table:
+    def _get_table_by_cls(self, table_name: str = '') -> Table:
         from .resource.db.table import Table
         table:Table
         
