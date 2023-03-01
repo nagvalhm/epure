@@ -32,8 +32,9 @@ class TableStorage(DbEntityResource):
 
 
         
-    def __getitem__(self, key:str):
-        return self.tables[key]
+    def __getitem__(self, table_name:str):
+        full_name = self._get_full_table_name(table_name)
+        return self.tables[full_name.full_name]
 
     def __iter__(self):
         return self.tables.__iter__()
