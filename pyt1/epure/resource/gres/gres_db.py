@@ -225,7 +225,7 @@ class GresDb(Db):
         bytes: 'bytea',
         bytearray: 'bytea',
 
-        #jsonb siblings
+        #json siblings
         range: 'json',
         list: 'json',
         List: 'json',
@@ -271,6 +271,7 @@ class GresDb(Db):
         'character': str,
         'point' : complex,
         'json': Any,
+        'jsonb': Any,
         'uuid' : UUID,
         'bytea': bytes,
 
