@@ -7,6 +7,7 @@ pyt/sandbox.py
 config_test/
 config/
 
+sql
 pyt1/env310
 pyt1/dist
 pyt1/__pycache__
