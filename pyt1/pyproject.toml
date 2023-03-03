@@ -2,11 +2,11 @@
 name = "epure"
 version = "0.1.0"
 description = "purest architecture"
-authors = ["nagvalhm <nagvalhm@yandex.ru>"]
-license = "MIT"
+authors = ["Nikita Umarov <nagvalhm@yandex.ru>", "Pavel Pichugin"]
+license = "MIT License (MIT)"
 packages = [
-    #{ include = "pypi_stub" },
-    { include = "epure" }
+    { include = "pypi_stub" },
+    # { include = "epure" }
 ]
 
 [tool.poetry.dependencies]
