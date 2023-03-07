@@ -210,6 +210,10 @@ class Table(DbEntity):
             return res
 
         for field_name, field_type in res.annotations.items():
+
+            if epure_cls.is_excluded(field_name):
+                continue
+
             if field_name not in attrs:
                 node_id = attrs['node_id']
                 promise = FieldPromise(epure_cls.resource, node_id, field_name)

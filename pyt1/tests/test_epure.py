@@ -11,9 +11,9 @@ import random
 
 def get_epure(cls):
     epure = cls()
-    id = epure.save()
-    res = epure.table.read(id=id)
-    assert res == epure
+    id = epure.save().node_id
+    res = epure.table.read(node_id=id)
+    assert res[0][0] == epure
     return res
 
 def table_exists(table_name):
@@ -24,6 +24,7 @@ def table_exists(table_name):
             cursor.execute(f'select * from {table_name}')
             if cursor.rowcount > 0:
                 result = cursor.fetchall()
+    return result
 
 @pytest.fixture
 def epure_class1():
@@ -95,14 +96,18 @@ def default_epure(regular_class3, epure_class3, epure_class1) -> Epure:
     epure.epure_class = epure_class3
     epure.epure_class1 = epure_class1
 
+    epure.with_out_hint = True
+
     id = epure.save().node_id
     res = epure.table.read(node_id=id)
+
+    assert not hasattr(res[0][0], "with_out_hint")
     assert res[0][0].node_id == epure.node_id
     return res
 
 def test_default_epure_table(default_epure):
-    assert default_epure.table.name == 'default_epure'
-    assert default_epure.db.name == 'GresDb'
+    assert default_epure[0][0].table.name == 'default_epure'
+    assert default_epure[0][0].table.db.name == 'GresDb'
     assert table_exists('default_epure')
 
 def test_default_epure_fields(default_epure):

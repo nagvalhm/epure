@@ -49,6 +49,8 @@ class DbEntityResource(Resource):
 
     def cast_db_py_val(self, val:Any, py_type:type) -> Any:
         # if type(val) == Decimal:
+        if val is None:
+            return val
         if py_type in (int, float, bool, UUID):
             return py_type(val)
         if self.same_db_type(py_type, Any):
@@ -56,3 +58,4 @@ class DbEntityResource(Resource):
         # if py_type == UUID:
             # return str(val)
         return val
+        # return py_type(val) instead of 54,55.
