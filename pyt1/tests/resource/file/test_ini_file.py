@@ -4,7 +4,7 @@ from ...helper import strict_eq
 
 @pytest.fixture
 def config():
-    return IniFile('./test_config.ini')
+    return IniFile('./pyt1/tests/test_config.ini')
 
 def test_read_virtual_section(config):
     db_host = config.db_host

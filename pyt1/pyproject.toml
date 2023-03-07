@@ -1,13 +1,15 @@
 [tool.poetry]
 name = "epure"
-version = "0.1.0"
+version = "0.2.3"
 description = "purest architecture"
-authors = ["nagvalhm <nagvalhm@yandex.ru>"]
+authors = ["Nikita Umarov <nagvalhm@yandex.ru>", "Pavel Pichugin"]
 license = "MIT"
+readme = "README.md"
 packages = [
-    #{ include = "pypi_stub" },
+    # { include = "pypi_stub" },
     { include = "epure" }
 ]
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -30,3 +32,8 @@ build-backend = "poetry.core.masonry.api"
 strictParameterNoneValue = false
 reportSelfClsParameterName = false
 # reportWildcardImportFromLibrary = false
+
+[tool.poetry.urls]
+Homepage = "https://github.com/nagvalhm/epure"
+Source = "https://github.com/nagvalhm/epure"
+Documentation = "https://github.com/nagvalhm/epure/blob/main/README.md"
