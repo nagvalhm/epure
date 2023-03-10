@@ -16,6 +16,7 @@ python = "^3.10"
 psycopg2 = "2.9.3"
 inflection = "^0.5.1"
 jsonpickle = "^2.2.0"
+twine = "^4.0.2"
 
 [tool.poetry.dev-dependencies]
 pyright = "1.1.257"
