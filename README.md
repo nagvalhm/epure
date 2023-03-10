@@ -8,16 +8,16 @@ All technical details hidden from you. Care only about your business logic.
 Installing
 ----------
 
-Install and update using `pip`:
+Install and update using <a href="https://pip.pypa.io/en/stable/getting-started/">`pip`</a>:
 
 ```
-    $ <a href="https://pip.pypa.io/en/stable/getting-started/">pip</a> install -U epure
+    $ pip install -U epure
 ```
 
-Install and update using `poetry`:
+Install and update using <a href="https://python-poetry.org/docs/">`poetry`</a>:
 
 ```
-    $ <a href="https://python-poetry.org/docs/">poetry</a> add epure
+    $ poetry add epure
 ```
 
 
