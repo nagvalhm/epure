@@ -1,21 +1,24 @@
 Epure
 =====
 
-Epure is python library that makes your experience working with database easier. 
-
-.. _Epure: https://github.com/nagvalhm/epure
+[Epure] (https://github.com/nagvalhm/epure) is agnostic ORM - you can store and retrieve data having no idea about database, table and columns. 
+All technical details hidden from you. Care only about your business logic.
 
 
 Installing
 ----------
 
-Install and update using `pip`_:
+Install and update using `pip`:
 
-.. code-block:: text
+```shell
+    $ [pip](https://pip.pypa.io/en/stable/getting-started/) install -U epure
+```
 
-    $ pip install -U epure
+Install and update using `poetry`:
 
-.. _pip: https://pip.pypa.io/en/stable/getting-started/
+```shell
+    $ [poetry](https://python-poetry.org/docs/) add epure
+```
 
 
 Connecting Epure to database
@@ -23,7 +26,7 @@ Connecting Epure to database
 
 Create example class with Epure, create instance of it and read it from DB.
 
-.. code-block:: python
+```python
 
     # import connection functions from Epure
     from epure.resource.gres.gres_db import GresDb
@@ -48,11 +51,13 @@ Create example class with Epure, create instance of it and read it from DB.
 
     # log_level defines level of description of opertaions with DB in auto-generated file epure_db.log
 
+```
+
 
 A Simple Example
 ----------------
 
-.. code-block:: python
+```python
 
     # save this as epure_example.py
     from epure.epure import epure
@@ -93,10 +98,11 @@ A Simple Example
     # node_id is used to search epure objects and retrive them from DB via read() method
     res = epure.table.read(node_id=node_id)
 
+```
 
 Developers
 -----
-Nikita Umarov (Pichugin)
+Nikita Umarov (Pichugin), 
 Pavel Pichugin
 
 

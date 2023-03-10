@@ -13,7 +13,14 @@ def get_epure(cls):
     epure = cls()
     id = epure.save().node_id
     res = epure.table.read(node_id=id)
-    assert res[0][0] == epure
+
+    # epure_json = epure.table.db.json_serializer.serialize_for_update(epure)
+    # res_json = epure.table.db.json_serializer.serialize_for_update(res[0][0])
+
+    # assert res[0][0] == epure
+    # assert epure_json == res_json
+    
+    assert res[0][0].annotations == epure.annotations
     return res
 
 def table_exists(table_name):

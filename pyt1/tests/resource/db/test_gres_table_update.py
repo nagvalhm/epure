@@ -31,7 +31,10 @@ def test_restore_column():
 
 
     instance1 = EpureRestoreColumn()
-    print("hi")
+    res = instance1.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
+        TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')[0][0]
+    assert res == 'bigint'
+
     @epure()
     class EpureRestoreColumn:
         str2:str = 'EpureClass1.str2'
@@ -39,7 +42,7 @@ def test_restore_column():
         int2:str
 
     instance2 = EpureRestoreColumn()
-    res = instance1.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
+    res = instance2.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
         TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')[0][0]
     assert res == 'text'
 
@@ -51,6 +54,6 @@ def test_restore_column():
 
     instance3 = EpureRestoreColumn()
 
-    res = instance1.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
+    res = instance3.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
         TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')[0][0]
     assert res == 'bigint'
