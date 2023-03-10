@@ -1,7 +1,7 @@
 Epure
 =====
 
-[Epure] (https://github.com/nagvalhm/epure) is agnostic ORM - you can store and retrieve data having no idea about database, table and columns. 
+<a href="https://github.com/nagvalhm/epure">Epure</a> is agnostic ORM - you can store and retrieve data having no idea about database, table and columns. 
 All technical details hidden from you. Care only about your business logic.
 
 
@@ -10,14 +10,14 @@ Installing
 
 Install and update using `pip`:
 
-```shell
-    $ [pip](https://pip.pypa.io/en/stable/getting-started/) install -U epure
+```
+    $ <a href="https://pip.pypa.io/en/stable/getting-started/">pip</a> install -U epure
 ```
 
 Install and update using `poetry`:
 
-```shell
-    $ [poetry](https://python-poetry.org/docs/) add epure
+```
+    $ <a href="https://python-poetry.org/docs/">poetry</a> add epure
 ```
 
 
