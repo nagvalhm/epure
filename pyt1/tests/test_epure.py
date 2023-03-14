@@ -1,5 +1,9 @@
 from __future__ import annotations
-from ..epure.epure import Epure, epure, connect
+
+# from ..epure.epure import Epure, epure
+# from epure import connect
+
+# from ..epure.epure import Epure, epure, connect
 from typing import List, Dict
 from datetime import datetime
 import pytest
@@ -14,11 +18,11 @@ def get_epure(cls):
     id = epure.save().node_id
     res = epure.table.read(node_id=id)
 
-    # epure_json = epure.table.db.json_serializer.serialize_for_update(epure)
-    # res_json = epure.table.db.json_serializer.serialize_for_update(res[0][0])
+    initial_epure_json = epure.table._serialize(epure)
+    res_json = epure.table._serialize(res[0][0])
 
     # assert res[0][0] == epure
-    # assert epure_json == res_json
+    assert initial_epure_json == res_json
     
     assert res[0][0].annotations == epure.annotations
     return res
@@ -89,7 +93,7 @@ def regular_class3():
     return res
 
 @pytest.fixture
-def default_epure(regular_class3, epure_class3, epure_class1) -> Epure:
+def default_epure(regular_class3, epure_class3, epure_class1):
     epure = DefaultEpure()
     epure.float3 = random.uniform(0.0, 1000000.0)
     epure.range0 = range(1, 10)

@@ -1,6 +1,6 @@
 from __future__ import annotations
-from ..epure.epure import epure, connect
-from ..epure.resource.gres.gres_db import GresDb
+from ..epure import connect, epure
+from ..epure import GresDb
 from ..epure.resource.db.constraint import NotNull, Check, Prim, Uniq, Default
 from typing import List, Dict, Tuple, Callable
 from datetime import datetime
