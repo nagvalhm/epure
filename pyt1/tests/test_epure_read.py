@@ -47,13 +47,13 @@ def test_read_default_epure_term():
 
         & tp.int0 < ec_1.int2)
 
-    query2 = (ec_1.int2 == 1488)
+    query2 = (ec_1.int2 == 1111)
 
     DefaultEpure.resource.read(tp.float3, tp.range0, 
         tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
 
 def test_read_default_epure_readmethod():
-    DefaultEpure.read_method(3, 0.8, 1488)
+    DefaultEpure.read_method(3, 0.8, 1111)
 
 
 

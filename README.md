@@ -29,8 +29,8 @@ Create example class with Epure, create instance of it and read it from DB.
 ```python
 
     # import connection functions from Epure
-    from epure.resource.gres.gres_db import GresDb
-    from epure.epure import connect
+    from epure import GresDb
+    from epure import connect
 
     # First way to connect database to epure
 
@@ -60,7 +60,7 @@ A Simple Example
 ```python
 
     # save this as epure_example.py
-    from epure.epure import epure
+    from epure import epure
 
     # different types hints avalible
     import types
@@ -90,7 +90,7 @@ A Simple Example
     obj.list_attr = [1,2,3,4]
 
     #saving obj instance to database
-    epure.save()
+    obj.save()
 
     # saved instance has attribute of node_id that is unique
     node_id = epure.node_id 

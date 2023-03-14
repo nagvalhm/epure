@@ -159,7 +159,7 @@ class DefaultEpure(ParentClass3):
 
             & tp.int0 < ec_1.int2)
 
-        query2 = (ec_1.int2 == 1488)
+        query2 = (ec_1.int2 == 1111)
 
         return self.resource.read(tp.float3, tp.range0, 
             tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)

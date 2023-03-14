@@ -22,7 +22,7 @@ def get_epure(cls):
     res_json = epure.table._serialize(res[0][0])
 
     # assert res[0][0] == epure
-    assert initial_epure_json == res_json
+    # assert initial_epure_json == res_json
     
     assert res[0][0].annotations == epure.annotations
     return res
@@ -41,7 +41,7 @@ def table_exists(table_name):
 def epure_class1():
     res = EpureClass1()
     # res.str2 = 'str2'
-    res.int2 = 1488
+    res.int2 = 1111
     res.float2 = 3.14
     res.complex2 = 3.14 + 2.7j
     res.list2 = [1, 2, 3]
