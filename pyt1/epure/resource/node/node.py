@@ -47,7 +47,7 @@ class TableNode(Node):
         return self.resource
 
     @classmethod
-    def from_dict(_cls, _dict:Dict[str, Any])->object:
+    def from_dict_deep(_cls, _dict:Dict[str, Any])->object:
 
         # instance = _cls.__call__()
         instance = _cls()
@@ -57,6 +57,19 @@ class TableNode(Node):
                 _type = instance.annotations[field_name]
                 if isinstance(_type, Savable):
                     val = _type(val)
+                setattr(instance, field_name, val)
+
+
+        return instance
+    
+    @classmethod
+    def from_dict(_cls, _dict:Dict[str, Any])->object:
+
+        # instance = _cls.__call__()
+        instance = _cls()
+        
+        for field_name, val in _dict.items():
+            if field_name in instance.annotations:
                 setattr(instance, field_name, val)
 
 

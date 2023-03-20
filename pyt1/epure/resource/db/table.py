@@ -62,6 +62,8 @@ class Table(DbEntity):
                 continue
             if field_name not in self.header:
                 continue
+            if not hasattr(node, field_name):
+                continue
 
             field_val = getattr(node, field_name, None)
             #working for db:

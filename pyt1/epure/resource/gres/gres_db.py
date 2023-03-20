@@ -198,7 +198,7 @@ class GresDb(Db):
             return 'NULL'
         if py_type in (int, float, bool):
             return str(val)            
-        if py_type in (str, UUID):
+        if py_type in (str, UUID) or (issubclass(py_type, Savable) and type(val) == str):
             res = f"'{str(val)}'"
             return res
         if py_type in (bytes, bytearray):            

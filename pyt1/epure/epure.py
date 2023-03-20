@@ -45,11 +45,16 @@ class Epure(type, Savable):
 
 
     def __getattr__(self, attr_name: str) -> Any:
-        if self.is_saved:
-            raise AttributeError(f"'{type(self)}' object has no attribute '{attr_name}'")
-        self.is_saved = True
-        self.save_epure()        
-        return getattr(self, attr_name)
+        if not self.is_saved:
+            self.is_saved = True
+            self.save_epure()
+            return getattr(self, attr_name)
+        raise AttributeError(f"'{type(self)}' object has no attribute '{attr_name}'")
+        # if self.is_saved:
+        #     raise AttributeError(f"'{type(self)}' object has no attribute '{attr_name}'")
+        # self.is_saved = True
+        # self.save_epure()        
+        # return getattr(self, attr_name)
 
     #decorator
     @classmethod
