@@ -176,7 +176,7 @@ class TableStorage(DbEntityResource):
 
 
     def _get_full_table_name(self, table_name:str) -> FullName:
-        table_name = table_name
+        # table_name = table_name
         full_name = table_name.split('.')
         if len(full_name) > 2:
             raise NameError('table_name name must have no more then one dot')

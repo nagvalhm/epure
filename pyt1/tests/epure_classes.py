@@ -140,6 +140,7 @@ class DefaultEpure(ParentClass3):
     regular_class:RegularClass3
     epure_class:EpureClass3
     epure_class1:EpureClass1
+    epure_class2:EpureClass1
 
     # def __init__(self):
     #     pass
@@ -236,3 +237,18 @@ class CrosEpure2:
 # class Competitions:
 #     res_id:UUID
 #     data:object
+
+@epure('AnotherDomain.EpureClass4')
+class EpureClass4:
+    regular_class:RegularClass3
+    epure_class:EpureClass3
+
+    range3:range
+    dict3:dict
+    set3:set
+    frozenset3:frozenset
+    bool3:bool
+    bytes3:bytes
+
+    def __init__(self):
+        pass

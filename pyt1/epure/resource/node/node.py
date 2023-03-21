@@ -24,7 +24,7 @@ class Node(Savable):
         resource = self.resource
         
         
-        if hasattr(self, 'node_id') and  self.node_id:
+        if hasattr(self, 'node_id') and self.node_id:
             res = resource.update(self, asynch)
             return res
         else:

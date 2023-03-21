@@ -70,6 +70,10 @@ class Table(DbEntity):
             if isinstance(field_val, Savable):
                 field_type = field_val.annotations['node_id']
                 field_val = field_val.save(True).node_id
+            
+            if (isinstance(field_type, type) and issubclass(field_type, Savable)\
+                and not isinstance(field_val, Savable)):
+                field_type = type(field_val)
                 
             field_val = self.db.cast_py_db_val(field_val, field_type)
 

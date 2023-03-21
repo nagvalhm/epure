@@ -12,6 +12,7 @@ from .epure_classes import *
 import psycopg2
 import psycopg2.extras
 import random
+from uuid import uuid4
 
 def get_epure(cls):
     epure = cls()
@@ -102,6 +103,7 @@ def default_epure(regular_class3, epure_class3, epure_class1):
     epure.frozenset0 = frozenset([1, '2', 3.14])
     epure.bool0 = True
     epure.bytes0 = bytes(10)
+    epure.epure_class2 = uuid4()
 
     epure.regular_class = regular_class3
     epure.epure_class = epure_class3
@@ -131,6 +133,10 @@ def test_default_epure_fields_in_correct_tables():
 @pytest.fixture
 def aliased_epure():
     return get_epure(AliasedEpure)
+
+@pytest.fixture
+def aliased_epure():
+    return get_epure(EpureClass4)
 
 def test_aliased_epure_fields(aliased_epure):
     pass
