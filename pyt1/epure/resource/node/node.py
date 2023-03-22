@@ -9,10 +9,10 @@ class Node(Savable):
     node_id:object
     __exclude__:list
 
-    def __init__(self, node_id:object=None, name: str = '', namespace: str = '', resource:Resource=None) -> None:
+    def __init__(self, node_id:object=None, resource:Resource=None) -> None:
         if node_id != None:
             self.node_id = node_id
-        super().__init__(name, namespace, resource)
+        super().__init__(resource)
 
     @classmethod
     def from_dict(_cls, _dict:Dict[str, Any])->object:
@@ -37,10 +37,10 @@ class TableNode(Node):
     node_id: UUID
     resource:Savable
 
-    def __init__(self, node_id:object=None, name: str = '', namespace: str = '', resource:Resource=None) -> None:
+    def __init__(self, node_id:object=None, resource:Resource=None) -> None:
         if node_id != None and isinstance(node_id, str):
             node_id = UUID(node_id)
-        super().__init__(node_id, name, namespace, resource)
+        super().__init__(node_id, resource)
 
     @property
     def table(self) -> Savable:

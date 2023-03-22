@@ -5,9 +5,10 @@ from ..savable import Savable
 from .constraint import Constraint
 from .db_entity_resource import DbEntityResource
 import re
+from ...named import Named
 
 
-class TableColumn(Savable):
+class TableColumn(Savable, Named):
     py_type:type
     
     @property
@@ -20,7 +21,8 @@ class TableColumn(Savable):
 
     def __init__(self, name:str, py_type:type=NoneType) -> None:
         self.py_type = py_type
-        super().__init__(name)
+        self.name = name
+        super().__init__()
 
     
     def __eq__(self, other:TableColumn) -> bool:

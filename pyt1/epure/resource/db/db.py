@@ -40,8 +40,7 @@ class Db(TableStorage):
                 host:str='', 
                 port:str='', 
                 default_namespace='', 
-                log_level:int = logging.NOTSET,
-                name:str='',
+                log_level:int = logging.NOTSET,                
                 default_table_type:Type[Table]=None,
                 migrate_on_delete:bool=False):
         
@@ -66,7 +65,7 @@ class Db(TableStorage):
         self.tables = {}
         self.set_logger()
 
-        return super().__init__(name, default_table_type, migrate_on_delete)
+        return super().__init__(default_table_type, migrate_on_delete)
 
 
 

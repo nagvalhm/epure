@@ -5,7 +5,7 @@ from typing import Dict, Any, Type, cast
 from epure.errors import DbError
 from .table_column import TableColumn
 
-from ..resource import FullName, SnakeCaseNamed
+from ...named import FullName, SnakeCaseNamed
 from ..savable import Savable
 from .table import Table
 from .db_entity_resource import DbEntityResource
@@ -21,7 +21,7 @@ class TableStorage(DbEntityResource):
     _epures: Dict[str, type] = None
 
     @abstractmethod
-    def __init__(self, name:str='', default_table_type:Type[Table]=None, 
+    def __init__(self, default_table_type:Type[Table]=None, 
     migrate_on_delete:bool=False):
 
         if default_table_type:
@@ -29,7 +29,7 @@ class TableStorage(DbEntityResource):
 
         self.migrate_on_delete = migrate_on_delete
 
-        super().__init__(name) 
+        super().__init__() 
 
 
         

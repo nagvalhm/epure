@@ -120,7 +120,7 @@ def default_epure(regular_class3, epure_class3, epure_class1):
 
 def test_default_epure_table(default_epure):
     assert default_epure[0][0].table.name == 'default_epure'
-    assert default_epure[0][0].table.db.name == 'GresDb'
+    assert default_epure[0][0].table.db.__class__.__name__ == 'GresDb'
     assert table_exists('default_epure')
 
 def test_default_epure_fields(default_epure):

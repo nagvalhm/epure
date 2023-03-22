@@ -11,10 +11,10 @@ class Savable(Resource):
     __exclude__:list = ['resource', 'is_saved', '_annotations', 'cache_queue']
     
 
-    def __init__(self, name: str = '', namespace: str = '', resource:Resource=None) -> None:
+    def __init__(self, resource:Resource=None) -> None:
         if resource != None:
             self.resource = resource
-        super().__init__(name, namespace)
+        super().__init__()
 
     @property
     def annotations(self) -> Dict[str,Any]:

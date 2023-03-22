@@ -9,7 +9,7 @@ from .gres_table import GresTable
 from ..db.table import Table
 from datetime import timedelta, datetime
 from ipaddress import _IPAddressBase
-from ..resource import Resource, FullName, SnakeCaseNamed
+from ...named import FullName, SnakeCaseNamed
 from ..savable import Savable
 import logging
 from inflection import underscore
