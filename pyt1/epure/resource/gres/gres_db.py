@@ -50,6 +50,7 @@ class GresDb(Db):
 
         print(self.execute("SELECT 'test request'"))
 
+        self._set_namespaces()
         
         self._set_tables()
 
@@ -82,7 +83,10 @@ class GresDb(Db):
             self._set_table(table)
             return table
         return []
+    
 
+    def serialize_namespace_for_create(self, namespace) -> object:
+        return f'''CREATE SCHEMA {namespace};'''
 
 
     def serialize_for_create(self, table: Savable, **kwargs) -> object:
@@ -135,7 +139,17 @@ class GresDb(Db):
     def get_default_namespace(self):
         return underscore(self.default_namespace)
       
+    def _set_namespaces(self):
+        script = '''
+          SELECT schema_name
+                    FROM information_schema.schemata
+        '''
+        all_namespaces = self.execute(script)
 
+        # for namespace in all_namespaces:
+        #     self.namespaces.append(namespace[0])
+
+        self.namespaces = [row[0] for row in all_namespaces]
 
     def _set_tables(self):
         script = '''

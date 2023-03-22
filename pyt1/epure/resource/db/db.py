@@ -62,6 +62,7 @@ class Db(TableStorage):
             self.log_level = log_level
 
         self.cache_queue = []
+        self.namespaces = []
         self.tables = {}
         self.set_logger()
 
@@ -71,6 +72,10 @@ class Db(TableStorage):
 
     def create(self, db_entity: Savable) -> DbEntity:
         check_type('db_entity', db_entity, DbEntity)
+
+        if not db_entity.namespace in self.namespaces:
+            self.create_namespace(db_entity.namespace)
+
         if isinstance(db_entity, Table):
             return self.create_table(db_entity)
         raise NotImplementedError(f'createion not implemented for type {type(db_entity)}')

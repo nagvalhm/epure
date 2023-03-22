@@ -15,6 +15,7 @@ from ...epure import Epure
 class TableStorage(DbEntityResource):
 
     tables:Dict[str,Table]
+    namespaces:list[str]
     default_table_type:Type[Table] = Table
     migrate_on_delete:bool = False
     _epures: Dict[str, type] = None
@@ -49,8 +50,12 @@ class TableStorage(DbEntityResource):
         table = self.read(table_name)
         return bool(table)
         
+    def create_namespace(self, namespace):
+        script = self.serialize_namespace_for_create(namespace)
+        script = str(script)
+        self.execute(script)
 
-
+        self._set_namespace(namespace)
 
     def create_table(self, table: Savable):
         check_type('table', table, self.default_table_type)
@@ -140,6 +145,9 @@ class TableStorage(DbEntityResource):
 
     def _deserialize_table_name(self, table_columns:list) -> FullName:
         raise NotImplementedError
+    
+    def _set_namespace(self, namespace):
+        self.namespaces.append(namespace)
 
     def _set_table(self, table:Table):
         self.tables[table.full_name] = table
