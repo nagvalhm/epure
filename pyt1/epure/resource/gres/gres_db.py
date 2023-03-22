@@ -122,7 +122,10 @@ class GresDb(Db):
             with connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute(script)
                 if cursor.rowcount > 0:
-                    result = cursor.fetchall()
+                    try:
+                        result = cursor.fetchall()
+                    except psycopg2.ProgrammingError as err:
+                        self.logger.info(err)
 
         return result
 
