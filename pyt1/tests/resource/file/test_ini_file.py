@@ -1,4 +1,4 @@
-from ....epure.resource.file.ini_file import IniFile
+from ....epure.files import IniFile
 import pytest
 from ...helper import strict_eq
 
