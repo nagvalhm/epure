@@ -12,8 +12,7 @@ class Resource{
     deserialize(str)
     
     "execute"(str script='')    
-    name
-    namespace
+
 }
 
 
@@ -72,13 +71,20 @@ class TableNode{
     db = resource.resource
 }
 
+class Named{
+    name
+    namespace
+}
+class NamedByClass{}
 
+Named <|-down- NamedByClass
 
 Resource <|-left- DbEntityResource
     DbEntityResource <|-left- TableStorage
         TableStorage <|-left- Db
             Db <|-up- GresDb
             Db <|-left- LiteDb
+            NamedByClass <|-up- DbEntity
             Db *-down-> DbEntity
                 DbEntity <|-left- GresEntity
     
