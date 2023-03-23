@@ -20,8 +20,6 @@ from .resource.node.proto import Proto
 from inspect import signature
 
 
-def connect(edb:TableStorage) -> None:
-    Epure.EDb = edb
 
 class Epure(type, Savable):
     

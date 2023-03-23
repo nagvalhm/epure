@@ -1,6 +1,6 @@
 from __future__ import annotations
-from ..epure import connect, epure
-from ..epure import GresDb
+from ..epure import epure
+from ..epure.dbs import GresDb
 from ..epure.resource.db.constraint import NotNull, Check, Prim, Uniq, Default
 from typing import List, Dict, Tuple, Callable
 from datetime import datetime
@@ -10,11 +10,11 @@ import types
 from ..epure.resource.gres.jsonb_table import JsonbTable
 
 try:
-    connect(GresDb('postgres://user_name:pass@host:5432'))
+    GresDb('postgres://user_name:pass@host:5432').connect()
 except Exception as ex:
     print(ex)
 
-connect(GresDb('postgres://postgres:postgres@localhost:5432'))
+GresDb('postgres://postgres:postgres@localhost:5432').connect()
 
 db = GresDb('postgres://postgres:postgres@localhost:32', 
     # host="localhost", 
@@ -23,7 +23,7 @@ db = GresDb('postgres://postgres:postgres@localhost:32',
     # user="postgres", 
     password="postgres",
     log_level=3)
-connect(db)
+db.connect()
 
 #parent
 class ParentClass1:

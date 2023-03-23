@@ -49,6 +49,9 @@ class TableStorage(DbEntityResource):
             return True
         table = self.read(table_name)
         return bool(table)
+    
+    def connect(self) -> None:
+        Epure.EDb = self
         
     def create_namespace(self, namespace):
         script = self.serialize_namespace_for_create(namespace)

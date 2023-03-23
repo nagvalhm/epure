@@ -1,4 +1,4 @@
-from ....epure.epure import Epure, epure, connect
+from ....epure.epure import Epure, epure
 # from ...test_epure import epure_class1, epure_class2
 import pytest
 

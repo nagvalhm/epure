@@ -35,8 +35,8 @@ Create example class with Epure, create instance of it and read it from DB.
     # First way to connect database to epure
 
     # Format of string to connect ('database://user:password@host:port')
-    connect(GresDb('postgres://postgres:postgres@localhost:5432',
-    log_level=3))
+    GresDb('postgres://postgres:postgres@localhost:5432',
+    log_level=3).connect()
 
     # Alternative way of connection
 
@@ -47,7 +47,7 @@ Create example class with Epure, create instance of it and read it from DB.
     # user="postgres", 
     password="postgres",
     log_level=3)
-    connect(db)
+    db.connect()
 
     # log_level defines level of description of opertaions with DB in auto-generated file epure_db.log
 

@@ -1,4 +1,4 @@
-from ....epure.epure import Epure, epure, connect
+from ....epure.epure import Epure, epure
 
 #columns
 def test_create_column():
