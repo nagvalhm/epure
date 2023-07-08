@@ -36,7 +36,7 @@ class Epure(type, Savable):
     def __call__(self, *args, **kwargs):
         if not self.is_saved:
             self.save_epure()
-            self.is_saved = True
+            self.is_saved = True    # __getattr__ is called here, you cannot enter __getattr__ with debuger, so put breakpoint on start of getattr func
 
         res = super(Epure, self).__call__(*args, **kwargs)
         return res
@@ -44,7 +44,7 @@ class Epure(type, Savable):
 
     def __getattr__(self, attr_name: str) -> Any:
         if not self.is_saved:
-            self.is_saved = True
+            self.is_saved = True    # __getattr__ is called here, you cannot enter __getattr__ with debuger, so put breakpoint on start of getattr func
             self.save_epure()
             return getattr(self, attr_name)
         raise AttributeError(f"'{type(self)}' object has no attribute '{attr_name}'")
@@ -183,7 +183,10 @@ class Epure(type, Savable):
             
             columns[field_name] = py_type
 
-        TableCls = self.EDb.default_table_type
+        if len(columns) == 1 and list(columns.keys())[0] == 'node_id':
+            TableCls = self.EDb.nosql_table_type
+        else:
+            TableCls = self.EDb.default_table_type
         table = TableCls(full_name.name, columns, self.EDb, full_name.namespace)
         return table
 
@@ -229,7 +232,7 @@ def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) 
 
     def epure_creator(cls:type) -> Epure:
         epure_cls = _create_epure(cls, saver, epure_metaclass)
-        epure_cls.is_saved = False
+        epure_cls.is_saved = False      # might not change true to false in the debuger, because this is overrided setter
         epure_cls.prepare_save(resource)
 
         del cls

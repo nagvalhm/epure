@@ -22,6 +22,16 @@ def test_simple_queries():
 
     debugger = MatplotTermDebugger()
 
+    query = x.f1 in ('val1', 'val2') | x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    # query.debugger = debugger
+    str_query = query.str(True)
+    assert str_query == '(f1 in (''val1'', ''val2'') or f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
+
+    query = x.f1 in (y.f2, y.f7) | x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    # query.debugger = debugger
+    str_query = query.str(True)
+    assert str_query == '(f1 in (f2, f7) or f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
+
     query = x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
     # query.debugger = debugger
     str_query = query.str(True)

@@ -23,6 +23,7 @@ from decimal import Decimal
 class GresDb(Db):
 
     default_table_type: Type[Table] = GresTable
+    nosql_table_type: Type[Table] = JsonbTable
     default_namespace:str='Public'
     log_level:int = logging.NOTSET
 
@@ -180,12 +181,16 @@ class GresDb(Db):
             self._set_table(table)
 
     def _get_table_type(self, table_columns:list):
-        if len(table_columns) > 2:
-            return self.default_table_type
-        jsonb_cols = list(filter(lambda c: c['data_type'] == 'jsonb', table_columns))
-        if len(jsonb_cols) != 1:
-            return self.default_table_type
-        return JsonbTable
+        jsonb_cols = list(filter(lambda c: c['column_name'] == 'jsonb___data', table_columns))
+        if len(jsonb_cols) > 0:
+            return JsonbTable
+        return self.default_table_type
+        # if len(table_columns) > 2:
+        #     return self.default_table_type
+        # jsonb_cols = list(filter(lambda c: c['data_type'] == 'jsonb', table_columns))
+        # if len(jsonb_cols) != 1:
+        #     return self.default_table_type
+        # return JsonbTable
 
     def serialize_constraint(self, constraint:Constraint) -> str:
         
@@ -237,6 +242,7 @@ class GresDb(Db):
         complex: 'point',
         UUID: 'uuid',
         bool: 'boolean',
+        Any: 'jsonb',
 
         #bytea siblings
         bytes: 'bytea',
@@ -249,7 +255,6 @@ class GresDb(Db):
         tuple: 'json',
         Tuple: 'json',
         object: 'json',
-        Any: 'json',
         dict: 'json',
         Dict: 'json',
         Dict[int,str]: 'json',
@@ -287,7 +292,7 @@ class GresDb(Db):
         'character varying': str,
         'character': str,
         'point' : complex,
-        'json': Any,
+        'json': object,
         'jsonb': Any,
         'uuid' : UUID,
         'bytea': bytes,

@@ -3,6 +3,11 @@ from .epure_classes import DefaultEpure
 # from ..epure.epure import Epure
 # from typing import cast
 
+# def test_read_default_epure_lambda_simple():
+
+#     res = DefaultEpure.resource.read(lambda tp: tp.str3 in ('str3_value', 'str3_value2'))
+#     assert isinstance(res, list) and bool(res[0])
+
 def test_read_default_epure_lambda():
 
     res = DefaultEpure.resource.read(lambda tp, dbp: 

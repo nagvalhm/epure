@@ -234,9 +234,17 @@ class CrosEpure2:
     epure_cls:CrosEpure1
 
 # @epure(JsonbTable('oraculs_domain.competitions', resource=db))
-# class Competitions:
-#     res_id:UUID
-#     data:object
+@epure('oraculs_domain.competitions')
+class Competitions:
+    pass
+    # res_id:UUID
+    # data:object
+
+@epure('oraculs_domain.oraculs')
+class Oraculs:
+    pass
+    # res_id:UUID
+    # data:object
 
 @epure('AnotherDomain.EpureClass4')
 class EpureClass4:
