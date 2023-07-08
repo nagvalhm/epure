@@ -80,3 +80,10 @@ class GresHeader(TableHeader):
         return f'''
             UPDATE TABLE {table_name} SET {to_column} = {from_column};
         '''
+    
+    def serialize_read_column(self, column:TableColumn):
+        table_name = self.table.full_name
+        res = f'{table_name}.{column.name}'
+        alias = res.replace('.', '___')
+        res = f'{res} as {alias}'
+        return res

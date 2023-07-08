@@ -38,7 +38,7 @@ class Binary(Term):
         super().__init__()
 
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
         return self.operator
 
     def __str__(self):

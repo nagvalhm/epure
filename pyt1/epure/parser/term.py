@@ -66,6 +66,9 @@ class Term:
 
     def __ge__(self, other): #>=
         return self.comparison(self, other, '>=')
+    
+    def __contains__(self, other): #in
+        return self.comparison(self, other, 'in')
 
 
 
@@ -102,7 +105,7 @@ class Term:
     def str(self, parentheses=False, full_names=False):
         return self.serialize(parentheses, full_names)
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
         raise NotImplementedError
         
 

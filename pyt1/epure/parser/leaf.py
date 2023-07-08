@@ -32,7 +32,7 @@ class Primitive(Leaf, Constant):
         self.val = val
         super().__init__()
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
         res = str(self.val)
         if isinstance(self.val, str) or isinstance(self.val, UUID):
             res = f"'{res}'"
@@ -76,15 +76,17 @@ class ColumnProxy(QueryingProxy, Name):
 
 
 
-    def serialize(self, parentheses=True, full_names=True, for_body=True) -> str:
-        res = self.__column__.full_name
-
-        if for_body:
+    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
+        res = ''
+        if not full_names:
+            res = self.__column__.name
+        elif for_header:
+            res = self.__table__.header.serialize_read_column(self.__column__)
+        else:
             table = self.__table__.full_name
             res = f'{table}.{res}'
-        else:
-            res = self.__table__.get_column_header_name(res)
-        if parentheses:
+
+        if not for_header and parentheses:
             res = self.append_parentheses(res)
         
         return res
@@ -136,16 +138,21 @@ class TableProxy(QueryingProxy, Name):
     #     res = TermHeader(list(*args))
     #     return res
 
-    def serialize(self, parentheses=True, full_names=True, for_body=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
         res = ''
-        if for_body:
-            res = f'{self.__table__.full_name}'
-            if parentheses:
-                res = self.append_parentheses(res)
-        else:
-            for col in self.__table__.header:
-                res += self.__table__.get_column_header_name(col) + ', '
+        # if not full_names:
+        #     res = self.__table__.name      
+        # el
+        if for_header:
+            header = self.__table__.header
+            for col in header:
+                res += header.serialize_read_column(header[col]) + ', '
             res = res[0:-2]
+        else:
+            res = f'{self.__table__.full_name}'
+
+        if not for_header and parentheses:
+            res = self.append_parentheses(res)
         
         return res
 

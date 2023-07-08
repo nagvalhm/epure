@@ -327,8 +327,8 @@ class Table(DbEntity):
         return header + res
 
 
-    def get_column_header_name(self, column_name:str):
-        raise NotImplementedError
+    # def get_column_header_name(self, column_name:str):
+    #     raise NotImplementedError
 
         # tables = []
         # columns = []

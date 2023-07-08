@@ -43,7 +43,7 @@ class GresTable(Table, GresEntity):
 
     def serialize_read(self, header, joins, where_clause, full_names) -> str:
         header = self._add_node_id_fields(header)
-        res_header = self.serialize_select_header(header, full_names)
+        res_header = self.serialize_read_header(header, full_names)
         res_joins = self.serialize_joins(joins)        
 
         res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
@@ -52,13 +52,13 @@ class GresTable(Table, GresEntity):
 
 
 
-    def serialize_select_header(self, header:List[QueryingProxy], full_names:bool):
+    def serialize_read_header(self, header:List[QueryingProxy], full_names:bool):
         res = 'SELECT'
         for item in header:
             if isinstance(item, ColumnProxy):
-                res += f' {item.serialize(False, full_names, False)},'
+                res += f' {item.serialize(False, full_names, True)},'
             elif isinstance(item, TableProxy):
-                res += f' {item.serialize(False, full_names, False)},'
+                res += f' {item.serialize(False, full_names, True)},'
             else:
                 raise EpureParseError('select header item must be ColumnProxy or TableProxy')
         res = res[:-1]
@@ -118,9 +118,9 @@ class GresTable(Table, GresEntity):
     def generate_id(self, resource: Savable = None):
         return uuid4()
 
-    def get_column_header_name(self, column_name:str):
-        table_name = self.full_name
-        res = f'{table_name}.{column_name}'
-        alias = res.replace('.', '___')
-        res = f'{res} as {alias}'
-        return res
+    # def get_column_header_name(self, column_name:str):
+    #     table_name = self.full_name
+    #     res = f'{table_name}.{column_name}'
+    #     alias = res.replace('.', '___')
+    #     res = f'{res} as {alias}'
+    #     return res

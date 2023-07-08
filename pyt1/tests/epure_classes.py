@@ -237,14 +237,22 @@ class CrosEpure2:
 @epure('oraculs_domain.competitions')
 class Competitions:
     pass
-    # res_id:UUID
-    # data:object
+
+@epure('oraculs_domain.tasks')
+class Tasks:
+    pass
 
 @epure('oraculs_domain.oraculs')
 class Oraculs:
     pass
-    # res_id:UUID
-    # data:object
+
+@epure('oraculs_domain.test_clssasdas')
+class TestClassasDas1:
+    test_field1:str    
+    test_field2:str
+    test_field3:object
+    test_field4:bytes
+    test_field5:str
 
 @epure('AnotherDomain.EpureClass4')
 class EpureClass4:
