@@ -1,0 +1,22 @@
+EGrid
+Catalog <|-- Emenu
+Emenu *--> Eli
+EMenuItem
+Emenu <|-- ESubMenu
+
+ViewList
+Etable <|-- Erow
+
+ERow
+
+ETablet
+ECard
+Ecell
+
+MainView
+
+RowRegister:dict
+
+class Epure{
+    etype    
+}
