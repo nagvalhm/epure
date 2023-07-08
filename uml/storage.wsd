@@ -36,6 +36,7 @@ class FileStorage{
 class IniFile{}
 class IniSection{}
 class NoneIniSection{}
+class ActualIniSection{}
 class JsonFile{}
 
 class Node{
@@ -55,8 +56,9 @@ Storage <|-- Savable
 Storage o--> Savable
     Savable <|-right- FileStorage
         FileStorage <|-up- IniFile
-            IniFile o--> NoneIniSection
-                NoneIniSection <|-- IniSection
+            IniFile o--> IniSection
+                IniSection <|-- NoneIniSection
+                IniSection <|-- ActualIniSection
         FileStorage <|-- JsonFile
     Savable <|-left- Table
         Table <|-left- GresTable
