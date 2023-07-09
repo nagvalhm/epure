@@ -1,7 +1,7 @@
 from typing import List, Dict, Union
 from .term import Term, TermHeader
 from .leaf import QueryingProxy
-from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST
+from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST, Mod, And
 import re
 # import astor
 from ..helpers.string_helper import find_parentheses
@@ -145,6 +145,11 @@ class TermParser(NodeTransformer):
     def visit_BinOp(self, node:BinOp):
         self.generic_visit(node)
         op = node.op
+
+        if isinstance(op,Mod) and isinstance(node.right.value, str):
+            return Name(f"{node.left.id} like '{node.right.value}'")
+
+        # if isinstance(op, And) and (isinstance() or )
         if not (isinstance(op, LShift) or isinstance(op, RShift)):
             return node
 

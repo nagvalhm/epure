@@ -315,5 +315,5 @@ class TableHeader(Savable):
         else:
             self.columns[column.name] = column
     
-    def serialize_read_column(self, column_name:str):
+    def serialize_read_column(self, column:TableColumn, full_names:bool):
         raise NotImplementedError

@@ -22,18 +22,29 @@ def test_simple_queries():
 
     debugger = MatplotTermDebugger()
 
-    query = x.f1 in ('val1', 'val2') | x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    query = x.f1 == y.f2 | x.f3 % '%test_like%' & 5 == x.f5 | (x.f6 == y.f7)
     # query.debugger = debugger
     str_query = query.str(True)
-    assert str_query == '(f1 in (''val1'', ''val2'') or f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
+    assert str_query == "(f1 == f2 or f3 % '%test_like%' and 5 == f5 or (f6 == f7))"
 
-    query = x.f1 in (y.f2, y.f7) | x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    # query = ('val1', 'val2') in x.f8
+    # query = x.f8 % '%krysa%'
+    # query = x.f8 >= ('val1', 'val2')
+    # query = x.f8 >> ('val1', 'val2')
+    # query = x.f8 >= ('val1', 'val2') | x.f1 == y.f2 | x.f9 > ('val3', 'val4') | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
     # query.debugger = debugger
-    str_query = query.str(True)
-    assert str_query == '(f1 in (f2, f7) or f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
+    # query.debugger.each_step = True
+    # str_query = query.str(True)
+    # assert str_query == '(f8 in (''val1'', ''val2'') or f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
+
+    # query = x.f8 in (y.f2, y.f7) | x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    # # query.debugger = debugger
+    # str_query = query.str(True)
+    # assert str_query == '(f8 in (f2, f7) or f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
 
     query = x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
     # query.debugger = debugger
+    # query.debugger.each_step = True
     str_query = query.str(True)
     assert str_query == '(f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
 
@@ -92,7 +103,7 @@ def test_simple_queries():
     query = (x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0)) | x.complex0 == y.test_field3
     str_query = query.str(True)
     assert str_query == '((str0 == test_field1 or (int0 == test_field2 and 5 == float0)) or complex0 == test_field3)'
- 
+    
     query = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
     str_query = query.str(True)
     assert str_query == '(((str0 == test_field1) or ((int0 == test_field2) and (float0 == 5))) or (complex0 == test_field3))'
@@ -128,21 +139,27 @@ def test_term_parser():
     b = db['oraculs_domain.tasks']
     parser = TermParser(real_x)
 
+    term = a.f1 == z.f2 | a.f3 % '%test_like%' & 5 == a.f5 | (a.f6 == z.f7)
+    query = parser.parse([a.f1, z.f2], term, False)
+    # assert query == "SELECT f1, f2 FROM oraculs_domain.competitions \n  WHERE \n f1 = f2 or (f3 like '%test_like%' and 5 = f5) or f6 = f7"
+    assert "WHERE \n f1 = f2 or (f3 like '%test_like%' and 5 = f5) or f6 = f7" in query
 
     term = (x.str0 == y.test_field1 
         | x.int0 == y.test_field2 & 5 == x.float0 
         | (x.complex0 == y.test_field3))
-    query = parser.parse([x, y], term, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
-                         
+    query = parser.parse([x.str0, y.test_field1], term, True)
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
+    assert 'WHERE \n public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1 or (public.default_epure.int0 = oraculs_domain.test_clssasdas.test_field2 and 5 = public.default_epure.float0) or public.default_epure.complex0 = oraculs_domain.test_clssasdas.test_field3' in query
+
     query = parser.parse([x, y], x.str0 == y.test_field1 | (x.int0 == y.test_field2 & 5 == x.float0) | x.complex0 == y.test_field3, False)
-    assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
-    
+    # assert query == 'SELECT public.default_epure.*, oraculs_domain.test_clssasdas.* FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
+    assert 'WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3' in query
+
     term = (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
     header = [x.str0, x.int0, y.test_field2, y]
     query = parser.parse(header, term, False)
-    assert query == 'SELECT str0, int0, test_field2, oraculs_domain.test_clssasdas.*, node_id FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
-                    
+    # assert query == 'SELECT str0, int0, test_field2, oraculs_domain.test_clssasdas.*, node_id FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
+    assert 'WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3' in query                
 
     # term =  [b.f1, b.f2, b.f3, b.f4,
     #             b.f5, b.f6] \

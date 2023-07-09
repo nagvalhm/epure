@@ -78,13 +78,16 @@ class ColumnProxy(QueryingProxy, Name):
 
     def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
         res = ''
-        if not full_names:
+        # if not full_names:
+        #     res = self.__column__.name
+        # el
+        if for_header:
+            res = self.__table__.header.serialize_read_column(self.__column__, full_names)
+        elif not full_names:
             res = self.__column__.name
-        elif for_header:
-            res = self.__table__.header.serialize_read_column(self.__column__)
         else:
             table = self.__table__.full_name
-            res = f'{table}.{res}'
+            res = f'{table}.{self.__column__.name}'
 
         if not for_header and parentheses:
             res = self.append_parentheses(res)
@@ -146,7 +149,7 @@ class TableProxy(QueryingProxy, Name):
         if for_header:
             header = self.__table__.header
             for col in header:
-                res += header.serialize_read_column(header[col]) + ', '
+                res += header.serialize_read_column(header[col], full_names) + ', '
             res = res[0:-2]
         else:
             res = f'{self.__table__.full_name}'

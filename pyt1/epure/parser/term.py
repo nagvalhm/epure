@@ -31,7 +31,9 @@ class Term:
 
     def __ror__(self, other:Term): #|
         return self.operation(other, self, 'or')
-
+    
+    def __mod__(self, other): #%
+        return self.operation(self, other, '%')
 
     #non primitive operators:
     def __xor__(self, other:Term): #^
@@ -39,7 +41,9 @@ class Term:
 
     def __rxor__(self, other:Term): #^
         return self.operation(other, self, '^')
-
+    
+    def __matmul__(self, other): #@
+        return self.operation(self, other, '@')
 
     def __lshift__(self, other:Term): #<<
         return self.operation(self, other, '<<')
@@ -67,8 +71,8 @@ class Term:
     def __ge__(self, other): #>=
         return self.comparison(self, other, '>=')
     
-    def __contains__(self, other): #in
-        return self.comparison(self, other, 'in')
+    # def __contains__(self, other): #in
+    #     return self.comparison(self, other, 'in')
 
 
 
