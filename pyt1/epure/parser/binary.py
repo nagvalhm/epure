@@ -126,11 +126,11 @@ class Binary(Term):
         left = self.left
         right = self.right
 
-        if left.__header__ or right.__header__:
-            header = self.merge_headers(left.__header__, right.__header__)
-            left.__header__ = header
-            right.__header__ = header
-            self.__header__ = header
+        # if left.__header__ or right.__header__:
+        #     header = self.merge_headers(left.__header__, right.__header__)
+        #     left.__header__ = header
+        #     right.__header__ = header
+        #     self.__header__ = header
             
         terms_graph.update(self.terms_graph)        
         terms_graph.update(left.terms_graph)        

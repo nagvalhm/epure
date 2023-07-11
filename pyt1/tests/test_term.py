@@ -31,11 +31,17 @@ def test_simple_queries():
     # query = x.f8 % '%krysa%'
     # query = x.f8 >= ('val1', 'val2')
     # query = x.f8 >> ('val1', 'val2')
-    # query = x.f8 >= ('val1', 'val2') | x.f1 == y.f2 | x.f9 > ('val3', 'val4') | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    query = x.f8 >= ('val1', 'val2') | x.f1 == y.f2 | x.f9 > ('val3', 'val4') | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
     # query.debugger = debugger
     # query.debugger.each_step = True
-    # str_query = query.str(True)
-    # assert str_query == '(f8 in (''val1'', ''val2'') or f1 == f2 or f3 == f4 and 4 == f5 or (f6 == f7))'
+    str_query = query.str(True)
+    assert str_query == "(f8 >= ('val1', 'val2') or f1 == f2 or f9 > ('val3', 'val4') or f3 == f4 and 4 == f5 or (f6 == f7))"
+
+    query = x.f8 >= ['val1', 'val2'] | x.f1 == y.f2 | x.f9 > ('val3', 'val4') | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
+    # query.debugger = debugger
+    # query.debugger.each_step = True
+    str_query = query.str(True)
+    assert str_query == "(f8 >= ('val1', 'val2') or f1 == f2 or f9 > ('val3', 'val4') or f3 == f4 and 4 == f5 or (f6 == f7))"
 
     # query = x.f8 in (y.f2, y.f7) | x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
     # # query.debugger = debugger
@@ -108,6 +114,22 @@ def test_simple_queries():
     str_query = query.str(True)
     assert str_query == '(((str0 == test_field1) or ((int0 == test_field2) and (float0 == 5))) or (complex0 == test_field3))'
 
+    query = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
+    str_query = query.str(True, True)
+    assert str_query == '(((oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or ((oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2) and (oraculs_domain.competitions.float0 == 5))) or (oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3))'
+
+    query = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
+    # query.debugger = debugger
+    # query.debugger.each_step = True
+    str_query = query.str(True)
+    assert str_query == "('str0', 'int0', 'test_field2', 'oraculs_domain.oraculs') @ (str0 == test_field1) or int0 == test_field2 and 5 == float0 or complex0 == test_field3"
+
+    query = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
+    # query.debugger = debugger
+    # query.debugger.each_step = True
+    str_query = query.str(True, True)
+    assert str_query == "('oraculs_domain.competitions.str0', 'oraculs_domain.competitions.int0', 'oraculs_domain.oraculs.test_field2', 'oraculs_domain.oraculs') @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3"
+
 
 def test_join_queries():
     db = DbProxy(real_db)
@@ -144,6 +166,11 @@ def test_term_parser():
     # assert query == "SELECT f1, f2 FROM oraculs_domain.competitions \n  WHERE \n f1 = f2 or (f3 like '%test_like%' and 5 = f5) or f6 = f7"
     assert "WHERE \n f1 = f2 or (f3 like '%test_like%' and 5 = f5) or f6 = f7" in query
 
+    term = a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7)
+    query = parser.parse([a.f1, z.f2], term, False)
+
+    assert "WHERE \n f1 = f2 or (f4 = f3 % 3 and 5 = f5) or f6 = f7" in query
+
     term = (x.str0 == y.test_field1 
         | x.int0 == y.test_field2 & 5 == x.float0 
         | (x.complex0 == y.test_field3))
@@ -159,7 +186,24 @@ def test_term_parser():
     header = [x.str0, x.int0, y.test_field2, y]
     query = parser.parse(header, term, False)
     # assert query == 'SELECT str0, int0, test_field2, oraculs_domain.test_clssasdas.*, node_id FROM public.default_epure \n  WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3'
-    assert 'WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3' in query                
+    assert 'WHERE \n str0 = test_field1 or (int0 = test_field2 and 5 = float0) or complex0 = test_field3' in query
+
+    term = a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= (a.f4,a.f2)
+    # term = a.f1 >= a.f2 | a.f3 % 3
+    header = [a.f1, z.f2]
+    query = parser.parse(header, term, False)
+    assert "WHERE \n f1 = f2 or (f4 = f3 % 3 and 5 = f5) or f6 = f7 or f1 in ('f4', 'f2')" in query
+
+    term = a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
+    # term = a.f1 >= a.f2 | a.f3 % 3
+    header = [a.f1, z.f2]
+    query = parser.parse(header, term, True)
+    # query = parser.parse(header, term, False)
+    assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5 or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2') @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
+    
+    # term = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
+    # # header = [x.str0, x.int0, y.test_field2, y]
+    # query = term.str(True)
 
     # term =  [b.f1, b.f2, b.f3, b.f4,
     #             b.f5, b.f6] \

@@ -33,7 +33,17 @@ class Primitive(Leaf, Constant):
         super().__init__()
 
     def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
-        res = str(self.val)
+        res = ""
+        if isinstance(self.val, list) or isinstance(self.val, tuple):
+            temp = []
+            for item in self.val:
+                if not isinstance(item, Leaf):
+                    temp.append(str(item))
+                else:
+                    temp.append(item.serialize(parentheses, full_names, for_header))
+            res = str(tuple(temp))
+        else:
+            res = str(self.val)
         if isinstance(self.val, str) or isinstance(self.val, UUID):
             res = f"'{res}'"
         if not parentheses:

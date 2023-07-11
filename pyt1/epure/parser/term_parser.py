@@ -1,7 +1,7 @@
 from typing import List, Dict, Union
 from .term import Term, TermHeader
 from .leaf import QueryingProxy
-from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST, Mod, And
+from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST, Mod, And, GtE, Tuple
 import re
 # import astor
 from ..helpers.string_helper import find_parentheses
@@ -10,6 +10,7 @@ from ..resource.db.table import Table
 from ..helpers.type_helper import check_type
 from uuid import uuid4
 from ..errors import EpureParseError
+from .leaf import Leaf
 
 class JoinOperation:    
     table:str
@@ -147,7 +148,7 @@ class TermParser(NodeTransformer):
         op = node.op
 
         if isinstance(op,Mod) and isinstance(node.right.value, str):
-            return Name(f"{node.left.id} like '{node.right.value}'")
+            return Name(f"{unparse(node.left)} like {unparse(node.right)}")
 
         # if isinstance(op, And) and (isinstance() or )
         if not (isinstance(op, LShift) or isinstance(op, RShift)):
@@ -162,7 +163,26 @@ class TermParser(NodeTransformer):
         join = JoinOperation(left, right, join_type, join_id)
         self.joins.append(join)
         return Name(join_id)
+    
+    # def serialize_tuple(self, ast_tuple:Tuple):
+    #         res = []
+    #         for const in ast_tuple.elts:
+    #             res.append(const.value)
+            
+    #         return str(tuple(res))
 
+    def visit_Compare(self, node:GtE):
+        self.generic_visit(node)
+        op = node.ops[0]
+
+        if isinstance(op, GtE) and (isinstance(node.comparators[0], Tuple) or isinstance(node.comparators[0], BinOp)):
+            # Ast_tuple_str = self.serialize_tuple(node.comparators[0])
+            # return Name(f"{node.left.id} in {self.serialize_tuple(node.comparators[0])}")
+            return Name(f"{unparse(node.left)} in {unparse(node.comparators[0])}")
+        else:
+            return node
+
+    
 
     # def visit_LShift(self, node: LShift):        
     #     left = unparse(node.parent.left)

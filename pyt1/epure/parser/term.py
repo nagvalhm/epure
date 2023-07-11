@@ -44,6 +44,9 @@ class Term:
     
     def __matmul__(self, other): #@
         return self.operation(self, other, '@')
+    
+    def __rmatmul__(self, other): #@
+        return self.operation(other, self, '@')
 
     def __lshift__(self, other:Term): #<<
         return self.operation(self, other, '<<')
@@ -80,21 +83,21 @@ class Term:
         from .bin_operation import BinOperation
         if isinstance(right, TermHeader):
             right = right.val
-        if isinstance(right, list):
-            if not isinstance(left, Term):
-                from .leaf import Primitive
-                left = Primitive(left)
-            left.__header__ = self.merge_headers(left.__header__, right)
-            return left
+        # if isinstance(right, list):
+        #     if not isinstance(left, Term):
+        #         from .leaf import Primitive
+        #         left = Primitive(left)
+        #     left.__header__ = self.merge_headers(left.__header__, right)
+        #     return left
             
-        if isinstance(left, TermHeader):
-            left = left.val
-        if isinstance(left, list):
-            if not isinstance(right, Term):
-                from .leaf import Primitive
-                right = Primitive(right)
-            right.__header__ = self.merge_headers(left, right.__header__)
-            return right
+        # if isinstance(left, TermHeader):
+        #     left = left.val
+        # if isinstance(left, list):
+        #     if not isinstance(right, Term):
+        #         from .leaf import Primitive
+        #         right = Primitive(right)
+        #     right.__header__ = self.merge_headers(left, right.__header__)
+        #     return right
         res = BinOperation(left, right, operator)
         res.merge_graphs()
         return res
