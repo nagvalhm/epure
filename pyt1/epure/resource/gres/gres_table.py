@@ -59,6 +59,13 @@ class GresTable(Table, GresEntity):
                 res += f' {item.serialize(False, full_names, True)},'
             elif isinstance(item, TableProxy):
                 res += f' {item.serialize(False, full_names, True)},'
+            elif isinstance(item, str):
+                sp = item.split('.')
+                if len(sp) == 2:
+                    proxy = self.db[item].querying_proxy
+                    res += f' {proxy.serialize(False, full_names, True)},'
+                else:
+                    res += f' {self.header.serialize_read_column(item, full_names)},'
             else:
                 raise EpureParseError('select header item must be ColumnProxy or TableProxy')
         res = res[:-1]
@@ -69,6 +76,9 @@ class GresTable(Table, GresEntity):
             table_name = first_item.__table__.full_name
         elif isinstance(first_item, TableProxy):
             table_name = str(first_item)
+        elif isinstance(first_item, str):
+            first_item = first_item.split('.')
+            table_name = f'{first_item[0]}.{first_item[1]}'
         res = res + f' FROM {table_name}'
         return res
 

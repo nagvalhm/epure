@@ -324,6 +324,21 @@ class Table(DbEntity):
                 node_id = getattr(tp, 'node_id', None)
                 if node_id is not None and not node_id.in_header(header + res):
                     res.append(node_id)
+        
+        if isinstance(header[0],str):
+            res = set()
+            for item in header:
+                sp = item.split('.')
+
+                if len(sp) == 3:
+                    node_id_column = f'{sp[0]}.{sp[1]}.node_id'
+                    if node_id_column not in header:
+                        res.add(node_id_column)
+                    
+            res = tuple(res)
+
+
+
         return header + res
 
 

@@ -130,6 +130,10 @@ def test_simple_queries():
     str_query = query.str(True, True)
     assert str_query == "('oraculs_domain.competitions.str0', 'oraculs_domain.competitions.int0', 'oraculs_domain.oraculs.test_field2', 'oraculs_domain.oraculs') @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3"
 
+    # query = [a.f1, z.f2] @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
+    query = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3 | x.f1 >= ((x.f4,y.f2)@(x.str0 == y.test_field1))
+    str_query = query.str(True, True)
+    assert str_query == "('oraculs_domain.competitions.str0', 'oraculs_domain.competitions.int0', 'oraculs_domain.oraculs.test_field2', 'oraculs_domain.oraculs') @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3"
 
 def test_join_queries():
     db = DbProxy(real_db)
@@ -194,13 +198,49 @@ def test_term_parser():
     query = parser.parse(header, term, False)
     assert "WHERE \n f1 = f2 or (f4 = f3 % 3 and 5 = f5) or f6 = f7 or f1 in ('f4', 'f2')" in query
 
-    term = a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
+    term = y.test_field1 @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= (a.f4,a.f2)
     # term = a.f1 >= a.f2 | a.f3 % 3
-    header = [a.f1, z.f2]
-    query = parser.parse(header, term, True)
+    query = parser.parse(term, True)
+    # query = parser.parse(header, term, False)
+    assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or (oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5) or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2')" in query
+
+    term = (a, z) @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= (a.f4,a.f2)
+    # term = a.f1 >= a.f2 | a.f3 % 3
+    query = parser.parse(term, True)
+    # query = parser.parse(header, term, False)
+    assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or (oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5) or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2')" in query
+
+    term = [a.f1, z.f2] @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
+    # term = a.f1 >= a.f2 | a.f3 % 3
+    # header = [a.f1, z.f2]
+    query = parser.parse(term, True)
     # query = parser.parse(header, term, False)
     assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5 or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2') @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
     
+    term = a @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
+    # term = a.f1 >= a.f2 | a.f3 % 3    
+    query = parser.parse(term, True)
+    # query = parser.parse(header, term, False)
+    assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5 or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2') @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
+    
+    term = a.f1 @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
+    # term = a.f1 >= a.f2 | a.f3 % 3    
+    query = parser.parse(term, True)
+    # query = parser.parse(header, term, False)
+    assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5 or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2') @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
+
+    term = (a.f1, z.f2, z) @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
+    # term = a.f1 >= a.f2 | a.f3 % 3
+    query = parser.parse(term, True)
+    # query = parser.parse(header, term, False)
+    assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5 or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2') @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
+
+    term = (a.f1, z.f2, z) @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(a.f2 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))))
+    # term = a.f1 >= a.f2 | a.f3 % 3
+    query = parser.parse(term, True)
+    # query = parser.parse(header, term, False)
+    assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5 or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in ('oraculs_domain.competitions.f4', 'oraculs_domain.competitions.f2') @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
+
     # term = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
     # # header = [x.str0, x.int0, y.test_field2, y]
     # query = term.str(True)
