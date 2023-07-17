@@ -126,9 +126,12 @@ class Table(DbEntity):
         
         if not term_header:
             term_header.append(tp)
-        
-        term = term_header
-        for key, val in kwargs.items():
+        # from ...parser.leaf import Primitive 
+        # term = term_header @ Primitive(True)
+        kwargs_items = list(kwargs.items())
+        first_item = kwargs_items[0]
+        term = term_header @ getattr(tp, first_item[0]) == first_item[1]
+        for (key, val) in kwargs_items[1:]:
             if operator == 'or':
                 term = term | getattr(tp, key) == val
             else:
@@ -325,6 +328,9 @@ class Table(DbEntity):
                 if node_id is not None and not node_id.in_header(header + res):
                     res.append(node_id)
         
+        # res = tuple(res)
+        header = tuple(header)
+        
         if isinstance(header[0],str):
             res = set()
             for item in header:
@@ -335,7 +341,7 @@ class Table(DbEntity):
                     if node_id_column not in header:
                         res.add(node_id_column)
                     
-            res = tuple(res)
+        res = tuple(res)
 
 
 

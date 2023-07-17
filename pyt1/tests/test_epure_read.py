@@ -28,7 +28,8 @@ def test_read_default_epure_lambda():
 
 
 def test_read_default_epure_kwargs():
-    DefaultEpure.resource.read('and', complex0=5+7j, float3=750479.0714551052)
+    # DefaultEpure.resource.read([], 'and', complex0=5+7j, float3=750479.0714551052)
+    DefaultEpure.resource.read([], 'and', complex0=5+7j, float3=750479.0714551052)
 
 
 

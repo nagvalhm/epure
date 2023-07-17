@@ -62,7 +62,8 @@ class TermParser(NodeTransformer):
         if isinstance(header, TermHeader):
             header = header.val
 
-        if isinstance(body, Term) and header:
+        if isinstance(body, Term):
+        # if isinstance(body, Term) and header:
             header = body.merge_headers(header, body.__header__)
 
         # if not header:
@@ -78,14 +79,16 @@ class TermParser(NodeTransformer):
             where_clause = res[1]
             header = res[0]
             if header[0] == '(':
-                header = eval(header)
-                # header = header.split(',')
+                # header = eval(header)
+                header = header[1:-1]
+                header = tuple(header.split(', '))
             else:
                 header = (header,)
         
-        # if not header:
-        #     header = self.parse_for_headers(where_clause)
-        #     if header:
+        if not header:
+            header = (self.resource.querying_proxy,)
+            # header = self.parse_for_headers(where_clause)
+            # if header:
                 
 
         res = self.resource.serialize_read(header, self.joins, where_clause, full_names)
