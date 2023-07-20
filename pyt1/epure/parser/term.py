@@ -109,20 +109,20 @@ class Term:
         res.merge_graphs()
         return res
 
-    def str(self, parentheses=False, full_names=False):
-        return self.serialize(parentheses, full_names)
+    def str(self, parentheses=False, full_names=False, translator:function=None):
+        return self.serialize(parentheses, full_names, translator)
 
-    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         raise NotImplementedError
         
 
-    def _simple_copy_terms(self, terms: List[Term]=None):
+    def _simple_copy_terms(self, terms: List[Term]=None, translator=None):
         if terms is None:
             terms = list(self.terms_graph.values())
 
         copies = []
         for term in terms:
-            term_copy = term._simple_copy()
+            term_copy = term._simple_copy(translator)
             copies.append(term_copy)
 
         for copy in copies:
@@ -132,12 +132,12 @@ class Term:
 
 
 
-    def _simple_copy(self) -> Term:
+    def _simple_copy(self, translator=None) -> Term:
         res = Term()
         if hasattr(self, 'id') and self.id:
             res.id = self.id
 
-        res.val = self.serialize(False, False)
+        res.val = self.serialize(False, False, translator=translator)
 
         if hasattr(self, 'parentheses'):
             res.parentheses = self.parentheses

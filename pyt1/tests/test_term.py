@@ -281,6 +281,12 @@ def test_term_parser():
     # query = parser.parse(header, term, False)
     assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or (oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5) or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in (oraculs_domain.competitions.f4, oraculs_domain.competitions.f2) @ oraculs_domain.competitions.f2 in (oraculs_domain.competitions.f4, oraculs_domain.competitions.f2) @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
 
+    # term = (a.f1, z.f2, z) @ a.f1 > z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(a.f2 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))))
+    # # term = a.f1 >= a.f2 | a.f3 % 3
+    # query = parser.parse(term, True)
+    # # query = parser.parse(header, term, False)
+    # assert "WHERE \n oraculs_domain.competitions.f1 = oraculs_domain.oraculs.f2 or (oraculs_domain.competitions.f4 = oraculs_domain.competitions.f3 % 3 and 5 = oraculs_domain.competitions.f5) or oraculs_domain.competitions.f6 = oraculs_domain.oraculs.f7 or oraculs_domain.competitions.f1 in (oraculs_domain.competitions.f4, oraculs_domain.competitions.f2) @ oraculs_domain.competitions.f2 in (oraculs_domain.competitions.f4, oraculs_domain.competitions.f2) @ (public.default_epure.str0 = oraculs_domain.test_clssasdas.test_field1)" in query
+
     # term = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
     # # header = [x.str0, x.int0, y.test_field2, y]
     # query = term.str(True)
@@ -416,6 +422,10 @@ def test_term_parser():
     # assert(query) == "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)"
                     #  "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)"
     assert "FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3 \nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field \nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3 \nRIGHT JOIN oraculs_domain.oraculs on True \n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)" in query
+
+    term = x.int3 % '%test_like%'
+    query = parser.parse(term, False)
+    assert query == "(f1 == f2 or f3 % '%test_like%' and 5 == f5 or (f6 == f7))"
 
 def test_columns_select():
     db = DbProxy(real_db)    

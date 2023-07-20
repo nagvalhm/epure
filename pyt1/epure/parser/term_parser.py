@@ -69,8 +69,9 @@ class TermParser(NodeTransformer):
         # if not header:
         #     raise EpureParseError('header not defined')
 
-        body = body.str(True, full_names)
-        self.joins = []
+        body = body.str(True, full_names, self.resource.db.cast_py_db_val)
+        self.joins.clear()
+        # self.collect_joins(body)
         body = self.collect_joins(body)
         where_clause = self.remove_join_ids(body)
 
@@ -80,7 +81,9 @@ class TermParser(NodeTransformer):
             header = res[0]
             if header[0] == '(':
                 # header = eval(header)
-                header = header[1:-1]
+                # header = header[1:-1]
+                header = header.replace('(','')
+                header = header.replace(')','')
                 header = tuple(header.split(', '))
             else:
                 header = (header,)

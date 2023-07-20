@@ -114,6 +114,8 @@ def default_epure(regular_class3, epure_class3, epure_class1):
     id = epure.save().node_id
     res = epure.table.read(node_id=id)
 
+    # res = epure.table.read(int3=6, str3="str3_value")
+
     assert not hasattr(res[0][0], "with_out_hint")
     assert res[0][0].node_id == epure.node_id
     return res
@@ -134,17 +136,17 @@ def test_default_epure_fields_in_correct_tables():
 def aliased_epure():
     return get_epure(AliasedEpure)
 
-@pytest.fixture
-def aliased_epure():
-    return get_epure(EpureClass4)
+# @pytest.fixture
+# def aliased_epure():
+#     return get_epure(EpureClass4)
 
 def test_aliased_epure_fields(aliased_epure):
     pass
 
 def test_aliased_epure_table(aliased_epure):
-    assert aliased_epure.table.name == 'prefix.aliasedtable'
-    assert default_epure.db.name == 'GresDb'
-    assert table_exists('prefix.aliasedtable')
+    assert aliased_epure[0][0].table.full_name == 'public.aliased_table'
+    assert aliased_epure[0][0].table.db.database == 'postgres'
+    assert table_exists('public.aliased_table')
 
 def test_aliased_epure_fields_in_correct_tables():
     pass

@@ -32,28 +32,35 @@ class Primitive(Leaf, Constant):
         self.val = val
         super().__init__()
 
-    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         res = ""
         if isinstance(self.val, list) or isinstance(self.val, tuple):
-            res = "("
+            res += "("
             for item in self.val:
                 if isinstance(item, Leaf):
                     res += f'{item.serialize(parentheses, full_names, for_header)}, '
                     # temp.append(str(item))
+                # elif isinstance(item,str):
+                #     res += f"'{item}', "
+                elif translator:
+                    # temp.append(item.serialize(parentheses, full_names, for_header))
+                    # res += f'{str(item)}, '
+                    res += f'{translator(item, type(item))}, '
                 elif isinstance(item,str):
                     res += f"'{item}', "
                 else:
-                    # temp.append(item.serialize(parentheses, full_names, for_header))
                     res += f'{str(item)}, '
-                    # res += f'{cast_py_db_val(item)}, '
+                # else:
             res = res[:-2] + ")"
             # res += ")"
             # res = str(tuple(temp))
+        elif translator:
+            # res = str(self.val)
+            res = translator(self.val, type(self.val))
         else:
             res = str(self.val)
-            # res = self(self.val)
 
-        if isinstance(self.val, str) or isinstance(self.val, UUID):
+        if not translator and (isinstance(self.val, str) or isinstance(self.val, UUID)):
             res = f"'{res}'"
 
         if not parentheses:
@@ -96,7 +103,7 @@ class ColumnProxy(QueryingProxy, Name):
 
 
 
-    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         res = ''
         # if not full_names:
         #     res = self.__column__.name
@@ -161,7 +168,7 @@ class TableProxy(QueryingProxy, Name):
     #     res = TermHeader(list(*args))
     #     return res
 
-    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         res = ''
         # if not full_names:
         #     res = self.__table__.name      
