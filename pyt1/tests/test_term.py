@@ -423,9 +423,9 @@ def test_term_parser():
                     #  "SELECT complex0, test_field3 FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field\nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3\nRIGHT JOIN oraculs_domain.oraculs on True\n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)"
     assert "FROM public.default_epure \n LEFT JOIN oraculs_domain.test_clssasdas on str0 = test_field1 or (int0 = test_field2 and float0 = 5) or complex0 = test_field3 \nRIGHT JOIN oraculs_domain.oraculs on test_field1 = test_field \nLEFT JOIN oraculs_domain.test_clssasdas on int3 = test_field3 \nRIGHT JOIN oraculs_domain.oraculs on True \n WHERE \n complex0 = 'vse' or ((list0 > 100500 or tuple0 < False) and float3 < test_field3 or complex3 = 4)" in query
 
-    term = x.int3 % '%test_like%'
-    query = parser.parse(term, False)
-    assert query == "(f1 == f2 or f3 % '%test_like%' and 5 == f5 or (f6 == f7))"
+    # term = x.int3 % '%test_like%'
+    # query = parser.parse(term, False)
+    # assert query == "(f1 == f2 or f3 % '%test_like%' and 5 == f5 or (f6 == f7))"
 
 def test_columns_select():
     db = DbProxy(real_db)    

@@ -219,11 +219,11 @@ class GresDb(Db):
         if val == None:
             return 'NULL'
         if py_type in (int, float, bool):
-            return str(val)            
+            return str(val)
         if py_type in (str, UUID):
             res = f"'{str(val)}'"
             return res
-        if py_type in (bytes, bytearray):            
+        if py_type in (bytes, bytearray):        
             val = val.decode()
             val = val.replace("\x00","")
             res = f"'{val}'"

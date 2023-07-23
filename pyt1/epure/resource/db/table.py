@@ -100,7 +100,13 @@ class Table(DbEntity):
         if kwargs:
             return self.read_by_kwargs(*args, **kwargs)
 
-        selector = args[0]
+        if args:
+            selector = args[0]
+        else:
+            # args.__add__(self.querying_proxy)
+            selector = self.querying_proxy@True
+            args = args + (selector,)
+
         if isinstance(selector, str):
             return self.read_by_sql(selector)
 
