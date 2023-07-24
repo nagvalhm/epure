@@ -6,8 +6,8 @@ All technical details hidden from you. Care only about your business logic.
 
 Supported databases
 ----------
-Postgres: yes :heavy_check_mark: ✔️
-Oracle: no :x: ❌
+Postgres: yes ✔️
+Oracle: no ❌
 
 Installing
 ----------
@@ -53,7 +53,7 @@ db.connect() #  with DB written in auto-generated file epure_db.log
 
 A Simple Example
 ----------------
-:warning:⚠️In order to save attributes of class to db, type hints is required!⚠️:warning:
+ ⚠️ In order to save attributes of class to db, type hints is required! ⚠️ 
 Create example class with Epure, create instance of it and read it from DB.
 ```python
 # save this as epure_example.py
@@ -64,7 +64,7 @@ from epure import epure
 import types
 from typing import List, Dict, Tuple, Callable
 
-# :warning:⚠️In order to save attributes of class to db, type hints is required!⚠️:warning:
+# ⚠️ In order to save attributes of class to db, type hints is required! ⚠️ 
 
 # decorate class by @epure() wrap function
 @epure()
