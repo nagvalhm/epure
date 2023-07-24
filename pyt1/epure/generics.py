@@ -1,1 +1,1 @@
-from ..epure.resource.db.constraint import NotNull, Check, Prim, Uniq, Default
+from .resource.db.constraint import NotNull, Check, Prim, Uniq, Default
