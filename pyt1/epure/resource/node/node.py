@@ -98,7 +98,8 @@ class TableNode(Node):
                 # field_val = getattr(field_val, 'none2', None)
 
             #working for db:
-            if isinstance(field_type, Savable) and not isinstance(field_val, UUID):
+            if field_val and isinstance(field_type, Savable)\
+            and not isinstance(field_val, UUID):
                 field_val = getattr(self, field_name, None)
                 field_type = field_val.annotations['node_id']
                 field_val = field_val.save(True).node_id
