@@ -19,8 +19,8 @@ def get_epure(cls):
     id = epure.save().node_id
     res = epure.table.read(node_id=id)
 
-    initial_epure_json = epure.table._serialize(epure)
-    res_json = epure.table._serialize(res[0][0])
+    # initial_epure_json = epure.table._serialize(epure)
+    # res_json = epure.table._serialize(res[0][0])
 
     # assert res[0][0] == epure
     # assert initial_epure_json == res_json
@@ -113,6 +113,11 @@ def default_epure(regular_class3, epure_class3, epure_class1):
 
     id = epure.save().node_id
     res = epure.table.read(node_id=id)
+
+    orig_json = epure.to_json()
+    res_json = res[0][0].to_json()
+    
+    # assert orig_json == res_json
 
     # res = epure.table.read(int3=6, str3="str3_value")
 

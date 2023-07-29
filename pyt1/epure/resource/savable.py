@@ -29,7 +29,7 @@ class Savable(Resource):
         pass
 
     def to_json(self):
-        pass
+        raise NotImplementedError
 
     @classmethod
     def is_excluded(cls, atr_name:str, type_hint:Any='') -> bool:

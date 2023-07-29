@@ -3,6 +3,8 @@ from ..savable import Savable
 from ..resource import Resource
 from ...errors import ResourceException
 from typing import Any, Dict
+import jsonpickle
+from ..db.constraint import Constraint
 
 class Node(Savable):
 
@@ -74,5 +76,40 @@ class TableNode(Node):
 
 
         return instance
+    
+    def to_json(self):
+        from ..db.table import NodePromise
+        res = {}
+        for field_name, field_type in self.annotations.items():
+            if isinstance(field_type, Constraint):
+                field_type = field_type.py_type
+                
+            if self.is_excluded(field_name, field_type):
+                continue
+            if field_name not in self.table.header:
+                continue
+            if not hasattr(self, field_name):
+                continue
+
+            field_val = getattr(self, field_name, None)
+
+            if isinstance(field_val, NodePromise):
+                field_val = getattr(field_val, 'node_id2', None)
+                # field_val = getattr(field_val, 'none2', None)
+
+            #working for db:
+            if isinstance(field_type, Savable) and not isinstance(field_val, UUID):
+                field_val = getattr(self, field_name, None)
+                field_type = field_val.annotations['node_id']
+                field_val = field_val.save(True).node_id
+
+            if isinstance(field_val, UUID):
+                field_val = str(field_val)
+
+            res[field_name] = field_val
+
+        res = jsonpickle.encode(res)
+
+        return res
 
     __exclude__:list = Node.__exclude__ + ['table', 'db']
