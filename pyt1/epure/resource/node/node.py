@@ -94,7 +94,7 @@ class TableNode(Node):
             field_val = getattr(self, field_name, None)
 
             if isinstance(field_val, NodePromise):
-                field_val = getattr(field_val, 'node_id2', None)
+                field_val = getattr(field_val, 'node_id', None)
                 # field_val = getattr(field_val, 'none2', None)
 
             #working for db:
