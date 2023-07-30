@@ -109,6 +109,9 @@ class TableNode(Node):
 
             res[field_name] = field_val
 
+        jsonpickle.set_preferred_backend('json')
+        jsonpickle.set_encoder_options('json', ensure_ascii=False)
+
         res = jsonpickle.encode(res)
 
         return res
