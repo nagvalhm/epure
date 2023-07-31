@@ -243,6 +243,7 @@ def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) 
 
 def _create_epure(cls, saver, _Epure):
     cls_dict = dict(cls.__dict__)
+    cls_dict.pop('__dict__', None)
     if issubclass(cls, Savable):
         return _Epure(cls.__name__, cls.__bases__, cls_dict)
 

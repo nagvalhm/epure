@@ -114,8 +114,11 @@ def default_epure(regular_class3, epure_class3, epure_class1):
     id = epure.save().node_id
     res = epure.table.read(node_id=id)
 
-    orig_json = epure.to_json()
-    res_json = res[0][0].to_json()
+    # orig_json = epure.to_json()
+    # res_json = res[0][0].to_json()
+
+    orig_json = epure.to_dict()
+    res_json = res[0][0].to_dict()
     
     # assert orig_json == res_json
 

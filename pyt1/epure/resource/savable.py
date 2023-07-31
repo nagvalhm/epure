@@ -28,7 +28,10 @@ class Savable(Resource):
     def save(self, asynch:bool=False):
         pass
 
-    def to_json(self):
+    # def to_json(self) -> str:
+    #     raise NotImplementedError
+
+    def to_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
 
     @classmethod
