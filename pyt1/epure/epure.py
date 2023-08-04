@@ -232,7 +232,7 @@ def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) 
 
     def epure_creator(cls:type) -> Epure:
         epure_cls = _create_epure(cls, saver, epure_metaclass)
-        epure_cls.is_saved = False      # might not change true to false in the debuger, because this is overrided setter
+        epure_cls.is_saved = False      # might not change true to false in the debuger, because this is overrided setter.
         epure_cls.prepare_save(resource)
 
         del cls
@@ -243,6 +243,7 @@ def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) 
 
 def _create_epure(cls, saver, _Epure):
     cls_dict = dict(cls.__dict__)
+    cls_dict.pop('__dict__', None)
     if issubclass(cls, Savable):
         return _Epure(cls.__name__, cls.__bases__, cls_dict)
 

@@ -38,7 +38,7 @@ class Binary(Term):
         super().__init__()
 
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         return self.operator
 
     def __str__(self):
@@ -46,19 +46,19 @@ class Binary(Term):
         return self.str(parentheses=True, full_names=True)
 
 
-    def str(self, parentheses=False, full_names=False):
+    def str(self, parentheses=False, full_names=False, translator=None):
         res = ''        
-        sorted_graph = self.sort_graph()
+        sorted_graph = self.sort_graph(translator)
         for term in sorted_graph:
-            res += term.serialize(parentheses, full_names) + " "
+            res += term.serialize(parentheses, full_names, translator=translator) + " "
         return res[:-1]
 
 
 
-    def sort_graph(self):
+    def sort_graph(self, translator=None):
         res = []
         
-        copies = self._simple_copy_terms()
+        copies = self._simple_copy_terms(translator=translator)
 
         if self.debugger:
             self.debugger.show(copies)
@@ -126,11 +126,11 @@ class Binary(Term):
         left = self.left
         right = self.right
 
-        if left.__header__ or right.__header__:
-            header = self.merge_headers(left.__header__, right.__header__)
-            left.__header__ = header
-            right.__header__ = header
-            self.__header__ = header
+        # if left.__header__ or right.__header__:
+        #     header = self.merge_headers(left.__header__, right.__header__)
+        #     left.__header__ = header
+        #     right.__header__ = header
+        #     self.__header__ = header
             
         terms_graph.update(self.terms_graph)        
         terms_graph.update(left.terms_graph)        

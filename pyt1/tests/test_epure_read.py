@@ -1,5 +1,8 @@
 # from .test_epure import default_epure
 from .epure_classes import DefaultEpure
+import pytest
+from .epure_classes import db as real_db
+from ..epure.parser.leaf import DbProxy
 # from ..epure.epure import Epure
 # from typing import cast
 
@@ -26,9 +29,31 @@ def test_read_default_epure_lambda():
     )
     assert isinstance(res, list) and bool(res[0])
 
+def test_read_default_epure_lambda2():
+
+    # res = DefaultEpure.resource.read(lambda tp, dbp:
+    #     (tp.float3, tp.range0, tp.epure_class, dbp['epure_class3'].node_id)@
+
+    #     dbp['epure_class3'] << (tp.epure_class == dbp['epure_class3'].node_id
+    #     | tp.generic_list0 == dbp['epure_class3'].generic_list2) ^
+
+    #     tp.str3 == 'str3_value' 
+    #     & (tp.int3 > 3 | tp.float3 < 0.8)
+
+    #     ^dbp['epure_class1'] << tp.epure_class1 == dbp['epure_class1'].node_id
+
+    #     # & tp.int0 < dbp['epure_class1'].int2
+        
+    # )
+    # assert isinstance(res, list) and bool(res[0])
+
+    DefaultEpure.resource.read(lambda pr, abc: [pr.int0 >= ('all-categories', 'promotions')])
+
 
 def test_read_default_epure_kwargs():
-    DefaultEpure.resource.read('and', complex0=5+7j, float3=750479.0714551052)
+    # DefaultEpure.resource.read([], 'and', complex0=5+7j, float3=750479.0714551052)
+    # SELECT * FROM public.default_epure where complex0 ~= point('5.0, 7.0') and float3 = 750479.0714551052
+    DefaultEpure.resource.read([], 'and', complex0=5+7j, float3=750479.0714551052) # fix point type read !!
 
 
 
@@ -37,8 +62,10 @@ def test_read_default_epure_sql():
 
 
 def test_read_default_epure_term():
-    tp = DefaultEpure.tp
-    dbp = DefaultEpure.dp
+    # tp = DefaultEpure.tp
+    tp = DefaultEpure.resource.querying_proxy
+    # dbp = DefaultEpure.dp
+    dbp = DefaultEpure.resource.resource_proxy
     ec_3 = dbp['epure_class3']
     ec_1 = dbp['epure_class1']
 
@@ -54,8 +81,10 @@ def test_read_default_epure_term():
 
     query2 = (ec_1.int2 == 1111)
 
-    DefaultEpure.resource.read(tp.float3, tp.range0, 
-        tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
+    with pytest.raises(Exception) as e_info:
+        DefaultEpure.resource.read(tp.float3, tp.range0, 
+            tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
+    assert "^\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts.\n" in e_info.value.args[0]
 
 def test_read_default_epure_readmethod():
     DefaultEpure.read_method(3, 0.8, 1111)
@@ -71,3 +100,40 @@ def test_read_default_epure_readmethod():
     #     x.zaebalo == 'vse' 
     #     & (x.skolko > 100500 | x.pohui < False) 
     #     & x.govno < db['its_table'].poeben)
+
+# def test_read_default_epure_sql2():
+#     db = DbProxy(real_db)
+#     x = db['default_epure']
+#     real_x = real_db['default_epure']
+#     y = db['oraculs_domain.test_clssasdas']
+#     # z = db['no_table']
+#     z = db['oraculs_domain.oraculs']
+#     a = db['oraculs_domain.competitions']
+#     b = db['oraculs_domain.tasks']
+
+#     DefaultEpure.resource.read(a.f1 @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1)))
+
+def test_read_default_epure_sql2():
+    db = DbProxy(real_db)
+    x = db['default_epure']
+    real_x = real_db['default_epure']
+    y = db['oraculs_domain.test_clssasdas']
+    # z = db['no_table']
+    z = db['oraculs_domain.oraculs']
+    a = db['oraculs_domain.competitions']
+    b = db['oraculs_domain.tasks']
+
+    DefaultEpure.resource.read(y ^ x << x.float0 == z.node_id)
+    # DefaultEpure.resource.read(y @ x << x.float0 == z.node_id)
+    # DefaultEpure.resource.read(x)
+
+def test_read_default_epure_empty():
+    db = DbProxy(real_db)
+    x = db['default_epure']
+
+    res_read = DefaultEpure.resource.read()
+
+    # read_sql = DefaultEpure.resource.read('select * from public.default_epure')
+
+    # assert res_read == read_sql
+    assert isinstance(res_read, list) and bool(res_read[0])

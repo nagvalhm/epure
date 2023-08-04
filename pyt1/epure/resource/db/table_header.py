@@ -314,3 +314,6 @@ class TableHeader(Savable):
             self.deleted_columns[column.name] = column
         else:
             self.columns[column.name] = column
+    
+    def serialize_read_column(self, column:TableColumn, full_names:bool):
+        raise NotImplementedError

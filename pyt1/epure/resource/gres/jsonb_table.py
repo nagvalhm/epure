@@ -27,7 +27,7 @@ class JsonbTable(GresTable):
             header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '') -> None:        
         check_type('header', header, [TableHeader, dict, NoneType])        
         # header['jsonb___data'] = Any
-        header = JsonbHeader()
+        header = JsonbHeader(table=self)
 
         super().__init__(name=name, header=header, namespace=namespace, resource=resource)
     

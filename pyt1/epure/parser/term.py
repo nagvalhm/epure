@@ -31,7 +31,9 @@ class Term:
 
     def __ror__(self, other:Term): #|
         return self.operation(other, self, 'or')
-
+    
+    def __mod__(self, other): #%
+        return self.operation(self, other, '%')
 
     #non primitive operators:
     def __xor__(self, other:Term): #^
@@ -39,7 +41,12 @@ class Term:
 
     def __rxor__(self, other:Term): #^
         return self.operation(other, self, '^')
-
+    
+    def __matmul__(self, other): #@
+        return self.operation(self, other, '@')
+    
+    def __rmatmul__(self, other): #@
+        return self.operation(other, self, '@')
 
     def __lshift__(self, other:Term): #<<
         return self.operation(self, other, '<<')
@@ -66,6 +73,9 @@ class Term:
 
     def __ge__(self, other): #>=
         return self.comparison(self, other, '>=')
+    
+    # def __contains__(self, other): #in
+    #     return self.comparison(self, other, 'in')
 
 
 
@@ -73,21 +83,21 @@ class Term:
         from .bin_operation import BinOperation
         if isinstance(right, TermHeader):
             right = right.val
-        if isinstance(right, list):
-            if not isinstance(left, Term):
-                from .leaf import Primitive
-                left = Primitive(left)
-            left.__header__ = self.merge_headers(left.__header__, right)
-            return left
+        # if isinstance(right, list):
+        #     if not isinstance(left, Term):
+        #         from .leaf import Primitive
+        #         left = Primitive(left)
+        #     left.__header__ = self.merge_headers(left.__header__, right)
+        #     return left
             
-        if isinstance(left, TermHeader):
-            left = left.val
-        if isinstance(left, list):
-            if not isinstance(right, Term):
-                from .leaf import Primitive
-                right = Primitive(right)
-            right.__header__ = self.merge_headers(left, right.__header__)
-            return right
+        # if isinstance(left, TermHeader):
+        #     left = left.val
+        # if isinstance(left, list):
+        #     if not isinstance(right, Term):
+        #         from .leaf import Primitive
+        #         right = Primitive(right)
+        #     right.__header__ = self.merge_headers(left, right.__header__)
+        #     return right
         res = BinOperation(left, right, operator)
         res.merge_graphs()
         return res
@@ -99,20 +109,20 @@ class Term:
         res.merge_graphs()
         return res
 
-    def str(self, parentheses=False, full_names=False):
-        return self.serialize(parentheses, full_names)
+    def str(self, parentheses=False, full_names=False, translator:function=None):
+        return self.serialize(parentheses, full_names, translator)
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         raise NotImplementedError
         
 
-    def _simple_copy_terms(self, terms: List[Term]=None):
+    def _simple_copy_terms(self, terms: List[Term]=None, translator=None):
         if terms is None:
             terms = list(self.terms_graph.values())
 
         copies = []
         for term in terms:
-            term_copy = term._simple_copy()
+            term_copy = term._simple_copy(translator)
             copies.append(term_copy)
 
         for copy in copies:
@@ -122,12 +132,12 @@ class Term:
 
 
 
-    def _simple_copy(self) -> Term:
+    def _simple_copy(self, translator=None) -> Term:
         res = Term()
         if hasattr(self, 'id') and self.id:
             res.id = self.id
 
-        res.val = self.serialize(False, False)
+        res.val = self.serialize(False, False, translator=translator)
 
         if hasattr(self, 'parentheses'):
             res.parentheses = self.parentheses

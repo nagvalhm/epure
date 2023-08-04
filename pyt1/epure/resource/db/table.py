@@ -100,7 +100,13 @@ class Table(DbEntity):
         if kwargs:
             return self.read_by_kwargs(*args, **kwargs)
 
-        selector = args[0]
+        if args:
+            selector = args[0]
+        else:
+            # args.__add__(self.querying_proxy)
+            selector = self.querying_proxy@True
+            args = args + (selector,)
+
         if isinstance(selector, str):
             return self.read_by_sql(selector)
 
@@ -136,9 +142,12 @@ class Table(DbEntity):
         
         if not term_header:
             term_header.append(tp)
-        
-        term = term_header
-        for key, val in kwargs.items():
+        # from ...parser.leaf import Primitive 
+        # term = term_header @ Primitive(True)
+        kwargs_items = list(kwargs.items())
+        first_item = kwargs_items[0]
+        term = term_header @ getattr(tp, first_item[0]) == first_item[1]
+        for (key, val) in kwargs_items[1:]:
             if operator == 'or':
                 term = term | getattr(tp, key) == val
             else:
@@ -334,11 +343,29 @@ class Table(DbEntity):
                 node_id = getattr(tp, 'node_id', None)
                 if node_id is not None and not node_id.in_header(header + res):
                     res.append(node_id)
+        
+        # res = tuple(res)
+        header = tuple(header)
+        
+        if isinstance(header[0],str):
+            res = set()
+            for item in header:
+                sp = item.split('.')
+
+                if len(sp) == 3:
+                    node_id_column = f'{sp[0]}.{sp[1]}.node_id'
+                    if node_id_column not in header:
+                        res.add(node_id_column)
+                    
+        res = tuple(res)
+
+
+
         return header + res
 
 
-    def get_column_header_name(self, column_name:str):
-        raise NotImplementedError
+    # def get_column_header_name(self, column_name:str):
+    #     raise NotImplementedError
 
         # tables = []
         # columns = []

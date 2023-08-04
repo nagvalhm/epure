@@ -1,7 +1,8 @@
 from __future__ import annotations
 from ..epure import epure
 from ..epure.dbs import GresDb
-from ..epure.resource.db.constraint import NotNull, Check, Prim, Uniq, Default
+# from ..epure.resource.db.constraint import NotNull, Check, Prim, Uniq, Default
+from ..epure.generics import NotNull, Check, Prim, Uniq, Default
 from typing import List, Dict, Tuple, Callable
 from datetime import datetime
 import pytest
@@ -237,14 +238,22 @@ class CrosEpure2:
 @epure('oraculs_domain.competitions')
 class Competitions:
     pass
-    # res_id:UUID
-    # data:object
+
+@epure('oraculs_domain.tasks')
+class Tasks:
+    pass
 
 @epure('oraculs_domain.oraculs')
 class Oraculs:
     pass
-    # res_id:UUID
-    # data:object
+
+@epure('oraculs_domain.test_clssasdas')
+class TestClassasDas1:
+    test_field1:str    
+    test_field2:str
+    test_field3:object
+    test_field4:bytes
+    test_field5:str
 
 @epure('AnotherDomain.EpureClass4')
 class EpureClass4:

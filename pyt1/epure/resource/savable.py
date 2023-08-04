@@ -28,8 +28,11 @@ class Savable(Resource):
     def save(self, asynch:bool=False):
         pass
 
-    def to_json(self):
-        pass
+    # def to_json(self) -> str:
+    #     raise NotImplementedError
+
+    def to_dict(self) -> Dict[str, Any]:
+        raise NotImplementedError
 
     @classmethod
     def is_excluded(cls, atr_name:str, type_hint:Any='') -> bool:

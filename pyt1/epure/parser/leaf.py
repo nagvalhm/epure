@@ -32,10 +32,37 @@ class Primitive(Leaf, Constant):
         self.val = val
         super().__init__()
 
-    def serialize(self, parentheses=True, full_names=True) -> str:
-        res = str(self.val)
-        if isinstance(self.val, str) or isinstance(self.val, UUID):
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
+        res = ""
+        if isinstance(self.val, list) or isinstance(self.val, tuple):
+            res += "("
+            for item in self.val:
+                if isinstance(item, Leaf):
+                    res += f'{item.serialize(parentheses, full_names, for_header)}, '
+                    # temp.append(str(item))
+                # elif isinstance(item,str):
+                #     res += f"'{item}', "
+                elif translator:
+                    # temp.append(item.serialize(parentheses, full_names, for_header))
+                    # res += f'{str(item)}, '
+                    res += f'{translator(item, type(item))}, '
+                elif isinstance(item,str):
+                    res += f"'{item}', "
+                else:
+                    res += f'{str(item)}, '
+                # else:
+            res = res[:-2] + ")"
+            # res += ")"
+            # res = str(tuple(temp))
+        elif translator:
+            # res = str(self.val)
+            res = translator(self.val, type(self.val))
+        else:
+            res = str(self.val)
+
+        if not translator and (isinstance(self.val, str) or isinstance(self.val, UUID)):
             res = f"'{res}'"
+
         if not parentheses:
             return res
         res = self.append_parentheses(res)
@@ -76,15 +103,20 @@ class ColumnProxy(QueryingProxy, Name):
 
 
 
-    def serialize(self, parentheses=True, full_names=True, for_body=True) -> str:
-        res = self.__column__.full_name
-
-        if for_body:
-            table = self.__table__.full_name
-            res = f'{table}.{res}'
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
+        res = ''
+        # if not full_names:
+        #     res = self.__column__.name
+        # el
+        if for_header:
+            res = self.__table__.header.serialize_read_column(self.__column__, full_names)
+        elif not full_names:
+            res = self.__column__.name
         else:
-            res = self.__table__.get_column_header_name(res)
-        if parentheses:
+            table = self.__table__.full_name
+            res = f'{table}.{self.__column__.name}'
+
+        if not for_header and parentheses:
             res = self.append_parentheses(res)
         
         return res
@@ -136,16 +168,21 @@ class TableProxy(QueryingProxy, Name):
     #     res = TermHeader(list(*args))
     #     return res
 
-    def serialize(self, parentheses=True, full_names=True, for_body=True) -> str:
+    def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         res = ''
-        if for_body:
-            res = f'{self.__table__.full_name}'
-            if parentheses:
-                res = self.append_parentheses(res)
-        else:
-            for col in self.__table__.header:
-                res += self.__table__.get_column_header_name(col) + ', '
+        # if not full_names:
+        #     res = self.__table__.name      
+        # el
+        if for_header:
+            header = self.__table__.header
+            for col in header:
+                res += header.serialize_read_column(header[col], full_names) + ', '
             res = res[0:-2]
+        else:
+            res = f'{self.__table__.full_name}'
+
+        if not for_header and parentheses:
+            res = self.append_parentheses(res)
         
         return res
 

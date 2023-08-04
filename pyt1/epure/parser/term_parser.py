@@ -1,7 +1,7 @@
 from typing import List, Dict, Union
 from .term import Term, TermHeader
 from .leaf import QueryingProxy
-from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST
+from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST, Mod, And, GtE, Tuple
 import re
 # import astor
 from ..helpers.string_helper import find_parentheses
@@ -10,6 +10,7 @@ from ..resource.db.table import Table
 from ..helpers.type_helper import check_type
 from uuid import uuid4
 from ..errors import EpureParseError
+from .leaf import Leaf
 
 class JoinOperation:    
     table:str
@@ -62,21 +63,47 @@ class TermParser(NodeTransformer):
             header = header.val
 
         if isinstance(body, Term):
+        # if isinstance(body, Term) and header:
             header = body.merge_headers(header, body.__header__)
 
-        if not header:
-            raise EpureParseError('header not defined')
+        # if not header:
+        #     raise EpureParseError('header not defined')
 
-        body = body.str(True, full_names)
-        self.joins = []
+        body = body.str(True, full_names, self.resource.db.cast_py_db_val)
+        self.joins.clear()
+        # self.collect_joins(body)
         body = self.collect_joins(body)
         where_clause = self.remove_join_ids(body)
 
+        if '@' in body:
+            res = body.split(' @ ', 1)
+            where_clause = res[1]
+            header = res[0]
+            if header[0] == '(':
+                # header = eval(header)
+                # header = header[1:-1]
+                header = header.replace('(','')
+                header = header.replace(')','')
+                header = tuple(header.split(', '))
+            else:
+                header = (header,)
         
+        if not header:
+            header = (self.resource.querying_proxy,)
+            # header = self.parse_for_headers(where_clause)
+            # if header:
+                
+
         res = self.resource.serialize_read(header, self.joins, where_clause, full_names)
         self.joins = []
         return res
 
+    def parse_for_headers(self, body):
+        res = []
+        # if '@' in body:
+        #    res = (body.split(' @ '))
+        
+        return res
 
     def collect_joins(self, body:str):
         tree = parse(body)
@@ -145,6 +172,11 @@ class TermParser(NodeTransformer):
     def visit_BinOp(self, node:BinOp):
         self.generic_visit(node)
         op = node.op
+
+        if isinstance(op,Mod) and isinstance(node.right.value, str):
+            return Name(f"{unparse(node.left)} like {unparse(node.right)}")
+
+        # if isinstance(op, And) and (isinstance() or )
         if not (isinstance(op, LShift) or isinstance(op, RShift)):
             return node
 
@@ -157,7 +189,26 @@ class TermParser(NodeTransformer):
         join = JoinOperation(left, right, join_type, join_id)
         self.joins.append(join)
         return Name(join_id)
+    
+    # def serialize_tuple(self, ast_tuple:Tuple):
+    #         res = []
+    #         for const in ast_tuple.elts:
+    #             res.append(const.value)
+            
+    #         return str(tuple(res))
 
+    def visit_Compare(self, node:GtE):
+        self.generic_visit(node)
+        op = node.ops[0]
+
+        if isinstance(op, GtE) and (isinstance(node.comparators[0], Tuple) or isinstance(node.comparators[0], BinOp)):
+            # Ast_tuple_str = self.serialize_tuple(node.comparators[0])
+            # return Name(f"{node.left.id} in {self.serialize_tuple(node.comparators[0])}")
+            return Name(f"{unparse(node.left)} in {unparse(node.comparators[0])}")
+        else:
+            return node
+
+    
 
     # def visit_LShift(self, node: LShift):        
     #     left = unparse(node.parent.left)
