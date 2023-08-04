@@ -29,10 +29,10 @@ class Resource():
     def serialize_for_update(self, savable:Savable,  **kwargs) -> object:
         raise NotImplementedError
 
-    def delete(self, savable:Savable, asynch:bool=False):
+    def delete(self, *args, **kwargs):
         raise NotImplementedError
 
-    def serialize_for_delete(self, savable:Savable,  **kwargs) -> object:
+    def serialize_for_delete(self, *args,  **kwargs) -> object:
         raise NotImplementedError
 
 

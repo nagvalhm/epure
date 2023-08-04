@@ -49,6 +49,10 @@ class GresTable(Table, GresEntity):
         res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
         res = self.replace_operators(res)
         return res
+    
+    def serialize_for_delete(self, node_id) -> str:
+        #here
+        return ''
 
 
 

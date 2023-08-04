@@ -112,6 +112,16 @@ class Table(DbEntity):
             return self.read_by_term(args[0:-1], selector)
 
         raise NotImplementedError(f'couldn read by object of type {type(selector)}')
+    
+
+    
+    def delete(self, *args, **kwargs):
+        return self.delete_by_id(args[0])
+    
+    def delete_by_id(self, node_id: str|UUID):
+        delete_sql = self.serialize_for_delete(node_id)
+        res = self.execute(delete_sql)
+        return res
 
 
     # def read_by_fields(self):
@@ -292,7 +302,7 @@ class Table(DbEntity):
     def serialize_for_update(self, node: Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def serialize_for_delete(self, node: Savable, **kwargs) -> object:
+    def serialize_for_delete(self, *args, **kwargs) -> object:
         raise NotImplementedError
 
     
