@@ -207,7 +207,8 @@ class GresDb(Db):
         elif origin == NotNull:
             return f"{db_type} NOT NULL DEFAULT {default}"
         elif origin == Uniq:
-            return f"{db_type} UNIQUE NULLS NOT DISTINCT"
+            return f"{db_type} UNIQUE"
+            # return f"{db_type} UNIQUE NULLS NOT DISTINCT"
         elif origin == Prim:
             return f"{db_type} PRIMARY KEY DEFAULT {default}"
         elif origin == Foreign:

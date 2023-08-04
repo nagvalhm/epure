@@ -159,6 +159,13 @@ def test_aliased_epure_table(aliased_epure):
 def test_aliased_epure_fields_in_correct_tables():
     pass
 
+def test_default_epure_delete_row_by_id():
+    res = EpureClass1()
+    node_id = res.save().node_id
+    res.table.delete_by_id(node_id)
+    read_res = res.table.read(node_id=node_id)
+    assert read_res == []
+    
 # @pytest.fixture
 # def custom_save_epure():
 #     epure = CustomSaveEpure()

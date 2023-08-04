@@ -10,6 +10,7 @@ from ...parser.leaf import TableProxy, QueryingProxy, DbProxy, ColumnProxy
 from ..db.table_column import TableColumn
 from collections import OrderedDict
 from ..node.proto import Proto
+from uuid import UUID
 
 from ...errors import DeserializeError
 

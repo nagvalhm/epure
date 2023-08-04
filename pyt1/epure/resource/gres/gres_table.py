@@ -52,7 +52,7 @@ class GresTable(Table, GresEntity):
     
     def serialize_for_delete(self, node_id) -> str:
         #here
-        return ''
+        return f"DELETE FROM {self.full_name} WHERE node_id = '{str(node_id)}'"
 
 
 

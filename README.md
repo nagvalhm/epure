@@ -53,8 +53,8 @@ db.connect() #  with DB written in auto-generated file epure_db.log
 
 A Simple Example
 ----------------
- ⚠️ In order to save attributes of class to db, type hints is required! ⚠️ 
-Create example class with Epure, create instance of it and read it from DB.
+ ##### ⚠️ In order to save attributes of class to db, type hints is required! ⚠️ 
+##### Create example class with Epure, create instance of it and read it from DB.
 ```python
 # save this as epure_example.py
 # --------------------------------
@@ -98,6 +98,29 @@ node_id = epure.node_id # -> UUID4
 
 # node_id is used to search epure objects and retrive them from DB via read() method, returns list of list with object(s)
 res = epure.table.read(node_id=node_id) # -> list[list[epure_object]]
+```
+
+Save epure instance
+----------------
+```python
+    in development
+```
+
+Update epure instance
+----------------
+```python
+    @epure()
+    class Example:
+    int_attr:int
+
+    ex = Example()
+    ex.int_attr = 42
+    ex.save()
+    ex.int_attr = 60
+    ex.save() # If instance of epure already has node_id attr, the next save() will be treated as update
+    
+    res = ex.table.read(node_id=ex.node_id)[0][0]
+    res.int_attr # -> 60  
 ```
 
 Read from table method variations
