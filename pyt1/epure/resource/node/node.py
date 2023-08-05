@@ -71,8 +71,14 @@ class TableNode(Node):
         instance = _cls()
         
         for field_name, val in _dict.items():
-            if field_name in instance.annotations:
+            name_is_in_cls_attrs = field_name in instance.annotations
+            val_type_match_cls_attr_type = name_is_in_cls_attrs and isinstance(val, instance.annotations[field_name])
+
+            if name_is_in_cls_attrs and val_type_match_cls_attr_type:
                 setattr(instance, field_name, val)
+            elif name_is_in_cls_attrs and not val_type_match_cls_attr_type:
+                raise TypeError(f'item with name "{field_name}" and value "{val}" of type "{type(val)}" does not match attr type of class '\
+                                 f'"{_cls}" with value name "{field_name}" and type of attr "{instance.annotations[field_name]}"')
 
 
         return instance
