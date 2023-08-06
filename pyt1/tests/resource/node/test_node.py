@@ -28,6 +28,7 @@ def test_node_from_dict():
     # _dict['name'] = 8
     # _dict['node_id'] = '312'
     # _dict['node_id'] = '1a35b818-81fe-45f5-9c60-3706b290cd68'
+    _dict['age'] = None
     # _dict = dict(name = "John", last_name = "Dow", Age = 35, grandma = epure_class1, grandpa = epure_class2)
     res = Human.from_dict(_dict)
 

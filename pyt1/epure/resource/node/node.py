@@ -86,6 +86,9 @@ class TableNode(Node):
                 except ValueError:
                     pass
                 # val = uuid_val
+            
+            if name_is_in_cls_attrs and val is None:
+                val_type_match_cls_attr_type = True
 
             if name_is_in_cls_attrs and val_type_match_cls_attr_type:
                 setattr(instance, field_name, val)
