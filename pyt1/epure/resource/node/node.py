@@ -91,7 +91,7 @@ class TableNode(Node):
             if val is None:
                 val_type_match_cls_attr_type = True
 
-            if val is str and cls_attr_type in (bytes, bytearray): # bytearray is yet to be tested !
+            if isinstance(val, str) and cls_attr_type in (bytes, bytearray): # bytearray is yet to be tested !
                 val = cls_attr_type(val.encode())
 
             if val_type_match_cls_attr_type:
