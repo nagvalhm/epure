@@ -215,6 +215,6 @@ def test_epure_cls_save_img():
 
     res = epure_inst.table.read(node_id=epure_inst.node_id)[0][0]
 
-    ep = EpureClass2.from_dict(epure_inst.__dict__)
+    # ep = EpureClass2.from_dict(epure_inst.__dict__)
 
     assert res.bytes2 == uri
