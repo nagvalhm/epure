@@ -93,6 +93,7 @@ class TableNode(Node):
 
             if isinstance(val, str) and cls_attr_type in (bytes, bytearray): # bytearray is yet to be tested !
                 val = cls_attr_type(val.encode())
+                val_type_match_cls_attr_type = True
 
             if val_type_match_cls_attr_type:
                 setattr(instance, field_name, val)
