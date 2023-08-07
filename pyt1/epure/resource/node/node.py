@@ -5,6 +5,7 @@ from ...errors import ResourceException
 from typing import Any, Dict
 import jsonpickle
 from ..db.constraint import Constraint
+from ...errors import EpureError
 
 class Node(Savable):
 
@@ -71,30 +72,33 @@ class TableNode(Node):
         instance = _cls()
         
         for field_name, val in _dict.items():
-            name_is_in_cls_attrs = field_name in instance.annotations
-            val_type_match_cls_attr_type = name_is_in_cls_attrs and isinstance(val, instance.annotations[field_name])
 
-            if field_name == "node_id":
+            if not field_name in instance.annotations:
+                continue
+
+            cls_attr_type = instance.annotations[field_name]
+            
+            val_type_match_cls_attr_type = isinstance(val, cls_attr_type)
+
+            if field_name == "node_id" and not isinstance(val, UUID):
                 val = UUID(val)
                 val_type_match_cls_attr_type = True
 
-            if name_is_in_cls_attrs and issubclass(instance.annotations[field_name], Savable)\
-            and not val_type_match_cls_attr_type:
-                try:
-                    val = UUID(val)
-                    val_type_match_cls_attr_type = True
-                except ValueError:
-                    pass
-                # val = uuid_val
+            if issubclass(cls_attr_type, Savable) and not val_type_match_cls_attr_type: # check if attr is epure
+                val = UUID(val)
+                val_type_match_cls_attr_type = True
             
-            if name_is_in_cls_attrs and val is None:
+            if val is None:
                 val_type_match_cls_attr_type = True
 
-            if name_is_in_cls_attrs and val_type_match_cls_attr_type:
+            if val is str and cls_attr_type in (bytes, bytearray): # bytearray is yet to be tested !
+                val = val.encode()
+
+            if val_type_match_cls_attr_type:
                 setattr(instance, field_name, val)
-            elif name_is_in_cls_attrs and not val_type_match_cls_attr_type:
+            else:
                 raise TypeError(f'Value for field "{field_name}" with value "{val}" of type "{type(val)}" does not match expected attr type of class '\
-                                 f'"{_cls}" with value name "{field_name}" and type of attr "{instance.annotations[field_name]}"')
+                                 f'"{_cls}" with value name "{field_name}" and type of attr "{cls_attr_type}"')
 
 
         return instance

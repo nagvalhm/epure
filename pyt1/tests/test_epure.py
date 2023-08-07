@@ -13,6 +13,8 @@ import psycopg2
 import psycopg2.extras
 import random
 from uuid import uuid4
+import requests
+import base64
 
 def get_epure(cls):
     epure = cls()
@@ -199,3 +201,20 @@ def test_default_epure_delete_row_by_id():
 
 # def test_excluded_fields_not_saved():
 #     pass
+
+def test_epure_cls_save_img():
+    epure_inst = EpureClass2()
+
+    response = requests.get('https://media.geeksforgeeks.org/wp-content/uploads/20210318103632/gfg-300x300.png')
+
+    uri = base64.b64encode(response.content)
+
+    epure_inst.bytes2 = uri
+
+    epure_inst.save()
+
+    res = epure_inst.table.read(node_id=epure_inst.node_id)[0][0]
+
+    ep = EpureClass2.from_dict(epure_inst.__dict__)
+
+    assert res.bytes2 == uri

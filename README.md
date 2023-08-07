@@ -94,10 +94,10 @@ obj.list_attr = [1,2,3,4]
 obj.save()
 
 # saved instance has attribute of node_id that is unique
-node_id = epure.node_id # -> UUID4
+node_id = obj.node_id # -> UUID4
 
 # node_id is used to search epure objects and retrive them from DB via read() method, returns list of list with object(s)
-res = epure.table.read(node_id=node_id) # -> list[list[epure_object]]
+res = obj.table.read(node_id=node_id) # -> list[list[epure_object]]
 ```
 
 Save epure instance

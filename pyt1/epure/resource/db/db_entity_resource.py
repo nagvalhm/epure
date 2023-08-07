@@ -55,6 +55,8 @@ class DbEntityResource(Resource):
             return py_type(val)
         if self.same_db_type(py_type, Any):
             return self.json_serializer.deserialize(val)
+        if py_type in (bytearray, bytes) and isinstance(val, memoryview):
+            return py_type(val.tobytes())
         # if py_type == UUID:
             # return str(val)
         return val
