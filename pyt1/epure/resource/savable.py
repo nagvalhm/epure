@@ -7,7 +7,7 @@ class Savable(Resource):
     resource: Resource
     is_saved:bool=False
     _annotations: Dict[str,Any]
-    #append to it, if u want excude
+    #append to it, if u want exclude
     __exclude__:list = ['resource', 'is_saved', '_annotations', 'cache_queue']
     
 

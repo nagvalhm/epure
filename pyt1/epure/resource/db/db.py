@@ -90,10 +90,10 @@ class Db(TableStorage):
     def execute(self, script: str = '') -> list:
         result = []
         
-        if hasattr(self, 'logger') and self.logger:
-            self.logger.debug(script)
         try:
             script = self.get_cache() + script
+            if hasattr(self, 'logger') and self.logger:
+                self.logger.debug(script)
             script = script.replace("\n", "")
             result = self._execute(script)
         except Exception as ex:

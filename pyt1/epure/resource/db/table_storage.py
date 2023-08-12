@@ -119,7 +119,7 @@ class TableStorage(DbEntityResource):
             self._epures = self._get_epures_dict()
         if table_name not in self._epures:
             from ...epure import Epure
-            self._epures[table_name] = self._get_epure_by_table_name()
+            self._epures[table_name] = self._get_epure_by_table_name(table_name)
         if table_name not in self._epures:
             return None
             # raise DbError('no one epure has this table as resource')
@@ -138,8 +138,16 @@ class TableStorage(DbEntityResource):
         return res
     
     def _get_epure_by_table_name(self, table_name: str):
+        # for ep in Epure.epures:
+        #     if ep.resource.full_name in self:
+        #         return ep
+        # return None
+        
+        if table_name not in self:
+            return None
+        
         for ep in Epure.epures:
-            if ep.resource.full_name in self:
+            if ep.resource.full_name == self[table_name].full_name:
                 return ep
         return None
         
