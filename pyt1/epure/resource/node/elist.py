@@ -26,6 +26,7 @@ class Elist(TableNode, List, metaclass=Generic):
     values:List
     # py_type:type = NoneType
     list_epure:Epure = None
+    node_id:UUID
 
     def __init__(self, _list:List) -> None:
         self.values = _list
@@ -40,7 +41,7 @@ class Elist(TableNode, List, metaclass=Generic):
         # super().__init__()
         # super(TableNode, self).__init__(_list)
 
-    def save(self) -> UUID:
+    def save(self, asynch:bool = False) -> UUID:
         # Epure.EDb
         # if not f"{self.__class__.py_type.__name__}___list" in Epure.EDb:
             # pass
@@ -56,6 +57,8 @@ class Elist(TableNode, List, metaclass=Generic):
                 inst.save()
             else:
                 inst.save(asynch=True)
+        self.node_id = uuid
+        return self
 
     def __setitem__(self, index, item) -> None:
         self.values.__setitem__(index, item)

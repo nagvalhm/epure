@@ -191,10 +191,15 @@ class Epure(type, Savable):
         return table
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
-       
+        from .resource.node.elist import Generic
+
         if py_type in self.epures:
-            py_type = cast(Epure, py_type)
+            # py_type = cast(Epure, py_type)
             return self.get_py_type(field_name, py_type.annotations['node_id'])
+        
+        if isinstance(py_type, Generic):
+            return self.get_py_type(field_name, py_type.__annotations__['node_id'])
+        # if isinstance(py_type, Constraint)
             
         if isinstance(py_type, Constraint) and issubclass(py_type.__origin__, Default):
             return self.get_default_type(field_name, py_type)
