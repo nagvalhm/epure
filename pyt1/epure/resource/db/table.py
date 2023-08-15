@@ -240,6 +240,8 @@ class Table(DbEntity):
         if not (hasattr(res, 'annotations') and 'node_id' in attrs):
             return res
 
+        res.__promises_dict__ = {}
+
         for field_name, field_type in res.annotations.items():
 
             if epure_cls.is_excluded(field_name):
@@ -248,7 +250,9 @@ class Table(DbEntity):
             if field_name not in attrs:
                 node_id = attrs['node_id']
                 promise = FieldPromise(epure_cls.resource, node_id, field_name)
-                setattr(res, field_name, promise)
+                # setattr(res, field_name, promise)
+                # delattr(res, field_name)
+                res.__promises_dict__[field_name] = promise
 
             elif isinstance(field_type, Epure):
                 node_id = attrs[field_name]
@@ -257,7 +261,9 @@ class Table(DbEntity):
                     res.set_proto_fields(proto)
                 elif lazy_read:
                     promise = NodePromise(field_type.resource, node_id)
-                    setattr(res, field_name, promise)
+                    # setattr(res, field_name, promise)
+                    delattr(res, field_name)
+                    res.__promises_dict__[field_name] = promise
                 elif not lazy_read:
                     node = field_type.resource.read(node_id=node_id)
                     setattr(res, field_name, node)
@@ -266,7 +272,9 @@ class Table(DbEntity):
                 elist_node_id = attrs[field_name]
                 if lazy_read:
                     promise = ElistPromise(field_type.list_epure.resource, elist_node_id, field_type)
-                    setattr(res, field_name, promise)
+                    # setattr(res, field_name, promise)
+                    delattr(res, field_name)
+                    res.__promises_dict__[field_name] = promise
                 elif not lazy_read:
                     list_values_rows = field_type.list_epure.resource.read(elist_node_id=elist_node_id)
                     node = field_type(list_values_rows)

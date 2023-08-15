@@ -13,7 +13,9 @@ class ElistMetacls(type):
         if name in self.elists:
             return self.elists[name]
         
-        res = self.__class__(self.__name__, self.__bases__, dict(self.__dict__))
+        cls_dict = dict(self.__dict__)
+        cls_dict.pop('__dict__', None)
+        res = self.__class__(self.__name__, self.__bases__, cls_dict)
         # res.__origin__ = self
         # res.py_type = param
         res.list_epure = Epure.EDb.get_epure_by_table_name(name)

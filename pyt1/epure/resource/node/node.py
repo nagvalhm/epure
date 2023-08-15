@@ -11,18 +11,27 @@ class Node(Savable):
 
     node_id:object
     __exclude__:list
+    __promises_dict__:Dict[str, Any]
 
     def __init__(self, node_id:object=None, resource:Resource=None) -> None:
         if node_id != None:
             self.node_id = node_id
         super().__init__(resource)
 
-    def __getattribute__(self, name: str) -> Any:
-        from ..node_promise import NodePromise
-        val = super(Node, self).__getattribute__(name)
-        if isinstance(val, NodePromise):
-            setattr(self, name, val.get())
-        return super().__getattribute__(name)
+    # def __getattribute__(self, name: str) -> Any:
+    #     from ..node_promise import NodePromise
+    #     val = super(Node, self).__getattribute__(name)
+    #     if isinstance(val, NodePromise):
+    #         setattr(self, name, val.get())
+    #     return super().__getattribute__(name)
+    
+    def __getattr__(self, name:str):
+        if '__promises_dict__' in self.__dict__ and name in self.__promises_dict__:
+            res = self.__promises_dict__[name].get()
+            setattr(self, name, res)
+            return res
+        else:
+            raise AttributeError(f"'{type(self)}' object has no attribute '{name}'")
 
     @classmethod
     def from_dict(_cls, _dict:Dict[str, Any])->object:
