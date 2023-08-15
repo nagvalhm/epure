@@ -21,5 +21,9 @@ def test_elist():
     inst.elist = Elist[str](['abc','defg',"the","brown","fox","jumps","over","lazy","dog"])
     inst.str0 = "The quick brown fox jumps over the lazy dog"
     inst.int2 = 42
-    inst.save()
+    inst.epure_field = EpureClass1()
+    id = inst.save().node_id
+    res = inst.table.read(node_id=id)
+    epure = res[0].epure_field
+    elist = res[0].elist
     pass

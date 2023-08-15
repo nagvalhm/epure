@@ -17,6 +17,13 @@ class Node(Savable):
             self.node_id = node_id
         super().__init__(resource)
 
+    def __getattribute__(self, name: str) -> Any:
+        from ..node_promise import NodePromise
+        val = super(Node, self).__getattribute__(name)
+        if isinstance(val, NodePromise):
+            setattr(self, name, val.get())
+        return super().__getattribute__(name)
+
     @classmethod
     def from_dict(_cls, _dict:Dict[str, Any])->object:
         raise NotImplementedError
@@ -157,11 +164,12 @@ class TableNode(Node):
             #     continue
             # if not hasattr(self, field_name):
             #     continue
+            if isinstance(field_type, NodePromise):
+                field_val = str(getattr(field_val, 'node_id', None))
+                _dict[field_name] = field_val
+                continue
 
             field_val = getattr(self, field_name, None)
-            
-            if isinstance(field_val, NodePromise):
-                field_val = getattr(field_val, 'node_id', None)
 
             if field_val and isinstance(field_type, Savable)\
             and not isinstance(field_val, UUID):

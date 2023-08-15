@@ -5,23 +5,9 @@ from typing import List, Any, Type, Generic
 from uuid import UUID, uuid4
 from ...epure import Epure, epure
 from types import NoneType
+from .elist_metacls import ElistMetacls
 
-class Generic(type):
-    py_type:type = NoneType
-    __origin__:type = NoneType
-
-    def __getitem__(self:Type, param:Any):
-        res = self.__class__(self.__name__, self.__bases__, dict(self.__dict__))
-        res.__origin__ = self
-        res.py_type = param
-
-
-        # if issubclass(res.py_type, Constraint):
-        #     # ( hasattr(res.py_type, '__origin__') and  issubclass(res.py_type.__origin__, Constraint)):
-        #     raise EpureError('Constraint parameter cant be Constraint')
-        return res
-
-class Elist(TableNode, List, metaclass=Generic):
+class Elist(TableNode, List, metaclass=ElistMetacls):
 # class Elist(TableNode, List):
     values:List
     # py_type:type = NoneType
@@ -31,13 +17,15 @@ class Elist(TableNode, List, metaclass=Generic):
     def __init__(self, _list:List) -> None:
         self.values = _list
 
-        py_type = self.__class__.py_type
-        name = f"{py_type.__name__}___list"
-        self.list_epure = Epure.EDb.get_epure_by_table_name(name)
-        if self.list_epure is None:
-            obj = type(name, (object,), {})
-            obj.__annotations__ = {"list_id":UUID, "value_order":int, "value":py_type}
-            self.list_epure = epure()(obj)
+        # py_type = self.__class__.py_type
+        # name = f"{py_type.__name__}___list"
+        # self.list_epure = Epure.EDb.get_epure_by_table_name(name)
+        # if self.list_epure is None:
+        #     obj = type(name, (object,), {})
+        #     obj.__annotations__ = {"elist_node_id":UUID, "value_order":int, "value":py_type}
+        #     self.list_epure = epure()(obj)
+        #     pass
+
         # super().__init__()
         # super(TableNode, self).__init__(_list)
 
@@ -49,7 +37,7 @@ class Elist(TableNode, List, metaclass=Generic):
         val_len = self.values.__len__()
         for i in range(val_len):
             inst = self.list_epure()
-            inst.list_id = uuid
+            inst.elist_node_id = uuid
             inst.value_order = i
             inst.value = self.values[i]
 

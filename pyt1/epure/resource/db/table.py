@@ -11,6 +11,7 @@ from ..db.table_column import TableColumn
 from collections import OrderedDict
 from ..node.proto import Proto
 from uuid import UUID
+from ..node.elist import ElistMetacls
 
 from ...errors import DeserializeError
 
@@ -21,7 +22,7 @@ from .db_entity import DbEntity
 from ...helpers.type_helper import check_type
 from ...errors import EpureError, DbError
 from .table_header import TableHeader
-from ..node_promise import FieldPromise, NodePromise
+from ..node_promise import FieldPromise, NodePromise, ElistPromise
 from ...epure import Epure
 
 
@@ -171,13 +172,11 @@ class Table(DbEntity):
         res = self.read(sql)
         return res
 
-        
-
     def deserialize(self, rows: dict, lazy_read:bool=True):
         res = []
         if not rows:
             return res
-        full_name_epure_dict = self._column_full_name_epure_dict(rows[0])        
+        full_name_epure_dict = self._column_full_name_epure_dict(rows[0])
         for node_dict in rows:
             res_row = self._init_epures_row(node_dict, full_name_epure_dict, lazy_read)
             res.append(res_row)
@@ -205,8 +204,14 @@ class Table(DbEntity):
                 val = self.db.cast_db_py_val(db_val)
                 attrs[column] = val
 
+        epure_dict_items = epure_attrs_dict.items()
+
+        if len(epure_dict_items) == 1:
+            item = list(epure_dict_items)[0]
+            return self._init_epure(item[0], item[1], lazy_read)
+
         res = []
-        for epure_cls, attrs in epure_attrs_dict.items():
+        for epure_cls, attrs in epure_dict_items:
             epure_obj = self._init_epure(epure_cls, attrs, lazy_read)
             res.append(epure_obj)
         return res
@@ -255,6 +260,16 @@ class Table(DbEntity):
                     setattr(res, field_name, promise)
                 elif not lazy_read:
                     node = field_type.resource.read(node_id=node_id)
+                    setattr(res, field_name, node)
+
+            elif isinstance(field_type, ElistMetacls):
+                elist_node_id = attrs[field_name]
+                if lazy_read:
+                    promise = ElistPromise(field_type.list_epure.resource, elist_node_id, field_type)
+                    setattr(res, field_name, promise)
+                elif not lazy_read:
+                    list_values_rows = field_type.list_epure.resource.read(elist_node_id=elist_node_id)
+                    node = field_type(list_values_rows)
                     setattr(res, field_name, node)
         return res
 

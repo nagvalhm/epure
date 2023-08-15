@@ -22,12 +22,12 @@ def get_epure(cls):
     res = epure.table.read(node_id=id)
 
     # initial_epure_json = epure.table._serialize(epure)
-    # res_json = epure.table._serialize(res[0][0])
+    # res_json = epure.table._serialize(res[0])
 
-    # assert res[0][0] == epure
+    # assert res[0] == epure
     # assert initial_epure_json == res_json
     
-    assert res[0][0].annotations == epure.annotations
+    assert res[0].annotations == epure.annotations
     return res
 
 def table_exists(table_name):
@@ -105,7 +105,7 @@ def default_epure(regular_class3, epure_class3, epure_class1):
     epure.frozenset0 = frozenset([1, '2', 3.14])
     epure.bool0 = True
     epure.bytes0 = bytes(10)
-    epure.epure_class2 = uuid4()
+    # epure.epure_class2 = uuid4()
 
     epure.regular_class = regular_class3
     epure.epure_class = epure_class3
@@ -117,22 +117,22 @@ def default_epure(regular_class3, epure_class3, epure_class1):
     res = epure.table.read(node_id=id)
 
     # orig_json = epure.to_json()
-    # res_json = res[0][0].to_json()
+    # res_json = res[0].to_json()
 
     orig_json = epure.to_dict()
-    res_json = res[0][0].to_dict()
+    res_json = res[0].to_dict()
     
     # assert orig_json == res_json
 
     # res = epure.table.read(int3=6, str3="str3_value")
 
-    assert not hasattr(res[0][0], "with_out_hint")
-    assert res[0][0].node_id == epure.node_id
+    assert not hasattr(res[0], "with_out_hint")
+    assert res[0].node_id == epure.node_id
     return res
 
 def test_default_epure_table(default_epure):
-    assert default_epure[0][0].table.name == 'default_epure'
-    assert default_epure[0][0].table.db.__class__.__name__ == 'GresDb'
+    assert default_epure[0].table.name == 'default_epure'
+    assert default_epure[0].table.db.__class__.__name__ == 'GresDb'
     assert table_exists('default_epure')
 
 def test_default_epure_fields(default_epure):
@@ -154,8 +154,8 @@ def test_aliased_epure_fields(aliased_epure):
     pass
 
 def test_aliased_epure_table(aliased_epure):
-    assert aliased_epure[0][0].table.full_name == 'public.aliased_table'
-    assert aliased_epure[0][0].table.db.database == 'postgres'
+    assert aliased_epure[0].table.full_name == 'public.aliased_table'
+    assert aliased_epure[0].table.db.database == 'postgres'
     assert table_exists('public.aliased_table')
 
 def test_aliased_epure_fields_in_correct_tables():
@@ -213,7 +213,7 @@ def test_epure_cls_save_img():
 
     epure_inst.save()
 
-    res = epure_inst.table.read(node_id=epure_inst.node_id)[0][0]
+    res = epure_inst.table.read(node_id=epure_inst.node_id)[0]
 
     # ep = EpureClass2.from_dict(epure_inst.__dict__)
 

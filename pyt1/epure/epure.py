@@ -5,6 +5,7 @@ from .resource.resource import Resource
 from .helpers.type_helper import check_type
 from .errors import EpureError, DefaultConstraintError
 from .resource.db.constraint import Foreign, Default, Constraint
+from .resource.node.elist_metacls import ElistMetacls
 
 
 # from types import FunctionType
@@ -191,13 +192,13 @@ class Epure(type, Savable):
         return table
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
-        from .resource.node.elist import Generic
+        # from .resource.node.elist import ElistMetacls
 
         if py_type in self.epures:
             # py_type = cast(Epure, py_type)
             return self.get_py_type(field_name, py_type.annotations['node_id'])
         
-        if isinstance(py_type, Generic):
+        if isinstance(py_type, ElistMetacls):
             return self.get_py_type(field_name, py_type.__annotations__['node_id'])
         # if isinstance(py_type, Constraint)
             

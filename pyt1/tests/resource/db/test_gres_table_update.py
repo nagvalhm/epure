@@ -32,8 +32,8 @@ def test_restore_column():
 
     instance1 = EpureRestoreColumn()
     res = instance1.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
-        TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')[0][0]
-    assert res == 'bigint'
+        TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')
+    assert res[0][0] == 'bigint'
 
     @epure()
     class EpureRestoreColumn:
@@ -43,8 +43,8 @@ def test_restore_column():
 
     instance2 = EpureRestoreColumn()
     res = instance2.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
-        TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')[0][0]
-    assert res == 'text'
+        TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')
+    assert res[0][0] == 'text'
 
     @epure()
     class EpureRestoreColumn:
@@ -55,5 +55,5 @@ def test_restore_column():
     instance3 = EpureRestoreColumn()
 
     res = instance3.execute('''SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'public' AND 
-        TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')[0][0]
-    assert res == 'bigint'
+        TABLE_NAME = 'epure_restore_column' AND COLUMN_NAME  = 'int2' ''')
+    assert res[0][0] == 'bigint'
