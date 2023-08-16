@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 from collections.abc import Iterable
 from .node import TableNode
 from typing import List, Any, Type, Generic
@@ -15,37 +15,30 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
     node_id:UUID
 
     def __init__(self, _list:List) -> None:
-        self.values = _list
+        self.values = []
+        if isinstance(_list[0], self.list_epure):
+            self.node_id = _list[0].node_id
+            _list.sort(key= lambda x: x.value_order)
+            self.values = _list
+        else:
+            for val in _list:
+                self.append(val)
 
-        # py_type = self.__class__.py_type
-        # name = f"{py_type.__name__}___list"
-        # self.list_epure = Epure.EDb.get_epure_by_table_name(name)
-        # if self.list_epure is None:
-        #     obj = type(name, (object,), {})
-        #     obj.__annotations__ = {"elist_node_id":UUID, "value_order":int, "value":py_type}
-        #     self.list_epure = epure()(obj)
-        #     pass
+    def save(self, asynch:bool=False) -> UUID:
+            
+        if not hasattr(self,"node_id") or not self.node_id:
+            self.node_id = uuid4()
 
-        # super().__init__()
-        # super(TableNode, self).__init__(_list)
-
-    def save(self, asynch:bool = False) -> UUID:
-        # Epure.EDb
-        # if not f"{self.__class__.py_type.__name__}___list" in Epure.EDb:
-            # pass
-        uuid = uuid4()
         val_len = self.values.__len__()
         for i in range(val_len):
-            inst = self.list_epure()
-            inst.elist_node_id = uuid
-            inst.value_order = i
-            inst.value = self.values[i]
+            val = self.values[i]
+            val.elist_node_id = self.node_id
 
-            if i == val_len-1:
-                inst.save()
+            if i != val_len-1:
+                val.save(asynch=True)
             else:
-                inst.save(asynch=True)
-        self.node_id = uuid
+                val.save(asynch=asynch)
+
         return self
 
     def __setitem__(self, index, item) -> None:
@@ -55,7 +48,10 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
         self.values.insert(index, item)
 
     def append(self, item) -> None:
-        self.values.append(item)
+        res = self.list_epure()
+        res.value_order = len(self.values)
+        res.value = item
+        self.values.append(res)
 
     def count(self) -> int:
         return self.values.count()
@@ -81,5 +77,16 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
     def reverse(self) -> None:
         self.values.reverse()
     
-    def sort(self) -> None:
-        self.values.sort()
+    def sort(self, *, key=None, reverse=False) -> None:
+        self.values.sort(key=key, reverse=reverse)
+
+    def __getitem__(self: Type, _param: Any):
+        return self.values[_param]
+    
+    def __repr__(self):
+        return str(self.values)
+    
+    # def __eq__(self, __value: Elist|object) -> bool:
+    #     if issubclass(__value,Elist):
+    #         return self.values.__eq__(__value.values)
+    #     return self.values.__eq__(__value)

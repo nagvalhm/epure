@@ -6,6 +6,7 @@ from .helpers.type_helper import check_type
 from .errors import EpureError, DefaultConstraintError
 from .resource.db.constraint import Foreign, Default, Constraint
 from .resource.node.elist_metacls import ElistMetacls
+from uuid import UUID
 
 
 # from types import FunctionType
@@ -199,7 +200,7 @@ class Epure(type, Savable):
             return self.get_py_type(field_name, py_type.annotations['node_id'])
         
         if isinstance(py_type, ElistMetacls):
-            return self.get_py_type(field_name, py_type.__annotations__['node_id'])
+            return self.get_py_type(field_name, UUID)
         # if isinstance(py_type, Constraint)
             
         if isinstance(py_type, Constraint) and issubclass(py_type.__origin__, Default):
