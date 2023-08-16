@@ -81,7 +81,7 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
         self.values.sort(key=key, reverse=reverse)
 
     def __getitem__(self: Type, _param: Any):
-        return self.values[_param]
+        return self.values[_param].value
     
     def __repr__(self):
         return str(self.values)
