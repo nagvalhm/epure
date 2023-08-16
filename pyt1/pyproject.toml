@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "epure"
-version = "0.2.27"
+version = "0.2.28"
 description = "purest architecture"
 authors = ["Nikita Umarov <nagvalhm@yandex.ru>", "Pavel Pichugin"]
 license = "MIT"
