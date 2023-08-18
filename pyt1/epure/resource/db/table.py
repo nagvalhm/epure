@@ -254,6 +254,9 @@ class Table(DbEntity):
                 # delattr(res, field_name)
                 res.__promises_dict__[field_name] = promise
 
+            elif attrs[field_name] == None:
+                setattr(res, field_name, None)
+
             elif isinstance(field_type, Epure):
                 node_id = attrs[field_name]
                 if issubclass(field_type, Proto) and field_name == '__proto__':

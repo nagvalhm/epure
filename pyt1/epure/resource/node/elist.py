@@ -9,17 +9,19 @@ from .elist_metacls import ElistMetacls
 
 class Elist(TableNode, List, metaclass=ElistMetacls):
 # class Elist(TableNode, List):
-    values:List
-    # py_type:type = NoneType
+    entries:List
+    deleted_entries:List
+    py_type:type = NoneType
     list_epure:Epure = None
     node_id:UUID
 
     def __init__(self, _list:List) -> None:
-        self.values = []
+        self.entries = []
+        self.deleted_entries = []
         if isinstance(_list[0], self.list_epure):
-            self.node_id = _list[0].node_id
+            self.node_id = _list[0].elist_node_id
             _list.sort(key= lambda x: x.value_order)
-            self.values = _list
+            self.entries = _list
         else:
             for val in _list:
                 self.append(val)
@@ -29,64 +31,117 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
         if not hasattr(self,"node_id") or not self.node_id:
             self.node_id = uuid4()
 
-        val_len = self.values.__len__()
+        val_len = self.entries.__len__()
         for i in range(val_len):
-            val = self.values[i]
-            val.elist_node_id = self.node_id
+            item = self.entries[i]
+            if not isinstance(item.value, self.py_type):
+                raise TypeError(f"value '{item.value}' of type '{type(item.value)}' is not same " 
+                                f"type as Elist '{self.list_epure.resource.full_name}' type of '{self.py_type}'")
+            
+            item.elist_node_id = self.node_id
+            item.value_order = i
 
+            # if hasattr(val, "__deleted__") and val.__deleted__:
+            #     self.resource.delete(val)
             if i != val_len-1:
-                val.save(asynch=True)
+                item.save(asynch=True)
             else:
-                val.save(asynch=asynch)
+                item.save(asynch=asynch)
+
+        for i in range(self.deleted_entries.__len__()):
+            item = self.deleted_entries[i]
+            self.list_epure.resource.delete(item.node_id)
+        
+        self.deleted_entries = []
 
         return self
 
     def __setitem__(self, index, item) -> None:
-        self.values.__setitem__(index, item)
+        if not isinstance(item, self.py_type):
+                raise TypeError(f"value '{item}' of type '{type(item)}' is not same " 
+                                f"type as Elist '{self.list_epure.resource.full_name}' type of '{self.py_type}'")
+        self.entries[index].value = item
+        # res = self.list_epure()
+        # res.value_order = index
+        # res.value = item
+        # self.entries.__setitem__(index, res)
+
+    # def __delitem__(self, key)
 
     def insert(self, index, item) -> None:
-        self.values.insert(index, item)
+        if not isinstance(item, self.py_type):
+                raise TypeError(f"value '{item}' of type '{type(item)}' is not same " 
+                                f"type as Elist '{self.list_epure.resource.full_name}' type of '{self.py_type}'")
+        res = self.list_epure()
+        res.value_order = index
+        res.value = item
+        self.entries.insert(index, res)
 
     def append(self, item) -> None:
+        if not isinstance(item, self.py_type):
+                raise TypeError(f"value '{item}' of type '{type(item)}' is not same " 
+                                f"type as Elist '{self.list_epure.resource.full_name}' type of '{self.py_type}'")
         res = self.list_epure()
-        res.value_order = len(self.values)
+        res.value_order = len(self.entries)
         res.value = item
-        self.values.append(res)
+        self.entries.append(res)
 
     def count(self) -> int:
-        return self.values.count()
+        return self.entries.count()
     
     def copy(self) -> list:
-        return self.values.copy()
+        return self.entries.copy()
     
     def clear(self) -> None:
-        self.values.clear()
+        self.entries.clear()
 
     def index(self, value:Any, *args) -> int:
-        return self.values.index(value, *args)
+        return self.entries.index(value, *args)
 
     def extend(self, __iterable: Iterable) -> None:
-        self.values.extend(__iterable)
+        self.entries.extend(__iterable)
     
-    def pop(self, __index = -1) -> Any:
-        return self.values.pop(__index)
+    def pop(self, index = -1) -> Any:
+        res = self.entries.pop(index)
+        self.deleted_entries.append(res)
+        return res
     
     def remove(self, __value: Any) -> None:
-        self.values.remove(__value)
+        self.entries.remove(__value)
+        self.deleted_entries.append(__value)
     
     def reverse(self) -> None:
-        self.values.reverse()
+        self.entries.reverse()
     
     def sort(self, *, key=None, reverse=False) -> None:
-        self.values.sort(key=key, reverse=reverse)
+        self.entries.sort(key=key, reverse=reverse)
 
     def __getitem__(self: Type, _param: Any):
-        return self.values[_param].value
+        return self.entries[_param].value
     
     def __repr__(self):
-        return str(self.values)
+        return str(self.entries)
     
     # def __eq__(self, __value: Elist|object) -> bool:
     #     if issubclass(__value,Elist):
-    #         return self.values.__eq__(__value.values)
-    #     return self.values.__eq__(__value)
+    #         return self.entries.__eq__(__value.entries)
+    #     return self.entries.__eq__(__value)
+
+    def read(self, *args, **kwargs):
+        if not isinstance(self.py_type, Epure):
+            return
+
+        node_id_dict:dict = {}
+        
+        for val in self.entries:
+            if hasattr(val, '__promises_dict__') and 'value' in val.__promises_dict__:
+                node_id_dict[val.__promises_dict__['value'].node_id] = val
+
+        if len(node_id_dict) == 0:
+            return
+
+        res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
+        # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.values()))
+
+        for val in res:
+            node_id_dict[val.node_id].value = val

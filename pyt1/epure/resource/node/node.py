@@ -29,6 +29,7 @@ class Node(Savable):
         if '__promises_dict__' in self.__dict__ and name in self.__promises_dict__:
             res = self.__promises_dict__[name].get()
             setattr(self, name, res)
+            self.__promises_dict__.pop(name)
             return res
         else:
             raise AttributeError(f"'{type(self)}' object has no attribute '{name}'")
