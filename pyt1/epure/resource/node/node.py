@@ -169,13 +169,6 @@ class TableNode(Node):
             if isinstance(field_type, Constraint):
                 field_type = field_type.py_type
                 
-            # if self.is_excluded(field_name, field_type):
-            #     continue
-            # if field_name not in self.table.header:
-            #     continue
-            # if not hasattr(self, field_name):
-            #     continue
-
             # if isinstance(field_type, NodePromise):
             #     field_val = str(getattr(field_val, 'node_id', None))
             #     _dict[field_name] = field_val
@@ -187,6 +180,7 @@ class TableNode(Node):
                 for name, value in field_val.items():    # for name, value in promises_dict
                     node_id = str(getattr(value, 'node_id', None))
                     promises[name] = node_id
+                
                 continue
 
             if field_val and isinstance(field_type, Savable)\
@@ -201,6 +195,7 @@ class TableNode(Node):
             _dict[field_name] = field_val
 
         _dict.update(promises)
+        _dict.pop("__promises_dict__", None)
  
         return _dict
             
