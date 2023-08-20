@@ -1,4 +1,5 @@
-from ....epure.resource.node.elist import Elist
+# from ....epure.resource.node.elist import Elist
+from ....epure import Elist
 import pytest
 from ....epure.epure import epure, Epure
 from typing import List
