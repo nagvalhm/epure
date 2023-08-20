@@ -161,7 +161,8 @@ class TableNode(Node):
     #     return res
 
     def to_dict(self) -> Dict[str, Any]:
-        _dict = self.__dict__
+        _dict = self.__dict__.copy()
+        promises = {}
 
         from ..db.table import NodePromise
         for field_name, field_type in _dict.items():
@@ -174,12 +175,19 @@ class TableNode(Node):
             #     continue
             # if not hasattr(self, field_name):
             #     continue
-            if isinstance(field_type, NodePromise):
-                field_val = str(getattr(field_val, 'node_id', None))
-                _dict[field_name] = field_val
-                continue
+
+            # if isinstance(field_type, NodePromise):
+            #     field_val = str(getattr(field_val, 'node_id', None))
+            #     _dict[field_name] = field_val
+            #     continue            
 
             field_val = getattr(self, field_name, None)
+
+            if field_name == "__promises_dict__" and field_val:
+                for name, value in field_val.items():    # for name, value in promises_dict
+                    node_id = str(getattr(value, 'node_id', None))
+                    promises[name] = node_id
+                continue
 
             if field_val and isinstance(field_type, Savable)\
             and not isinstance(field_val, UUID):
@@ -192,6 +200,8 @@ class TableNode(Node):
 
             _dict[field_name] = field_val
 
+        _dict.update(promises)
+ 
         return _dict
             
 
