@@ -6,6 +6,8 @@ from typing import Any, Dict
 import jsonpickle
 from ..db.constraint import Constraint
 from ...errors import EpureError
+from .elist_metacls import ElistMetacls
+from ..node_promise import NodePromise, ElistPromise
 
 class Node(Savable):
 
@@ -87,7 +89,8 @@ class TableNode(Node):
 
         # instance = _cls.__call__()
         instance = _cls()
-        
+        instance.__promises_dict__ = {}
+
         for field_name, val in _dict.items():
 
             if not field_name in instance.annotations:
@@ -101,14 +104,32 @@ class TableNode(Node):
                 val = UUID(val)
                 val_type_match_cls_attr_type = True
 
-            if issubclass(cls_attr_type, Savable) and not val_type_match_cls_attr_type: # check if attr is epure
-                val = UUID(val)
+            if isinstance(cls_attr_type, ElistMetacls) and not val_type_match_cls_attr_type: # check if attr is elist
+                try: 
+                    elist_node_id = UUID(val)
+                    promise = ElistPromise(cls_attr_type.list_epure.resource, elist_node_id, cls_attr_type)
+                    instance.__promises_dict__[field_name] = promise
+                    continue
+                except(Exception):
+                    val = cls_attr_type(val)
+
+                val_type_match_cls_attr_type = True
+
+            elif issubclass(cls_attr_type, Savable) and not val_type_match_cls_attr_type: # check if attr is epure 
+                try: 
+                    node_id = UUID(val)
+                    promise = NodePromise(cls_attr_type.resource, node_id)
+                    instance.__promises_dict__[field_name] = promise
+                    continue
+                except(ValueError):
+                    val = cls_attr_type(val)
+
                 val_type_match_cls_attr_type = True
             
             if val is None:
                 val_type_match_cls_attr_type = True
 
-            if isinstance(val, str) and cls_attr_type in (bytes, bytearray): # bytearray is yet to be tested !
+            if isinstance(val, str) and cls_attr_type in (bytes, bytearray): # bytearray is yet to be tested!
                 val = cls_attr_type(val.encode())
                 val_type_match_cls_attr_type = True
 
@@ -183,8 +204,7 @@ class TableNode(Node):
                 
                 continue
 
-            if field_val and isinstance(field_type, Savable)\
-            and not isinstance(field_val, UUID):
+            if isinstance(field_type, Savable) and not isinstance(field_val, UUID):
                 field_val = getattr(self, field_name, None)
                 field_type = field_val.annotations['node_id']
                 field_val = field_val.save(True).node_id

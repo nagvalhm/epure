@@ -56,15 +56,15 @@ def test_elist_epures():
 
     # assert res2.elist2 == res2.elist1
 
+@epure()
+class EpureClsElist:
+    elist:Elist[str] 
+    str0:str
+    int2:int
+    epure_field:EpureClass1
+
 # @pytest.fixture
 def elist_epure_cls1():
-
-    @epure()
-    class EpureClsElist:
-        elist:Elist[str] 
-        str0:str
-        int2:int
-        epure_field:EpureClass1
 
     return EpureClsElist()
 
@@ -145,3 +145,34 @@ def test_elist_str_set_item_by_index_wrong_type():
         inst.elist[1] = 42
     except(TypeError):
         return True
+    
+def test_elist_str_from_dict_and_to_dict():
+    inst = elist_epure_cls1()
+    inst.elist = Elist[str](["long","live","the","king"])
+    inst.str0 = "Snug as a bug in a rug"
+    inst.epure_field = EpureClass1()
+    inst.save()
+    inst_to_dict = inst.to_dict()
+    inst_from_dict = EpureClsElist.from_dict(inst_to_dict)
+    inst_from_dict.epure_field
+    inst_from_dict.elist
+    pass
+
+def test_elist_str_from_dict_and_to_dict():
+    inst = elist_epure_cls1()
+    inst.elist = Elist[str](["aurora","borealis","northen","lights"])
+    inst.str0 = "A piece of cake"
+    inst.epure_field = EpureClass1()
+    inst_to_dict = inst.to_dict()
+    inst_from_dict = EpureClsElist.from_dict(inst_to_dict)
+    inst_from_dict.epure_field
+    inst_from_dict.elist
+    pass
+
+def test_elist_str_from_dict():
+    elist = (["viktor","van","dem","rossen"])
+    str0 = "Bread and butter"
+    _dict = {"elist":elist,"str0":str0}
+    inst_from_dict = EpureClsElist.from_dict(_dict)
+    inst_from_dict.elist
+    assert inst_from_dict.str0 == str0
