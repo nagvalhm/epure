@@ -145,3 +145,6 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
 
         for val in res:
             node_id_dict[val.node_id].value = val
+
+    def __len__(self) -> int:
+        return self.entries.__len__()

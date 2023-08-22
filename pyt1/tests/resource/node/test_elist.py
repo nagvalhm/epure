@@ -146,16 +146,21 @@ def test_elist_str_set_item_by_index_wrong_type():
     except(TypeError):
         return True
     
-def test_elist_str_from_dict_and_to_dict():
+def test_elist_str_from_dict_and_to_dict_save():
     inst = elist_epure_cls1()
     inst.elist = Elist[str](["long","live","the","king"])
     inst.str0 = "Snug as a bug in a rug"
     inst.epure_field = EpureClass1()
-    inst.save()
+    id = inst.save().node_id
+    res = inst.table.read(node_id=id)[0]
     inst_to_dict = inst.to_dict()
+    inst_to_dict_read = res.to_dict()
     inst_from_dict = EpureClsElist.from_dict(inst_to_dict)
+    inst_from_dict_read = EpureClsElist.from_dict(inst_to_dict_read)
     inst_from_dict.epure_field
     inst_from_dict.elist
+    inst_from_dict_read.epure_field
+    inst_from_dict_read.elist
     pass
 
 def test_elist_str_from_dict_and_to_dict():
@@ -176,3 +181,38 @@ def test_elist_str_from_dict():
     inst_from_dict = EpureClsElist.from_dict(_dict)
     inst_from_dict.elist
     assert inst_from_dict.str0 == str0
+
+def test_elist_bytes_from_dict_save_read():
+    @epure()
+    class EpureClsElistBytes:
+        elist:Elist[bytes]
+        str0:str
+        int2:int
+        epure_field:EpureClass1
+
+    inst = EpureClsElistBytes()
+    inst.elist = Elist[bytes]([b"utf9",b"asci",b"butes"])
+    inst.str0 = "Icepick"
+    inst.epure_field = EpureClass1()
+    id = inst.save().node_id
+    res = inst.table.read(node_id=id)[0]
+    inst_to_dict = res.to_dict()
+    inst_from_dict = EpureClsElistBytes.from_dict(inst_to_dict)
+    inst_from_dict.epure_field
+    inst_from_dict.elist
+    pass
+
+def test_elist_bytes_from_dict():
+    @epure()
+    class EpureClsElistBytes:
+        elist:Elist[bytes]
+        str0:str
+        int2:int
+        epure_field:EpureClass1
+
+    elist = ["bate","utaf13","utah5"]
+    str0 = "Carrot cake"
+    _dict = {"elist":elist, "str0":str0}
+    inst_from_dict = EpureClsElistBytes.from_dict(_dict)
+    inst_from_dict.elist
+    pass
