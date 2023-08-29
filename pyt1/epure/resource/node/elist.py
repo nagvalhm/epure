@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from ...epure import Epure, epure
 from types import NoneType
 from .elist_metacls import ElistMetacls
+from ..node_promise import NodePromise
 
 class Elist(TableNode, List, metaclass=ElistMetacls):
 # class Elist(TableNode, List):
@@ -148,3 +149,16 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
 
     def __len__(self) -> int:
         return self.entries.__len__()
+    
+    @property
+    def ids(self):
+        res = []
+        for item in self.entries:
+            if hasattr(item, "__promises_dict__") and\
+            "value" in item.__promises_dict__:
+                res.append(item.__promises_dict__['value'].node_id)
+            else:
+                res.append(item.value.node_id)
+
+        return res
+            

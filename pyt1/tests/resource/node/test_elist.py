@@ -30,10 +30,14 @@ def test_elist_epures():
     epurecls1 = EpureClsWElist1()
     epurecls1.elist1 = Elist[EpureCls4]([inst2,inst3,inst4,inst1])
     id_1 = epurecls1.save().node_id
+    ids1 = epurecls1.elist1.ids
     res1 = epurecls1.table.read(node_id=id_1)[0]
     # res_str4 = res1.elist1[0].value.str4
+    ids2 = res1.elist1.ids
     res_str4 = res1.elist1[0].str4
     assert res_str4 == inst2.str4
+    assert ids1 == ids2
+    res1.elist1.ids
 
     @epure()
     class EpureClsWElist2:
@@ -200,6 +204,7 @@ def test_elist_bytes_from_dict_save_read():
     inst_from_dict = EpureClsElistBytes.from_dict(inst_to_dict)
     inst_from_dict.epure_field
     inst_from_dict.elist
+    inst.elist.ids
     pass
 
 def test_elist_bytes_from_dict():
