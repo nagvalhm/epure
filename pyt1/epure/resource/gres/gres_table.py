@@ -46,7 +46,10 @@ class GresTable(Table, GresEntity):
         res_header = self.serialize_read_header(header, full_names)
         res_joins = self.serialize_joins(joins)        
 
-        res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
+        if where_clause:
+            res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
+        else:
+            res = f'{res_header} \n {res_joins}'
         res = self.replace_operators(res)
         return res
     

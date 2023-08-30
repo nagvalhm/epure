@@ -1,7 +1,7 @@
 from typing import List, Dict, Union
 from .term import Term, TermHeader
 from .leaf import QueryingProxy
-from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST, Mod, And, GtE, Tuple
+from ast import Constant, Name, BinOp, Eq, NotEq, LShift, RShift, BitXor, parse, dump, NodeVisitor, NodeTransformer, unparse, walk, iter_child_nodes, AST, Mod, And, GtE, Tuple, List as astList
 import re
 # import astor
 from ..helpers.string_helper import find_parentheses
@@ -70,23 +70,28 @@ class TermParser(NodeTransformer):
         #     raise EpureParseError('header not defined')
 
         body = body.str(True, full_names, self.resource.db.cast_py_db_val)
-        self.joins.clear()
-        # self.collect_joins(body)
-        body = self.collect_joins(body)
-        where_clause = self.remove_join_ids(body)
+
 
         if '@' in body:
+            if body[0] == '(':
+                body = body[1:-1]                
             res = body.split(' @ ', 1)
-            where_clause = res[1]
+            body = res[1]
             header = res[0]
-            if header[0] == '(':
+            if header[0] == '[':
                 # header = eval(header)
                 # header = header[1:-1]
-                header = header.replace('(','')
-                header = header.replace(')','')
+                header = header.replace('[','')
+                header = header.replace(']','')
                 header = tuple(header.split(', '))
             else:
                 header = (header,)
+
+        self.joins.clear()
+        # self.collect_joins(body)
+        body = self.clear_parentheses(body, '>= [', 3, '[', ']', '(', ')')
+        body = self.collect_joins(body)
+        where_clause = self.remove_join_ids(body)
         
         if not header:
             header = (self.resource.querying_proxy,)
@@ -126,30 +131,32 @@ class TermParser(NodeTransformer):
 
         while '()' in body:
             body = body.replace('()', '')
+        
+        
+        body = self.clear_parentheses(body, '( and ')
+        body = self.clear_parentheses(body, '(and ')
+        body = self.clear_parentheses(body, '( or ')
+        body = self.clear_parentheses(body, '(or ')
 
-        body = self.clear_parentheses(body, '( and')
-        body = self.clear_parentheses(body, '(and')
-        body = self.clear_parentheses(body, '( or')
-        body = self.clear_parentheses(body, '(or')
-
-        body = self.clear_parentheses(body, 'and )', 4)
-        body = self.clear_parentheses(body, 'and)', 3)
-        body = self.clear_parentheses(body, 'or )', 3)
-        body = self.clear_parentheses(body, 'or)', 2)
+        body = self.clear_parentheses(body, ' and )', 5)
+        body = self.clear_parentheses(body, ' and)', 4)
+        body = self.clear_parentheses(body, ' or )', 4)
+        body = self.clear_parentheses(body, ' or)', 3)
         #needed?
 
         # body = body.replace('^', '')
 
         return body
 
-    def clear_parentheses(self, body:str, pattern:str, offset:int=0):
+    def clear_parentheses(self, body:str, pattern:str, offset:int=0, open='(', close=')', \
+                          rep1='', rep2=''):
         if pattern not in body:
             return body
 
             
         while pattern in body:
             first = body.index(pattern) + offset
-            open_close_parentheses = find_parentheses(body)
+            open_close_parentheses = find_parentheses(body, open, close)
             
             second = None
             if first in open_close_parentheses:
@@ -162,8 +169,8 @@ class TermParser(NodeTransformer):
                 raise EpureParseError()
 
             list_body = list(body)
-            list_body[first] = ''
-            list_body[second] = ''
+            list_body[first] = rep1
+            list_body[second] = rep2
             body = ''.join(list_body)
 
         return body
@@ -201,7 +208,7 @@ class TermParser(NodeTransformer):
         self.generic_visit(node)
         op = node.ops[0]
 
-        if isinstance(op, GtE) and (isinstance(node.comparators[0], Tuple) or isinstance(node.comparators[0], BinOp)):
+        if isinstance(op, GtE) and (isinstance(node.comparators[0], Tuple) or isinstance(node.comparators[0], astList) or isinstance(node.comparators[0], BinOp)):
             # Ast_tuple_str = self.serialize_tuple(node.comparators[0])
             # return Name(f"{node.left.id} in {self.serialize_tuple(node.comparators[0])}")
             return Name(f"{unparse(node.left)} in {unparse(node.comparators[0])}")

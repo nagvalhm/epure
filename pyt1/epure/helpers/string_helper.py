@@ -11,14 +11,14 @@ def screen_regex_specials(val:str):
     return res
 
 #return dict: {open bracket: close bracket}
-def find_parentheses(val:str) -> dict:
+def find_parentheses(val:str, open='(', close=')') -> dict:
     res = {}
     pstack = []
 
     for i, c in enumerate(val):
-        if c == '(':
+        if c == open:
             pstack.append(i)
-        elif c == ')':
+        elif c == close:
             if len(pstack) == 0:
                 raise IndexError("No matching closing parens at: " + str(i))
             res[pstack.pop()] = i

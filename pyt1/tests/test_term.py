@@ -42,12 +42,12 @@ def test_simple_queries():
     # query.debugger = debugger
     # query.debugger.each_step = True
     str_query = query.str(True, True)
-    assert str_query == "(oraculs_domain.competitions.str5, oraculs_domain.competitions.int4, oraculs_domain.oraculs.test_field3, oraculs_domain.oraculs) @ (oraculs_domain.competitions.str3 == oraculs_domain.oraculs.test_field2) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3 or oraculs_domain.competitions.f1 >= (oraculs_domain.competitions.f4, oraculs_domain.oraculs.f2) @ (oraculs_domain.competitions.str1 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.f1 >= ('val3', 'val4')"
+    assert str_query == "[oraculs_domain.competitions.str5, oraculs_domain.competitions.int4, oraculs_domain.oraculs.test_field3, oraculs_domain.oraculs] @ (oraculs_domain.competitions.str3 == oraculs_domain.oraculs.test_field2) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3 or oraculs_domain.competitions.f1 >= [oraculs_domain.competitions.f4, oraculs_domain.oraculs.f2] @ (oraculs_domain.competitions.str1 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.f1 >= ['val3', 'val4']"
 
 
     query = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3 | x.f1 >= ((x.f4,y.f2)@(x.str0 == y.test_field1))
     str_query = query.str(True, True)
-    assert str_query == '(oraculs_domain.competitions.str0, oraculs_domain.competitions.int0, oraculs_domain.oraculs.test_field2, oraculs_domain.oraculs) @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3 or oraculs_domain.competitions.f1 >= (oraculs_domain.competitions.f4, oraculs_domain.oraculs.f2) @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1)'
+    assert str_query == '[oraculs_domain.competitions.str0, oraculs_domain.competitions.int0, oraculs_domain.oraculs.test_field2, oraculs_domain.oraculs] @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3 or oraculs_domain.competitions.f1 >= [oraculs_domain.competitions.f4, oraculs_domain.oraculs.f2] @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1)'
 
 
     query = x.f1 == y.f2 | x.f3 % '%test_like%' & 5 == x.f5 | (x.f6 == y.f7)
@@ -63,13 +63,13 @@ def test_simple_queries():
     # query.debugger = debugger
     # query.debugger.each_step = True
     str_query = query.str(True)
-    assert str_query == "(f8 >= ('val1', 'val2') or f1 == f2 or f9 > ('val3', 'val4') or f3 == f4 and 4 == f5 or (f6 == f7))"
+    assert str_query == "(f8 >= ['val1', 'val2'] or f1 == f2 or f9 > ['val3', 'val4'] or f3 == f4 and 4 == f5 or (f6 == f7))"
 
     query = x.f8 >= ['val1', 'val2'] | x.f1 == y.f2 | x.f9 > ('val3', 'val4') | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
     # query.debugger = debugger
     # query.debugger.each_step = True
     str_query = query.str(True)
-    assert str_query == "(f8 >= ('val1', 'val2') or f1 == f2 or f9 > ('val3', 'val4') or f3 == f4 and 4 == f5 or (f6 == f7))"
+    assert str_query == "(f8 >= ['val1', 'val2'] or f1 == f2 or f9 > ['val3', 'val4'] or f3 == f4 and 4 == f5 or (f6 == f7))"
 
     # query = x.f8 in (y.f2, y.f7) | x.f1 == y.f2 | x.f3 == x.f4 & 4 == x.f5 | (x.f6 == y.f7)
     # # query.debugger = debugger
@@ -154,13 +154,13 @@ def test_simple_queries():
     # query.debugger = debugger
     # query.debugger.each_step = True
     str_query = query.str(True)
-    assert str_query == "(str0, int0, test_field2, oraculs_domain.oraculs) @ (str0 == test_field1) or int0 == test_field2 and 5 == float0 or complex0 == test_field3"
+    assert str_query == "[str0, int0, test_field2, oraculs_domain.oraculs] @ (str0 == test_field1) or int0 == test_field2 and 5 == float0 or complex0 == test_field3"
 
     query = [x.str0, x.int0, y.test_field2, y] @ (x.str0 == y.test_field1) | x.int0 == y.test_field2 & 5 == x.float0 | x.complex0 == y.test_field3
     # query.debugger = debugger
     # query.debugger.each_step = True
     str_query = query.str(True, True)
-    assert str_query == "(oraculs_domain.competitions.str0, oraculs_domain.competitions.int0, oraculs_domain.oraculs.test_field2, oraculs_domain.oraculs) @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3"
+    assert str_query == "[oraculs_domain.competitions.str0, oraculs_domain.competitions.int0, oraculs_domain.oraculs.test_field2, oraculs_domain.oraculs] @ (oraculs_domain.competitions.str0 == oraculs_domain.oraculs.test_field1) or oraculs_domain.competitions.int0 == oraculs_domain.oraculs.test_field2 and 5 == oraculs_domain.competitions.float0 or oraculs_domain.competitions.complex0 == oraculs_domain.oraculs.test_field3"
 
     # query = [a.f1, z.f2] @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1))
     
@@ -346,7 +346,7 @@ def test_term_parser():
     
     term = x >= ((y, x) @ (x.str0 == y.test_field1 & x.int0 == 4)) & y.test_field2
     term_str = term.str(True)
-    assert term_str == "public.default_epure >= (oraculs_domain.test_clssasdas, public.default_epure) @ (str0 == test_field1 and int0 == 4) and test_field2"
+    assert term_str == "public.default_epure >= [oraculs_domain.test_clssasdas, public.default_epure] @ (str0 == test_field1 and int0 == 4) and test_field2"
 
     term = (x.str0 == y.test_field1) | (x.int0 == y.test_field2) & (5 == x.float0) | (x.complex0 == y.test_field3)
     term_str = term.str(True)
@@ -528,7 +528,21 @@ def test_join_with_delimeter():
     parser = TermParser(real_x)
     x = db['default_epure']
     y = db['epure_class1']
+    debugger = MatplotTermDebugger()
 
-    query = parser.parse([x,y] @ y << (x.epure_class1 == y.node_id))
+    lst = (1, 2, 3)
+
+    query = (x,y) @ y << (x.epure_class1 == y.node_id)
+
+    str_query = query.str(True, True)
+
+    query2 = (x,y) @ (y << (x.epure_class1 == y.node_id)) ^ x.str0 >= lst
+    # query2.debugger = debugger
+    # query2.debugger.each_step = True
+    str_query2 = query2.str(True, True)
     
-    assert query
+    query = (x,y) @ y << (x.epure_class1 == y.node_id) ^ x.str0 >= lst
+
+    query = parser.parse(query)
+    
+    assert 'FROM public.default_epure \n LEFT JOIN public.epure_class1 on public.default_epure.epure_class1 = public.epure_class1.node_id \n WHERE \n public.default_epure.str0 in (1, 2, 3)' in query
