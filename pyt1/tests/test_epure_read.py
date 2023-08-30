@@ -137,3 +137,11 @@ def test_read_default_epure_empty():
 
     # assert res_read == read_sql
     assert isinstance(res_read, list) and bool(res_read[0])
+
+# def test_read_join_with_delimeter():
+#     db = DbProxy(real_db)
+#     x = db['default_epure']
+#     y = db['epure_class1']
+
+#     DefaultEpure.resource.read([x,y] @ y << (x.epure_class1 == y.node_id))
+

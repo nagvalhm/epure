@@ -156,9 +156,11 @@ class Elist(TableNode, List, metaclass=ElistMetacls):
         for item in self.entries:
             if hasattr(item, "__promises_dict__") and\
             "value" in item.__promises_dict__:
-                res.append(item.__promises_dict__['value'].node_id)
+                id = item.__promises_dict__['value'].node_id
             else:
-                res.append(item.value.node_id)
+                id = item.value.node_id
+
+            res.append(str(id))
 
         return res
             

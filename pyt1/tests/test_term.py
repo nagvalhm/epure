@@ -521,4 +521,14 @@ def test_columns_select():
     # query = parser.parse(term, False)
 
     # assert query == ""
+
+def test_join_with_delimeter():
+    db = DbProxy(real_db)
+    real_x = real_db['default_epure']
+    parser = TermParser(real_x)
+    x = db['default_epure']
+    y = db['epure_class1']
+
+    query = parser.parse([x,y] @ y << (x.epure_class1 == y.node_id))
     
+    assert query
