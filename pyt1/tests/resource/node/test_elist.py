@@ -205,6 +205,7 @@ def test_elist_bytes_from_dict_save_read():
     inst_from_dict.epure_field
     inst_from_dict.elist
     inst.elist.ids
+    res.elist.ids
     pass
 
 def test_elist_bytes_from_dict():

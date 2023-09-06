@@ -6,7 +6,8 @@ from typing import Any, Dict
 import jsonpickle
 from ..db.constraint import Constraint
 from ...errors import EpureError
-from .elist_metacls import ElistMetacls
+# from .elist_metacls import ElistMetacls
+# from .elist import EcollectionMetacls
 from ..node_promise import NodePromise, ElistPromise
 
 class Node(Savable):
@@ -86,6 +87,7 @@ class TableNode(Node):
     
     @classmethod
     def from_dict(_cls, _dict:Dict[str, Any])->object:
+        from .elist import ECollectionMetacls
 
         # instance = _cls.__call__()
         instance = _cls()
@@ -104,10 +106,10 @@ class TableNode(Node):
                 val = UUID(val)
                 val_type_match_cls_attr_type = True
 
-            if isinstance(cls_attr_type, ElistMetacls) and not val_type_match_cls_attr_type: # check if attr is elist
+            if isinstance(cls_attr_type, ECollectionMetacls) and not val_type_match_cls_attr_type: # check if attr is elist
                 try: 
-                    elist_node_id = UUID(val)
-                    promise = ElistPromise(cls_attr_type.list_epure.resource, elist_node_id, cls_attr_type)
+                    collection_node_id = UUID(val)
+                    promise = ElistPromise(cls_attr_type.list_epure.resource, collection_node_id, cls_attr_type)
                     instance.__promises_dict__[field_name] = promise
                     continue
                 except(Exception):
@@ -186,6 +188,8 @@ class TableNode(Node):
     #     return res
 
     def to_dict(self) -> Dict[str, Any]:
+        from .elist import ECollectionMetacls
+
         _dict = self.__dict__.copy()
 
         if "__promises_dict__" in _dict and _dict['__promises_dict__']:
@@ -204,7 +208,7 @@ class TableNode(Node):
                 field_val = field_val.py_type
 
             # if isinstance(type(field_val), ElistMetacls) and not issubclass(field_val.py_type, Savable):
-            if isinstance(type(field_val), ElistMetacls):
+            if isinstance(type(field_val), ECollectionMetacls):
                 field_val = [field_val[i] for i in range(len(field_val))]
 
             elif isinstance(field_val, Savable):
@@ -220,3 +224,11 @@ class TableNode(Node):
             
 
     __exclude__:list = Node.__exclude__ + ['table', 'db']
+
+class EsetTableNode(TableNode):
+
+    def __hash__(self) -> int:
+        if hasattr(self, "node_id") and self.node_id:
+            return hash(self.node_id)
+        
+        return hash(id(self))
