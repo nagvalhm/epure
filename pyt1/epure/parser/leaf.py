@@ -35,7 +35,7 @@ class Primitive(Leaf, Constant):
     def serialize(self, parentheses=True, full_names=True, for_header=False, translator=None) -> str:
         res = ""
         if isinstance(self.val, list) or isinstance(self.val, tuple):
-            res += "("
+            res += "["
             for item in self.val:
                 if isinstance(item, Leaf):
                     res += f'{item.serialize(parentheses, full_names, for_header)}, '
@@ -51,7 +51,7 @@ class Primitive(Leaf, Constant):
                 else:
                     res += f'{str(item)}, '
                 # else:
-            res = res[:-2] + ")"
+            res = res[:-2] + "]"
             # res += ")"
             # res = str(tuple(temp))
         elif translator:
