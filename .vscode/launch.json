@@ -68,6 +68,18 @@
         },
 
         {
+            "name": "compile binary",
+            "type": "python",
+            "request": "launch",            
+            "justMyCode": true,
+            "module": "compileall",
+            "args": ["epure"],
+            "console": "integratedTerminal",
+            "python": "${config:python_path}",
+            "cwd": "${config:cwd}"
+        },
+
+        {
             "name": "Launch via npm",
             "type": "node",
             // "program": "${file}",
