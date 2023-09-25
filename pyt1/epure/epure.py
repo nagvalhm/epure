@@ -5,7 +5,8 @@ from .resource.resource import Resource
 from .helpers.type_helper import check_type
 from .errors import EpureError, DefaultConstraintError
 from .resource.db.constraint import Foreign, Default, Constraint
-from .resource.node.elist_metacls import ElistMetacls
+# from .resource.node.elist_metacls import ElistMetacls
+# from .resource.node.elist import ECollectionMetacls
 from uuid import UUID
 
 
@@ -194,12 +195,15 @@ class Epure(type, Savable):
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
         # from .resource.node.elist import ElistMetacls
+        from .resource.node.elist import ECollectionMetacls
+
 
         if py_type in self.epures:
             # py_type = cast(Epure, py_type)
             return self.get_py_type(field_name, py_type.annotations['node_id'])
         
-        if isinstance(py_type, ElistMetacls):
+        # if isinstance(py_type, ElistMetacls):
+        if isinstance(py_type, ECollectionMetacls):
             return self.get_py_type(field_name, UUID)
         # if isinstance(py_type, Constraint)
             

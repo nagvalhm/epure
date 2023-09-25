@@ -11,7 +11,7 @@ from ..db.table_column import TableColumn
 from collections import OrderedDict
 from ..node.proto import Proto
 from uuid import UUID
-from ..node.elist import ElistMetacls
+# from ..node.elist import ElistMetacls
 
 from ...errors import DeserializeError
 
@@ -243,6 +243,7 @@ class Table(DbEntity):
         res.__promises_dict__ = {}
 
         for field_name, field_type in res.annotations.items():
+            from ..node.elist import ECollectionMetacls
 
             if epure_cls.is_excluded(field_name):
                 continue
@@ -271,15 +272,15 @@ class Table(DbEntity):
                     node = field_type.resource.read(node_id=node_id)
                     setattr(res, field_name, node)
 
-            elif isinstance(field_type, ElistMetacls):
-                elist_node_id = attrs[field_name]
+            elif isinstance(field_type, ECollectionMetacls):
+                collection_node_id = attrs[field_name]
                 if lazy_read:
-                    promise = ElistPromise(field_type.list_epure.resource, elist_node_id, field_type)
+                    promise = ElistPromise(field_type.collection_epure.resource, collection_node_id, field_type)
                     # setattr(res, field_name, promise)
                     delattr(res, field_name)
                     res.__promises_dict__[field_name] = promise
                 elif not lazy_read:
-                    list_values_rows = field_type.list_epure.resource.read(elist_node_id=elist_node_id)
+                    list_values_rows = field_type.collection_epure.resource.read(collection_node_id=collection_node_id)
                     node = field_type(list_values_rows)
                     setattr(res, field_name, node)
         return res
