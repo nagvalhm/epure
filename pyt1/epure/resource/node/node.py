@@ -228,7 +228,8 @@ class TableNode(Node):
 class EsetTableNode(TableNode):
 
     def __hash__(self) -> int:
-        if hasattr(self, "node_id") and self.node_id:
-            return hash(self.node_id)
+        val = self.value
+        # if hasattr(val, "node_id") and val.node_id:
+        #     return hash(val.node_id)
         
-        return hash(id(self))
+        return hash(id(val))

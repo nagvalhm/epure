@@ -272,17 +272,21 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
         return self
     
-    def remove(self, __element: Any) -> None:
+    def remove(self, ___element: Any) -> None:
         for x in self:
-            if x.value == __element:
-                __element = x
+            if x.value == ___element:
+                ___element = x
                 break
-        self.deleted_entries.append(__element)
-        return super(self.__class__, self).remove(__element)
+        self.deleted_entries.append(___element)
+        return super(self.__class__, self).remove(___element)
     
-    def discard(self, __element: Any) -> None:
-        self.deleted_entries.append(__element)
-        return super(self.__class__, self).discard(__element)
+    def discard(self, el: Any) -> None:
+        for x in self:
+            if x.value == el:
+                el = x
+                break
+        self.deleted_entries.append(el)
+        return super(self.__class__, self).discard(el)
     
     def clear(self) -> None:
         entries = self.copy()
@@ -302,3 +306,11 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
             res.append(str(id))
 
         return res
+    
+    def __contains__(self, __o: object) -> bool:
+        
+        for x in self:
+            if x.value == __o:
+                return True
+
+        # return super().__contains__(__o)

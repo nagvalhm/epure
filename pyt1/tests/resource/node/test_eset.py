@@ -226,3 +226,40 @@ def test_eset_bytes_from_dict():
     inst_from_dict = EpureClsEsetBytes.from_dict(_dict)
     inst_from_dict.eset
     pass
+
+def test_eset_epure_remove_item_by_val():
+
+    @epure()
+    class EpureCls5:
+        str4:str
+    
+    inst1 = EpureCls5()
+    inst1.str4 = "abc"
+    inst2 = EpureCls5()
+    inst2.str4 = "defg"
+    inst3 = EpureCls5()
+    inst3.str4 = "hyz"
+    inst4 = EpureCls5()
+    inst4.str4 = "gdf"
+
+    @epure()
+    class EpureClsWEset1:
+        eset1:Eset[EpureCls5]
+        str2:str
+        int3:int
+        epure_field1:EpureClass1
+    
+    epurecls1 = EpureClsWEset1()
+    # epurecls1.eset1 = Eset[EpureCls4]((inst2,inst3,inst4,inst1))
+    epurecls1.eset1 = Eset[EpureCls5]((inst2,inst3,inst4,inst1))
+    try:
+        epurecls1.eset1.add(inst1)
+    except(ValueError):
+        pass
+    id_1 = epurecls1.save().node_id
+    epurecls1.eset1.discard(inst2)
+    assert inst2 not in epurecls1.eset1
+    
+    ids1 = epurecls1.eset1.ids
+    res1 = epurecls1.table.read(node_id=id_1)[0]
+    
