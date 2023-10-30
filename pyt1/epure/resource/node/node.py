@@ -2,12 +2,12 @@ from uuid import UUID
 from ..savable import Savable
 from ..resource import Resource
 from ...errors import ResourceException
-from typing import Any, Dict
+from typing import Any, Dict, Callable
 import jsonpickle
 from ..db.constraint import Constraint
 from ...errors import EpureError
 # from .elist_metacls import ElistMetacls
-# from .elist import EcollectionMetacls
+from .elist_metacls import ECollectionMetacls
 from ..node_promise import NodePromise, ElistPromise
 
 class Node(Savable):
@@ -36,6 +36,12 @@ class Node(Savable):
             return res
         else:
             raise AttributeError(f"'{type(self)}' object has no attribute '{name}'")
+        
+    def load(self):
+        if '__promises_dict__' in self.__dict__ and self.__promises_dict__:
+            for name in list(self.__promises_dict__):
+                self.__getattr__(name)
+            delattr(self, "__promises_dict__")
 
     @classmethod
     def from_dict(_cls, _dict:Dict[str, Any])->object:
@@ -187,41 +193,76 @@ class TableNode(Node):
 
     #     return res
 
-    def to_dict(self) -> Dict[str, Any]:
+    def _serialize_field_val_to_dict(self, field_val, field_type=None, field_name:str=None, rec_depth:int = None, *args):
+        # return super()._serialize_field_val(field_type)
+        lambda_func = args[0][0]
+
+        if isinstance(field_val, Savable) and not isinstance(type(field_val), ECollectionMetacls)\
+        and lambda_func(field_name, field_val, self, rec_depth, args):
+            field_val = field_val.to_dict(rec_depth+1, lambda_func)
+
+        elif isinstance(type(field_val), ECollectionMetacls) and isinstance(field_val[0], Savable)\
+        and lambda_func(field_name, field_val, self, rec_depth, args):
+            field_val = [field_val[i].to_dict(rec_depth+1, lambda_func) for i in range(len(field_val))]
+
+        elif isinstance(type(field_val), ECollectionMetacls) and not isinstance(field_val[0], Savable)\
+        and lambda_func(field_name, field_val, self, rec_depth, args):
+            field_val = [field_val[i] for i in range(len(field_val))]
+
+        elif isinstance(field_val, Savable):
+            field_val = field_val.save(True).node_id
+
+        if isinstance(field_val, UUID):
+            field_val = str(field_val)
+
+        return field_val
+
+
+    def to_dict(self, rec_depth=0, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
+                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls)) -> Dict[str, Any]:
         from .elist import ECollectionMetacls
 
-        _dict = self.__dict__.copy()
+        self.load()
 
-        if "__promises_dict__" in _dict and _dict['__promises_dict__']:
-            for name, value in _dict['__promises_dict__'].items():
-                if isinstance(value, ElistPromise):
-                    # value = value.get().read()
-                    value = value.get()
-                else:
-                    value = getattr(value, 'node_id', None)
-                _dict[name] = value
+        # _dict = self.__dict__.copy()
+        _dict = self._serialize(self, self._serialize_field_val_to_dict, rec_depth, lambda_func)
 
-        _dict.pop("__promises_dict__", None)
+        # if "__promises_dict__" in _dict and _dict['__promises_dict__']:
+        #     for name, value in _dict['__promises_dict__'].items():
+        #         if isinstance(value, ElistPromise):
+        #             # value = value.get().read()
+        #             value = value.get()
+        #         else:
+        #             value = getattr(value, 'node_id', None)
+        #         _dict[name] = value
 
-        for field_name, field_val in _dict.items():
-            if isinstance(field_val, Constraint):
-                field_val = field_val.py_type
+        # _dict.pop("__promises_dict__", None)
 
-            # if isinstance(type(field_val), ElistMetacls) and not issubclass(field_val.py_type, Savable):
-            if isinstance(type(field_val), ECollectionMetacls):
-                field_val = [field_val[i] for i in range(len(field_val))]
+        # for field_name, field_val in _dict.items():
+        #     if isinstance(field_val, Constraint):
+        #         field_val = field_val.py_type
 
-            elif isinstance(field_val, Savable):
-                field_val = getattr(self, field_name, None)
-                field_val = field_val.save(True).node_id
+        #     # if isinstance(type(field_val), ElistMetacls) and not issubclass(field_val.py_type, Savable):
+        #     if isinstance(type(field_val), ECollectionMetacls):
+        #         field_val = [field_val[i] for i in range(len(field_val))]
 
-            if isinstance(field_val, UUID):
-                field_val = str(field_val)
+        #     elif isinstance(field_val, Savable) and lambda_func(field_name, field_val, self, rec_depth):
+        #         # field_val = getattr(self, field_name, None)
+        #         # field_val = field_val.save(True).node_id
+        #         field_val = field_val.to_dict(rec_depth+1, lambda_func)
 
-            _dict[field_name] = field_val
+        #     if isinstance(field_val, UUID):
+        #         field_val = str(field_val)
+
+        #     _dict[field_name] = field_val
  
         return _dict
-            
+
+    def to_json(self, encoder:Callable=jsonpickle.encode) -> Dict[str, Any]:
+
+        _dict = self.to_dict()
+        
+        return encoder(_dict)
 
     __exclude__:list = Node.__exclude__ + ['table', 'db']
 

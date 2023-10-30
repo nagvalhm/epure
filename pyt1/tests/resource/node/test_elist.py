@@ -62,7 +62,7 @@ def test_elist_epures():
 
 @epure()
 class EpureClsElist:
-    elist:Elist[str] 
+    elist:Elist[str]
     str0:str
     int2:int
     epure_field:EpureClass1

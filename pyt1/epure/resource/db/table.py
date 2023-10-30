@@ -54,21 +54,30 @@ class Table(DbEntity):
         
 
 
-    def _serialize(self, node: Savable) -> Dict[str, str]:
-        res = {}
-        for field_name, field_type in node.annotations.items():
-            if isinstance(field_type, Constraint):
-                field_type = field_type.py_type
+    # def _serialize(self, node: Savable) -> Dict[str, str]:
+    #     res = {}
+    #     for field_name, field_type in node.annotations.items():
+    #         if isinstance(field_type, Constraint):
+    #             field_type = field_type.py_type
                 
-            if node.is_excluded(field_name, field_type):
-                continue
-            if field_name not in self.header:
-                continue
-            if not hasattr(node, field_name):
-                continue
+    #         if node.is_excluded(field_name, field_type):
+    #             continue
+    #         if field_name not in self.header:
+    #             continue
+    #         if not hasattr(node, field_name):
+    #             continue
 
-            field_val = getattr(node, field_name, None)
-            #working for db:
+    #         field_val = getattr(node, field_name, None)
+            
+    #         field_val = self._serialize_field_val(field_val, field_type)
+
+    #         res[field_name] = field_val
+        
+    #     return res
+
+
+    def _serialize_field_val_to_sql(self, field_val, field_type=None, field_name=None, rec_depth=None, *args):
+        #working for db:
             if isinstance(field_val, Savable):
                 field_type = field_val.annotations['node_id']
                 field_val = field_val.save(True).node_id
@@ -79,10 +88,7 @@ class Table(DbEntity):
                 
             field_val = self.db.cast_py_db_val(field_val, field_type)
 
-            res[field_name] = field_val
-        
-        return res
-
+            return field_val
 
 
     def create(self, node: Node, asynch:bool=False) -> object:
@@ -245,7 +251,7 @@ class Table(DbEntity):
         for field_name, field_type in res.annotations.items():
             from ..node.elist import ECollectionMetacls
 
-            if epure_cls.is_excluded(field_name):
+            if epure_cls.is_excluded(field_name, field_type):
                 continue
 
             if field_name not in attrs:

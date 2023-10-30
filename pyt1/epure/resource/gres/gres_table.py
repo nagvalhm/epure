@@ -25,7 +25,7 @@ class GresTable(Table, GresEntity):
 
     def serialize_for_create(self, node: Savable, **kwargs) -> object:
 
-        node_dict = self._serialize(node)
+        node_dict = self._serialize(node, self._serialize_field_val_to_sql)
 
         columns = ""
         values = ""
@@ -114,8 +114,7 @@ class GresTable(Table, GresEntity):
 
     def serialize_for_update(self, node: Savable, **kwargs) -> object:
 
-        node_dict = self._serialize(node)
-
+        node_dict = self._serialize(node, self._serialize_field_val_to_sql)
         if not ('node_id' in node_dict and node_dict['node_id']):
             raise DbError('unable update node without node_id')
 

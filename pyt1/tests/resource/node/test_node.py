@@ -3,6 +3,8 @@ from ....epure.epure import Epure, epure
 from uuid import UUID
 import pytest
 from ...test_epure import EpureClass1
+# from epure import Elist
+from ....epure import Elist
 
 def compare_dict_to_obj(dict, obj):
     for item in dict:
@@ -33,3 +35,121 @@ def test_node_from_dict():
     res = Human.from_dict(_dict)
 
     assert compare_dict_to_obj(_dict, res)
+
+def test_node_not_recursive_to_dict_default_depth():
+    
+    @epure()
+    class EpureClsToDict1:
+        nametag:str = "Plain"
+        num:int = 86
+    
+    @epure()
+    class EpureClsToDictPlain1:
+        epure_cls:EpureClsToDict1
+        text:str = "Text"
+        age:int = 80
+
+    inst = EpureClsToDictPlain1()
+    inst.epure_cls = EpureClsToDict1()
+    res = inst.to_dict()
+
+    assert res == {'epure_cls': {'nametag': 'Plain', 'num': 86}, 'text': 'Text', 'age': 80}
+
+def test_node_to_dict_custom_lambda_func_nested_vals_recursive():
+
+    @epure()
+    class EpureClsSimple:
+        str0:str = "Texxxt"
+        num0:int = 2
+
+    epure_cls_simple1 = EpureClsSimple()
+    epure_cls_simple2 = EpureClsSimple()
+
+    @epure()
+    class EpureClsToDict2:
+        nametag:str = "Plain"
+        num:int = 86
+        elist_str_to_exclude:Elist[str] = Elist[str](["abc", "def"])
+        elist_epure_to_exclude:Elist[EpureClsSimple] = Elist[EpureClsSimple]([epure_cls_simple1, epure_cls_simple2])
+        elist_str_no_def_val:Elist[str]
+        elist_str_def_val:Elist[str] = Elist[str](["abc", "def"])
+        elist_epure:Elist[EpureClsSimple] = Elist[EpureClsSimple]([epure_cls_simple1, epure_cls_simple2])
+
+    @epure()
+    class ExcludedEpure:
+        another_epure:EpureClsToDict2 = EpureClsToDict2()
+
+    @epure()
+    class EpureClsToDictPlain2:
+        epure_cls:EpureClsToDict2
+        excluded_epure:ExcludedEpure = ExcludedEpure()
+        text:str = "Text"
+        age:int = 80
+
+    inst = EpureClsToDictPlain2()
+    inst.epure_cls = EpureClsToDict2()
+    inst.epure_cls.elist_str_no_def_val = Elist[str](["no", "definitions"])
+    id1 = inst.save().node_id
+
+    res = inst.to_dict(lambda_func= lambda field_name, field_value, parent_value, depth_level, args: 
+                depth_level < 2 and (field_name != "excluded_epure" and field_name != "elist_str_to_exclude") and field_name != "elist_epure_to_exclude")
+    
+    res_json = inst.to_json()
+
+    # expected_res_from_to_dict = {'node_id': 'bf35bd03-7bbf-42ef-a1f4-ab28dac9334f', 'epure_cls': {'node_id': 'b4b7ff10-47f0-40e8-bf26-8f1d86e12b27', 'nametag': 'Plain', 'num': 86, 'elist_str_to_exclude': '7b1aad0c-c3e8-4163-bfa0-b545584271f0', 'elist_epure_to_exclude': 'dcf26df7-5f9d-4453-8979-4ccf3d96f4a2', 'elist_str_no_def_val': ['no', 'definitions'], 'elist_str_def_val': ['abc', 'def'], 'elist_epure': [{'node_id': '486c198a-f421-4313-8a00-e402b3f977fe', 'str0': 'Texxxt', 'num0': 2}, {'node_id': '11570fa7-5206-4dcd-89bf-beed2faca04e', 'str0': 'Texxxt', 'num0': 2}]}, 'excluded_epure': 'bedaa95f-f6bf-4166-9327-9bae52b4c177', 'text': 'Text', 'age': 80}
+
+    assert res['epure_cls']['elist_str_no_def_val'] == ['no', 'definitions'] 
+    assert res['epure_cls']['elist_epure'][0]['num0'] == 2
+
+    epure_from_db = inst.table.read(node_id=id1)[0]
+
+    res_to_dict_from_epure_db = epure_from_db.to_dict(lambda_func= lambda field_name, field_value, parent_value, depth_level, args: 
+                depth_level < 2 and (field_name != "excluded_epure" and field_name != "elist_str_to_exclude") and field_name != "elist_epure_to_exclude")
+
+    assert res == res_to_dict_from_epure_db
+
+
+
+    
+
+# def test_node_recursive_to_dict_with_custom_lambda_func():
+
+#     @epure()
+#     class AnotherEpure:
+#         str3:str = "Str"
+    
+#     @epure()
+#     class EpureClsSimple:
+#         str0:str = "Texxxt"
+#         num0:int = 2
+
+
+#     epure_cls_simple1 = EpureClsSimple()
+#     epure_cls_simple1.another_epure = AnotherEpure()
+
+#     epure_cls_simple2 = EpureClsSimple()
+
+#     @epure()
+#     class EpureClsToDict3:
+#         nametag:str = "Plain"
+#         num:int = 86
+#         elist_str:Elist[str] = ["abc", "def"]
+#         elist_epure:Elist[EpureClsSimple] = [epure_cls_simple1, epure_cls_simple2]
+
+#     @epure()
+#     class EpureClsToDictPlain3:
+#         epure_cls:EpureClsToDict3
+#         text:str = "Text"
+#         age:int = 80
+
+#     inst = EpureClsToDictPlain3()
+#     inst.epure_cls = EpureClsToDict3()
+
+#     id1 = inst.save().node_id
+
+#     epure_from_db = inst.table.read(node_id=id1)[0]
+
+#     res = epure_from_db.to_dict(depth_level=3, lambda_func= lambda field_name, field_value, parent_value, depth_level: 
+#                 depth_level < 2 or field_name != "another_epure")
+
+#     assert res == {}

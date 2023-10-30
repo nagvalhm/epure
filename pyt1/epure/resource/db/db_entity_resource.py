@@ -59,5 +59,8 @@ class DbEntityResource(Resource):
             return py_type(val.tobytes())
         # if py_type == UUID:
             # return str(val)
+        if py_type is complex:
+            complex_tuple = eval(val)
+            return py_type(f"{complex_tuple[0]}+{complex_tuple[1]}j")
         return val
         # return py_type(val) instead of 54,55.

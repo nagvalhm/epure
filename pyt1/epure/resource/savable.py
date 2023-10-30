@@ -1,6 +1,8 @@
+from __future__ import annotations
 from types import NoneType
 from .resource import Resource
-from typing import Any, Dict, get_type_hints
+from typing import Any, Dict, get_type_hints, Callable
+from .db.constraint import Constraint
 
 class Savable(Resource):    
     
@@ -48,3 +50,29 @@ class Savable(Resource):
 
     def execute(self, script: str = '') -> object:
         return self.resource.execute(script)
+    
+    def _serialize(self, node: Savable, serializer:Callable, rec_depth:int=None, *args) -> Dict[str, str]:
+        res = {}
+        for field_name, field_type in node.annotations.items():
+            if isinstance(field_type, Constraint):
+                field_type = field_type.py_type
+                
+            if node.is_excluded(field_name, field_type):
+                continue
+            # if field_name not in self.header:
+            #     continue
+            if not hasattr(node, field_name):
+                continue
+
+            field_val = getattr(node, field_name, None)
+
+            field_val = serializer(field_val, field_type, field_name, rec_depth, args)
+            
+            # field_val = self._serialize_field_val(field_val, field_type)
+
+            res[field_name] = field_val
+        
+        return res
+    
+    # def _serialize_field_val(field_val, field_type=None):
+    #     raise NotImplementedError
