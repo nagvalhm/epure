@@ -180,7 +180,8 @@ class Epure(type, Savable):
 
         for field_name, py_type in self.annotations.items():
             py_type = cast(type, py_type)
-            if self.is_excluded(field_name, py_type):
+
+            if Table.is_excluded(self, field_name, py_type):
                 continue
             py_type = self.get_py_type(field_name, py_type)
             

@@ -37,15 +37,19 @@ class Savable(Resource):
         raise NotImplementedError
 
     @classmethod
-    def is_excluded(cls, atr_name:str, type_hint:Any='') -> bool:
+    def is_excluded(self, node, atr_name:str, type_hint:Any='') -> bool:
+        cls = type(node)
+        if isinstance(node, type):
+            cls = node
+
         if hasattr(cls, '__exclude__') and atr_name in cls.__exclude__:
             return True
         if atr_name[:2] == "__" and atr_name[-2:] == "__":
             return True
         if atr_name in ("prepared_resource"):
             return True
-        if type_hint in (NoneType, None):
-            return True
+        # if type_hint in (NoneType, None):
+        #     return True
         return False
 
     def execute(self, script: str = '') -> object:
@@ -57,7 +61,9 @@ class Savable(Resource):
             if isinstance(field_type, Constraint):
                 field_type = field_type.py_type
                 
-            if node.is_excluded(field_name, field_type):
+            # if node.is_excluded(field_name, field_type):
+            #     continue
+            if self.is_excluded(node, field_name, field_type):
                 continue
             # if field_name not in self.header:
             #     continue

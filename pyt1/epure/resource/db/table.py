@@ -75,6 +75,12 @@ class Table(DbEntity):
         
     #     return res
 
+    @classmethod
+    def is_excluded(self, node, atr_name:str, type_hint:Any='') -> bool:
+        if type_hint in (NoneType, None):
+            return True
+        return super().is_excluded(node, atr_name, atr_name)
+
 
     def _serialize_field_val_to_sql(self, field_val, field_type=None, field_name=None, rec_depth=None, *args):
         #working for db:
@@ -251,7 +257,7 @@ class Table(DbEntity):
         for field_name, field_type in res.annotations.items():
             from ..node.elist import ECollectionMetacls
 
-            if epure_cls.is_excluded(field_name, field_type):
+            if self.is_excluded(epure_cls, field_name, field_type):
                 continue
 
             if field_name not in attrs:
