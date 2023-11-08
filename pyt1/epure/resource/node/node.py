@@ -201,11 +201,11 @@ class TableNode(Node):
         and lambda_func(field_name, field_val, self, rec_depth, args):
             field_val = field_val.to_dict(rec_depth+1, lambda_func)
 
-        elif (isinstance(type(field_val), ECollectionMetacls) or type(field_val) in (list,)) and isinstance(field_val[0], Savable)\
-        and lambda_func(field_name, field_val, self, rec_depth, args):
+        elif (isinstance(type(field_val), ECollectionMetacls) or type(field_val) in (list,)) and field_val[0]\
+        and isinstance(field_val[0], Savable) and lambda_func(field_name, field_val, self, rec_depth, args):
             field_val = [field_val[i].to_dict(rec_depth+1, lambda_func) for i in range(len(field_val))]
 
-        elif isinstance(type(field_val), ECollectionMetacls) and not isinstance(field_val[0], Savable)\
+        elif isinstance(type(field_val), ECollectionMetacls) and field_val[0] and not isinstance(field_val[0], Savable)\
         and lambda_func(field_name, field_val, self, rec_depth, args):
             field_val = [field_val[i] for i in range(len(field_val))]
 
