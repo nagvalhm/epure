@@ -117,44 +117,45 @@ def test_node_to_dict_custom_lambda_func_nested_vals_recursive_with_save():
 
     
 
-# def test_node_recursive_to_dict_with_custom_lambda_func():
+def test_node_recursive_to_dict_with_collections_of_epure():
 
-#     @epure()
-#     class AnotherEpure:
-#         str3:str = "Str"
+    @epure()
+    class AnotherEpure:
+        str3:str = "Str"
     
-#     @epure()
-#     class EpureClsSimple:
-#         str0:str = "Texxxt"
-#         num0:int = 2
+    @epure()
+    class EpureClsSimple1:
+        str0:str = "Texxxt"
+        num0:int = 2
 
+    epure_cls_simple1 = EpureClsSimple1()
+    epure_cls_simple1.another_epure = AnotherEpure()
 
-#     epure_cls_simple1 = EpureClsSimple()
-#     epure_cls_simple1.another_epure = AnotherEpure()
+    epure_cls_simple2 = EpureClsSimple1()
 
-#     epure_cls_simple2 = EpureClsSimple()
+    @epure()
+    class EpureClsToDict3:
+        nametag:str = "Plain"
+        num:int = 86
+        elist_str:Elist[str] = Elist[str](["abc", "def"])
+        elist_epure:Elist[EpureClsSimple1] = Elist[EpureClsSimple1]([epure_cls_simple1, epure_cls_simple2])
 
-#     @epure()
-#     class EpureClsToDict3:
-#         nametag:str = "Plain"
-#         num:int = 86
-#         elist_str:Elist[str] = ["abc", "def"]
-#         elist_epure:Elist[EpureClsSimple] = [epure_cls_simple1, epure_cls_simple2]
+    @epure()
+    class EpureClsToDictPlain3:
+        epure_cls:EpureClsToDict3
+        text:str = "Text"
+        age:int = 80
+        # epure_dict:NoneType = {"abc":AnotherEpure(), "gvd":AnotherEpure()}
+        epure_list:NoneType = [AnotherEpure(), AnotherEpure(), AnotherEpure()]
+        # epure_set:NoneType = (AnotherEpure(), AnotherEpure())
 
-#     @epure()
-#     class EpureClsToDictPlain3:
-#         epure_cls:EpureClsToDict3
-#         text:str = "Text"
-#         age:int = 80
+    inst = EpureClsToDictPlain3()
+    inst.epure_cls = EpureClsToDict3()
 
-#     inst = EpureClsToDictPlain3()
-#     inst.epure_cls = EpureClsToDict3()
+    id1 = inst.save().node_id
 
-#     id1 = inst.save().node_id
+    epure_from_db = inst.table.read(node_id=id1)[0]
 
-#     epure_from_db = inst.table.read(node_id=id1)[0]
+    res = epure_from_db.to_dict()
 
-#     res = epure_from_db.to_dict(depth_level=3, lambda_func= lambda field_name, field_value, parent_value, depth_level: 
-#                 depth_level < 2 or field_name != "another_epure")
-
-#     assert res == {}
+    assert res["epure_list"] == [{'str3': 'Str'}, {'str3': 'Str'}, {'str3': 'Str'}]
