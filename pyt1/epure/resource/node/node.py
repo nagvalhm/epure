@@ -210,7 +210,7 @@ class TableNode(Node):
             field_val = [field_val[i] for i in range(len(field_val))]
 
         elif isinstance(field_val, Savable):
-            field_val = field_val.save(True).node_id
+            field_val = field_val.node_id
 
         if isinstance(field_val, UUID):
             field_val = str(field_val)
