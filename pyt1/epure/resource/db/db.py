@@ -94,7 +94,7 @@ class Db(TableStorage):
             script = self.get_cache() + script
             if hasattr(self, 'logger') and self.logger:
                 self.logger.debug(script)
-            script = script.replace("\n", "")
+            # script = script.replace("\n", "")
             result = self._execute(script)
         except Exception as ex:
             err = EpureError(f'unnable execute script {script}: {ex}') \
@@ -128,3 +128,9 @@ class Db(TableStorage):
             fileHandler.setFormatter(formater)
 
             self.logger.addHandler(fileHandler)
+            
+    def glb(self): #get line breaker if logging level is debug or higher
+        if self.logger.root.level >= logging.DEBUG:
+            return '\n'
+        return ''
+            
