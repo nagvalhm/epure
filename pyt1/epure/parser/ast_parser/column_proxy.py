@@ -11,3 +11,12 @@ class ColumnProxy(Term):
             table_proxy = TableProxy(db, table)
         self.__table_proxy__ = table_proxy
         super().__init__()
+
+    def serialize(self, full_names=True) -> str:
+        if not full_names:
+            res = self.__column__.name
+        else:
+            table = self.__table__.full_name
+            res = f'{table}.{self.__column__.name}'
+
+        return res

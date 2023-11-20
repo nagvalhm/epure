@@ -48,6 +48,7 @@ def test_read_default_epure_lambda2():
     # assert isinstance(res, list) and bool(res[0])
 
     DefaultEpure.resource.read(lambda pr, abc: [pr.int0 >= ('all-categories', 'promotions')])
+    # DefaultEpure.resource.read(lambda pr, abc: [pr.int0 % "\%abc%"]) # test like and \ notation of python
 
 
 def test_read_default_epure_kwargs():
@@ -56,10 +57,14 @@ def test_read_default_epure_kwargs():
     DefaultEpure.resource.read([], 'and', complex0=5+7j, float3=750479.0714551052) # fix point type read !!
 
 
-
 def test_read_default_epure_sql():
     DefaultEpure.resource.read('select * from default_epure where float3 = 308396.1685926297')
 
+# def test_read_default_single_backslash():
+#     src = "select * from public.default_epure where public.default_epure.str0 = '\gvorog'"
+#     res = "".join(list(src))
+#     res = DefaultEpure.resource.read(res)
+#     res
 
 def test_read_default_epure_term():
     # tp = DefaultEpure.tp

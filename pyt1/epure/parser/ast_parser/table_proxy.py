@@ -22,3 +22,7 @@ class TableProxy(Term):
     # def __getitem__(self, *args) -> Any:
     #     res = TermHeader(list(*args))
     #     return res
+
+    def serialize(self, full_names = True) -> str:
+        res = f'{self.__table__.full_name}'
+        return res
