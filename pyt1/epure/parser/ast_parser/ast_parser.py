@@ -59,10 +59,11 @@ class AstParser(ast.NodeTransformer):
         comp_targ_in_keys = compare_targ in self.astTypesDict.keys()
 
         if left_val_in_keys and comp_targ_in_keys:
-            op_str = "_or" if type(node.op) is ast.Or else "_and"
             # op_str = "|" if type(node.op) is ast.Or else "&"
-            new_node_str = f"{left_val}.{op_str}({compare_targ})"
+            op_str = "_or" if type(node.op) is ast.Or else "_and"
             # new_node_str = f"(({left_val}) {op_str} ({compare_targ}))"
+            # new_node_str = f"{left_val}.{op_str}({compare_targ})"
+            new_node_str = f"{self.first_arg_name}.tp.{op_str}({left_val},{compare_targ})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
             self.astTypesDict[new_node_str] = node

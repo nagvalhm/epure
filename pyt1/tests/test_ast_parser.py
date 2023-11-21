@@ -147,6 +147,8 @@ def test_simple_queries_ast_parser_read_decorator():
 
             query = "abc" in ["abc","def"] and "abc" in lst
 
+            query = 5 == self123.tp.f2 or 5 == self123.tp.f2 and self123.tp.f1 == 234 and self123.tp.f1 == 234
+
             return query
 
         @ReadHolderCls.read

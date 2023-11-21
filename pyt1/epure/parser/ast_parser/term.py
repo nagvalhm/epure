@@ -4,11 +4,11 @@ from typing import Any
 class Term:
 
     #bool_ops
-    def _and(self, other): #and
-        return f"{self} AND {other}"
+    def _and(self, left, right): #and
+        return f"{left} AND {right}"
     
-    def _or(self, other): #or
-        return f"{self} OR {other}"
+    def _or(self, left, right): #or
+        return f"{left} OR {right}"
 
     # def __and__(self, other) -> str:
     #     return f"{self} AND {other}"    
