@@ -9,6 +9,7 @@ import pytest
 import types
 # from uuid import UUID
 from ..epure.resource.gres.jsonb_table import JsonbTable
+from ..epure.parser.term_parser import TermParser
 
 try:
     GresDb('postgres://user_name:pass@host:5432').connect()
@@ -23,7 +24,8 @@ db = GresDb('postgres://postgres:postgres@localhost:32',
     # database="postgres", 
     # user="postgres", 
     password="postgres",
-    log_level=3)
+    log_level=3,
+    parser=TermParser)
 db.connect()
 
 #parent

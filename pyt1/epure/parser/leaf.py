@@ -10,6 +10,7 @@ from ast import Name, Constant
 from ..errors import EpureParseError
 from ..helpers.type_helper import check_type
 from uuid import UUID
+from .proxy_base_cls import ColumnProxyBase, TableProxyBase
 
 class Leaf(Term):
     left_parentheses_count = 0
@@ -84,7 +85,7 @@ class QueryingProxy(Leaf):
         raise NotImplementedError
 
 
-class ColumnProxy(QueryingProxy, Name):
+class ColumnProxy(QueryingProxy, Name, ColumnProxyBase):
     if TYPE_CHECKING:
         __table__:Table
         __column__:TableColumn
@@ -141,7 +142,7 @@ class ColumnProxy(QueryingProxy, Name):
         return False
 
 
-class TableProxy(QueryingProxy, Name):
+class TableProxy(QueryingProxy, Name, TableProxyBase):
     if TYPE_CHECKING:
         __table__:Table
 

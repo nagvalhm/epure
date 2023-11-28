@@ -10,7 +10,7 @@ from ..resource.db.table import Table
 from ..helpers.type_helper import check_type
 from uuid import uuid4
 from ..errors import EpureParseError
-from .leaf import Leaf
+from .leaf import Leaf, TableProxy, ColumnProxy
 
 class JoinOperation:    
     table:str
@@ -34,6 +34,9 @@ class TermParser(NodeTransformer):
     joins:List[JoinOperation]
     parent = None
     resource:Table
+
+    column_proxy_cls=ColumnProxy
+    table_proxy_cls=TableProxy
 
     def __init__(self, resource:Table) -> None:
         self.resource = resource

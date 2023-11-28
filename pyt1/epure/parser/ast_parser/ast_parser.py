@@ -13,6 +13,8 @@ from .column_proxy import ColumnProxy
 class AstParser(ast.NodeTransformer):
 
     astTypesDict:Dict[str, Any]
+    column_proxy_cls=ColumnProxy
+    table_proxy_cls=TableProxy
 
     def __init__(self) -> None:
         self.astTypesDict = {}

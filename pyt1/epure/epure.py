@@ -8,6 +8,11 @@ from .resource.db.constraint import Foreign, Default, Constraint
 # from .resource.node.elist_metacls import ElistMetacls
 # from .resource.node.elist import ECollectionMetacls
 from uuid import UUID
+from .parser.ast_parser.db_proxy import DbProxy
+import textwrap
+import inspect
+from .parser.ast_parser.ast_parser import AstParser
+import types
 
 
 # from types import FunctionType
@@ -191,7 +196,7 @@ class Epure(type, Savable):
             TableCls = self.EDb.nosql_table_type
         else:
             TableCls = self.EDb.default_table_type
-        table = TableCls(full_name.name, columns, self.EDb, full_name.namespace)
+        table = TableCls(full_name.name, columns, self.EDb, full_name.namespace, parser=self.EDb.parser)
         return table
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
@@ -268,3 +273,30 @@ def _create_epure(cls, saver, _Epure):
 
 def proto(resource:object='', saver:type=Proto, epure_metaclass:type=Epure) -> Callable:
     return epure(resource, saver, epure_metaclass)
+
+def read(func):
+    def inner(self, *args, **kwargs):
+        self.dbp = DbProxy(self.resource.db)
+        self.tp = self.dbp[self.table.full_name]
+        func_source = inspect.getsource(func)
+        dedent_src = textwrap.dedent(func_source)
+
+        func_parsed = AstParser().parse(dedent_src)
+        
+        # ast.fix_missing_locations(changed_tree)
+
+        co = compile(func_parsed, "debug_parser.py", "exec")
+
+        fn = types.FunctionType(co.co_consts[0], globals())
+
+        res = fn(self,*args)
+
+        # exec(co, globals())
+
+        
+
+        # res = self.resource.read(res)
+        
+        return res
+        # return self.resource.read(res)
+    return inner

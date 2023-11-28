@@ -103,7 +103,7 @@ class TableStorage(DbEntityResource):
         full_name = self._deserialize_table_name(table_columns)
 
         TableCls = self._get_table_type(table_columns)
-        table = TableCls(name=full_name.name, namespace=full_name.namespace, resource=self)
+        table = TableCls(name=full_name.name, namespace=full_name.namespace, resource=self, parser=self.parser)
         
         
         for column_dict in table_columns:

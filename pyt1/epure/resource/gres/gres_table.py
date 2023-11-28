@@ -7,6 +7,7 @@ from ...errors import  DbError, EpureParseError
 # from ..db.select_query import SelectQuery
 # from ..db.term import JoinBinary, Pseudo, _PseudoColumn, _PseudoTable
 from ...parser.leaf import QueryingProxy, ColumnProxy, TableProxy
+from ...parser.proxy_base_cls import ColumnProxyBase, TableProxyBase
 from ...parser.term_parser import JoinOperation
 from uuid import uuid4
 
@@ -39,7 +40,17 @@ class GresTable(Table, GresEntity):
         res = f'INSERT INTO {self.full_name}({columns}) VALUES ({values}) returning node_id;'
         return res
 
+    # def serialize_read(self, header, joins, where_clause, full_names) -> str:
+    #     header = self._add_node_id_fields(header)
+    #     res_header = self.serialize_read_header(header, full_names)
+    #     res_joins = self.serialize_joins(joins)        
 
+    #     if where_clause:
+    #         res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
+    #     else:
+    #         res = f'{res_header} \n {res_joins}'
+    #     res = self.replace_operators(res)
+    #     return res
 
     def serialize_read(self, header, joins, where_clause, full_names) -> str:
         header = self._add_node_id_fields(header)
@@ -62,9 +73,11 @@ class GresTable(Table, GresEntity):
     def serialize_read_header(self, header:List[QueryingProxy], full_names:bool):
         res = 'SELECT'
         for item in header:
-            if isinstance(item, ColumnProxy):
+            if isinstance(item, ColumnProxyBase):
+            # if isinstance(item, self.db.parser.column_proxy_cls):
                 res += f' {item.serialize(False, full_names, True)},'
-            elif isinstance(item, TableProxy):
+            elif isinstance(item, TableProxyBase):
+            # elif isinstance(item, self.db.parser.table_proxy_cls):
                 res += f' {item.serialize(False, full_names, True)},'
             elif isinstance(item, str):
                 sp = item.split('.')
@@ -79,9 +92,11 @@ class GresTable(Table, GresEntity):
 
         first_item = header[0]
         table_name = ''
-        if isinstance(first_item, ColumnProxy):
+        # if isinstance(first_item, ColumnProxy):
+        if isinstance(first_item, ColumnProxyBase):
             table_name = first_item.__table__.full_name
-        elif isinstance(first_item, TableProxy):
+        # elif isinstance(first_item, TableProxy):
+        elif isinstance(first_item, TableProxyBase):
             table_name = str(first_item)
         elif isinstance(first_item, str):
             first_item = first_item.split('.')

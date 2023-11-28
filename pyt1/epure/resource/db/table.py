@@ -12,6 +12,7 @@ from collections import OrderedDict
 from ..node.proto import Proto
 from uuid import UUID
 # from ..node.elist import ElistMetacls
+from ...parser.ast_parser.ast_parser import AstParser
 
 from ...errors import DeserializeError
 
@@ -41,14 +42,18 @@ class Table(DbEntity):
         return self.resource
 
     def __init__(self, name: str,
-            header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '') -> None:        
+            header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '', parser=AstParser) -> None:        
         check_type('header', header, [TableHeader, dict, NoneType])
         from ...parser.term_parser import TermParser
 
         self._set_header(header)
         super().__init__(name, namespace, resource)
 
-        self.parser = TermParser(self)
+        # self.parser = TermParser(self)
+        if parser == TermParser:
+            parser = TermParser(self)
+        
+        self.parser = parser
         self.querying_proxy = TableProxy(self.db, self)
         self.resource_proxy = DbProxy(self.db)
         
@@ -130,6 +135,10 @@ class Table(DbEntity):
         if isinstance(args[-1], Term):
             selector = args[-1]
             return self.read_by_term(args[0:-1], selector)
+        
+        if args:
+            res = self.serialize_read(header=args[0], joins=[], where_clause=args[1], full_names=True)
+            return self.read_by_sql(res)
 
         raise NotImplementedError(f'couldn read by object of type {type(selector)}')
     

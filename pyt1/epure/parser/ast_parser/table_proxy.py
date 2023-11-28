@@ -1,8 +1,10 @@
+from __future__ import annotations
 from .term import Term
 from typing import Any
 from .column_proxy import ColumnProxy
+from ..proxy_base_cls import TableProxyBase
 
-class TableProxy(Term):
+class TableProxy(Term, TableProxyBase):
 
     def __init__(self, db, table):
         self.__db__ = db
@@ -23,6 +25,23 @@ class TableProxy(Term):
     #     res = TermHeader(list(*args))
     #     return res
 
-    def serialize(self, full_names = True) -> str:
-        res = f'{self.__table__.full_name}'
+    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
+        res = ''
+        # if not full_names:
+        #     res = self.__table__.name      
+        # el
+        if for_header:
+            header = self.__table__.header
+            for col in header:
+                res += header.serialize_read_column(header[col], full_names) + ', '
+            res = res[0:-2]
+        else:
+            res = f'{self.__table__.full_name}'
+
+        # if not for_header and parentheses:
+        #     res = self.append_parentheses(res)
+
         return res
+    
+    def join(self, *args, lambda_f):
+        pass

@@ -1,5 +1,7 @@
 from .term import Term
-class ColumnProxy(Term):
+from ..proxy_base_cls import ColumnProxyBase
+
+class ColumnProxy(Term, ColumnProxyBase):
     def __init__(self, db, table, column, table_proxy=None):
         self.__db__ = db
         self.__table__ = table
@@ -12,11 +14,16 @@ class ColumnProxy(Term):
         self.__table_proxy__ = table_proxy
         super().__init__()
 
-    def serialize(self, full_names=True) -> str:
-        if not full_names:
+    def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
+        if for_header:
+            res = self.__table__.header.serialize_read_column(self.__column__, full_names)
+        elif not full_names:
             res = self.__column__.name
         else:
             table = self.__table__.full_name
             res = f'{table}.{self.__column__.name}'
+
+        # if not for_header and parentheses:
+        #     res = self.append_parentheses(res)
 
         return res

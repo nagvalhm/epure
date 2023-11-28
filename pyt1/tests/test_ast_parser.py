@@ -14,6 +14,7 @@ import textwrap
 import types
 import pdb
 from ..epure.parser.ast_parser.ast_parser import AstParser
+from ..epure.epure import read
 
 def foo1():
     return 1
@@ -22,8 +23,8 @@ def foo2():
     return 2
 
 def test_simple_queries_ast_parser_read_decorator():
-    dbp = DbProxy(real_db)
-    tp = dbp['oraculs_domain.competitions']
+    # dbp = DbProxy(real_db)
+    # tp = dbp['oraculs_domain.competitions']
     # y = dbp['oraculs_domain.oraculs']
 
     # class AstParser(ast.NodeTransformer):
@@ -58,7 +59,13 @@ def test_simple_queries_ast_parser_read_decorator():
         
 
     @epure()
-    class AstParserTestCls(ReadHolderCls):
+    # class AstParserTestCls(ReadHolderCls):
+    class AstParserTestCls:
+        int_field:int
+        f2:str
+        f1:str
+        f8:str
+        f4:str
         # @ReadHolderCls.read
         # def foo(self, param):
         #     print(param)
@@ -67,13 +74,14 @@ def test_simple_queries_ast_parser_read_decorator():
         #     query = tp.f1.abc == 1 and tp.f2 == 4
         #     return query + param
         
-        @ReadHolderCls.read
-        def foo2(self123):
+        @read
+        def test_diff_cases(self123):
             var = self123.tp.f1
             var.pole = self123.tp.f1
             var = True
             tup = ("dr","dgb")
             lst = ["br","zcv"]
+
             tptst = self123.tp
 
             query = self123.tp.f2 == '%percent0'
@@ -147,13 +155,71 @@ def test_simple_queries_ast_parser_read_decorator():
 
             query = "abc" in ["abc","def"] and "abc" in lst
 
-            query = 5 == self123.tp.f2 or 5 == self123.tp.f2 and self123.tp.f1 == 234 and self123.tp.f1 == 234
+            query = "abc" == self123.tp.f2 or "def" == self123.tp.f2 and self123.tp.f1 == "cor" and self123.tp.f1 == "vet"
 
-            return query
+            tptst = self123.tp
 
-        @ReadHolderCls.read
-        def foo3(self3,tp,dbp):
-            var = True
+            res = self123.resource.read([tptst.f1, tptst.f2], query)
+
+            return res
+
+        @read
+        def test_wrong_columns_attr_error(self):
+            query = 5 == self.tp.col_4 or 5 == self.tp.col_4 and self.tp.col_5 == 234 and self.tp.col_8 == 234
+            res = self.resource.read([self.tp.col_4, self.tp.col_5, self.tp.col_8], query)
+
+            return res
         
-    # AstParserTestCls().foo(" and some bongos-bongos")
-    res = AstParserTestCls().foo2()
+        @read
+        def test_in_sql_func(self342):
+            lst = ["br","zcv"]
+            query = self342.tp.f4 in ("abc","def") and self342.tp.f8 in lst
+            res = self342.resource.read([self342.tp.f4, self342.tp.f8], query)
+            return res
+        
+        @read
+        def test_like_func(self342):
+            query = self342.tp.f4 == "%def"
+            res = self342.resource.read([self342.tp.f4, self342.tp.f8], query)
+            return query
+        
+    res = AstParserTestCls().test_diff_cases()
+    try:
+        res = AstParserTestCls().test_wrong_columns()
+        assert False
+    except(AttributeError):
+        assert True
+
+    res = AstParserTestCls().test_in_sql_func()
+    res = AstParserTestCls().test_like_func()
+
+    @epure()
+    class AstParserTestCls2:
+        name:str
+        last_name:str
+        age:int
+
+        def __init__(self, name, last_name, age) -> None:
+            self.name = name
+            self.last_name = last_name
+            self.age = age
+
+        @read
+        def find_mike_ermantraut_or_wazowsky(self):
+            tp = self.tp
+            query = tp.name == "Mike" and tp.last_name in ('Wazowsky', 'Ermantraut')
+            res = self.resource.read([self.tp.name, self.tp.last_name, self.tp.age], query)
+            return res
+        
+    erman = AstParserTestCls2("Mike", "Ermantraut", 60)
+    erman.save()
+    wazow = AstParserTestCls2("Mike", "Wazowsky", 20)
+    wazow.save()
+    killof = AstParserTestCls2("Mike", "Killof", 42)
+    killof.save()
+    batikov = AstParserTestCls2("Viktor", "Ermantraut", 84)
+    batikov.save()
+
+    res = erman.find_mike_ermantraut_or_wazowsky()
+    assert res
+

@@ -18,3 +18,5 @@ class DbProxy(Term):
 
     def __len__(self):
         return self.__db__.__len__()
+    
+    # def select(self, args)
