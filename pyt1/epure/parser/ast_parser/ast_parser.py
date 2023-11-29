@@ -213,11 +213,11 @@ class AstParser(ast.NodeTransformer):
 
     #    node_str = ast.unparse(node)
 
-    def visit_Str(self, node: Str) -> Any:
+    # def visit_Str(self, node: Str) -> Any:
         
-        str_unparsed = ast.unparse(node)
+        # str_unparsed = ast.unparse(node)
 
-        if "\\" in str_unparsed:
-            node.value = node.value.replace(r"\\","\\")
+        # if "\\" in str_unparsed:
+        #     node.value = node.value.replace(r"\\","\\")
 
-        return node
+        # return node

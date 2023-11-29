@@ -28,30 +28,30 @@ def test_simple_queries_ast_parser_read_decorator():
     # y = dbp['oraculs_domain.oraculs']
 
     # class AstParser(ast.NodeTransformer):
-    class ReadHolderCls:
-        def read(func):
-            def inner(self, *args, **kwargs):
-                dbp = DbProxy(self.resource.db)
-                self.tp = dbp["public.ast_parser_test_cls"]
-                func_source = inspect.getsource(func)
-                dedent_src = textwrap.dedent(func_source)
+    # class ReadHolderCls:
+    #     def read(func):
+    #         def inner(self, *args, **kwargs):
+    #             dbp = DbProxy(self.resource.db)
+    #             self.tp = dbp["public.ast_parser_test_cls"]
+    #             func_source = inspect.getsource(func)
+    #             dedent_src = textwrap.dedent(func_source)
 
-                func_parsed = AstParser().parse(dedent_src)
+    #             func_parsed = AstParser().parse(dedent_src)
                 
-                # ast.fix_missing_locations(changed_tree)
+    #             # ast.fix_missing_locations(changed_tree)
 
-                co = compile(func_parsed, "debug_parser.py", "exec")
+    #             co = compile(func_parsed, "debug_parser.py", "exec")
 
-                fn = types.FunctionType(co.co_consts[0], globals())
+    #             fn = types.FunctionType(co.co_consts[0], globals())
 
-                res = fn(self,*args)
+    #             res = fn(self,*args)
 
-                # exec(co, globals())
-                res = self.resource.read(res)
+    #             # exec(co, globals())
+    #             res = self.resource.read(res)
                 
-                return res
-                # return self.resource.read(res)
-            return inner
+    #             return res
+    #             # return self.resource.read(res)
+    #         return inner
         
         # def visit_BoolOp(self, node: BoolOp) -> Any:
 
@@ -178,7 +178,7 @@ def test_simple_queries_ast_parser_read_decorator():
             return res
         
         @read
-        def test_like_func(self342):
+        def test_like_sql_func(self342):
             query = self342.tp.f4 == "%def"
             res = self342.resource.read([self342.tp.f4, self342.tp.f8], query)
             return query
@@ -191,7 +191,8 @@ def test_simple_queries_ast_parser_read_decorator():
         assert True
 
     res = AstParserTestCls().test_in_sql_func()
-    res = AstParserTestCls().test_like_func()
+
+    res = AstParserTestCls().test_like_sql_func()
 
     @epure()
     class AstParserTestCls2:
@@ -205,10 +206,29 @@ def test_simple_queries_ast_parser_read_decorator():
             self.age = age
 
         @read
-        def find_mike_ermantraut_or_wazowsky(self):
+        def find_sql_in_mike_ermantraut_or_wazowsky(self):
             tp = self.tp
             query = tp.name == "Mike" and tp.last_name in ('Wazowsky', 'Ermantraut')
+            assert query == "public.ast_parser_test_cls2.name = 'Mike' AND public.ast_parser_test_cls2.last_name IN ('Wazowsky', 'Ermantraut')"
             res = self.resource.read([self.tp.name, self.tp.last_name, self.tp.age], query)
+            return res
+        
+        @read
+        def find_sql_like_m(self33):
+            tp = self33.tp
+            query = tp.name == "M%" or 84 == tp.age
+            assert query == "public.ast_parser_test_cls2.name LIKE 'M%' OR public.ast_parser_test_cls2.age = 84"
+            res = self33.resource.read([self33.tp.name, self33.tp.last_name, self33.tp.age], query)
+            return res
+
+        @read
+        def find_sql_like_V_backshash(self33):
+            def test():
+                return 3
+            tp = self33.tp
+            query = tp.name == r"\%Victor"
+            # assert query == r"public.ast_parser_test_cls2.name = '\\%Victor'"
+            res = self33.resource.read([self33.tp.name, self33.tp.last_name, self33.tp.age], query)
             return res
         
     erman = AstParserTestCls2("Mike", "Ermantraut", 60)
@@ -217,9 +237,28 @@ def test_simple_queries_ast_parser_read_decorator():
     wazow.save()
     killof = AstParserTestCls2("Mike", "Killof", 42)
     killof.save()
-    batikov = AstParserTestCls2("Viktor", "Ermantraut", 84)
-    batikov.save()
+    erm = AstParserTestCls2("Viktor", "Ermantraut", 84)
+    erm.save()
+    golden = AstParserTestCls2("Mark", "Golden", 30)
+    golden.save()
+    mona = AstParserTestCls2("Mona", "Traumb", 50)
+    mona.save()
+    matthew = AstParserTestCls2("Matthew", "Crysler", 50)
+    matthew.save()
+    maten = AstParserTestCls2("Maten", "Dragov", 50)
+    maten.save()
+    vic = AstParserTestCls2("\%Victor", "Volben", 50)
+    vic.save()
 
-    res = erman.find_mike_ermantraut_or_wazowsky()
-    assert res
 
+    res1 = erman.find_sql_in_mike_ermantraut_or_wazowsky()
+    assert res1
+    
+    res2 = erman.find_sql_like_m()
+    assert res2
+
+    res3 = erman.find_sql_like_V_backshash()
+    assert res3
+
+
+# def lambda db, tp: tp.

@@ -150,3 +150,11 @@ def test_read_default_epure_empty():
 
 #     DefaultEpure.resource.read([x,y] @ y << (x.epure_class1 == y.node_id))
 
+# def test_read_default_epure_header_as_array():
+#     db = DbProxy(real_db)
+#     x = db['default_epure']
+
+#     res_read = DefaultEpure.resource.read([x.str3, x.int3], x.str3 == "abc")
+
+#     # assert res_read == read_sql
+#     assert isinstance(res_read, list) and bool(res_read[0])

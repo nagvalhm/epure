@@ -13,6 +13,7 @@ from ..node.proto import Proto
 from uuid import UUID
 # from ..node.elist import ElistMetacls
 from ...parser.ast_parser.ast_parser import AstParser
+from ...parser.proxy_base_cls import ColumnProxyBase
 
 from ...errors import DeserializeError
 
@@ -138,6 +139,7 @@ class Table(DbEntity):
         
         if args:
             res = self.serialize_read(header=args[0], joins=[], where_clause=args[1], full_names=True)
+            res = res.replace(r"\\","\\")
             return self.read_by_sql(res)
 
         raise NotImplementedError(f'couldn read by object of type {type(selector)}')
@@ -387,7 +389,8 @@ class Table(DbEntity):
     def _add_node_id_fields(self, header:List[QueryingProxy]):
         res = []
         for item in header:
-            if isinstance(item, ColumnProxy):
+            # if isinstance(item, ColumnProxy):
+            if isinstance(item, ColumnProxyBase):
                 tp = item.__table_proxy__
                 node_id = getattr(tp, 'node_id', None)
                 if node_id is not None and not node_id.in_header(header + res):

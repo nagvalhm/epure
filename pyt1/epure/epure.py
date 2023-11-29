@@ -1,5 +1,5 @@
 from __future__ import annotations
-from types import NoneType
+from types import NoneType, CodeType
 from typing import cast, Callable, List, Any, get_type_hints, Dict, TYPE_CHECKING
 from .resource.resource import Resource
 from .helpers.type_helper import check_type
@@ -287,7 +287,11 @@ def read(func):
 
         co = compile(func_parsed, "debug_parser.py", "exec")
 
-        fn = types.FunctionType(co.co_consts[0], globals())
+        # get index of code obj compiled from func
+        i = next(i for i, v in enumerate(co.co_consts) if isinstance(v, CodeType))
+
+        fn = types.FunctionType(co.co_consts[i], globals())
+        # fn = types.FunctionType(co, globals())
 
         res = fn(self,*args)
 
