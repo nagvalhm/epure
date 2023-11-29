@@ -1,7 +1,10 @@
 # from .epure_classes import db as real_db
 # from ..epure.resource.db.pseudo_table import PseudoDb
 # from pytest import fixture
+# import pytest
 
+# skip the test
+#pytest.skip(allow_module_level=True)
 
 # def test_simple_queries():
 #     db = PseudoDb(real_db)

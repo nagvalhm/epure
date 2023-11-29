@@ -1,9 +1,15 @@
-from ..epure.parser.leaf import DbProxy
-from ..epure.parser.term_parser import TermParser
-from .epure_classes import db as real_db
+import pytest
+
+# skip the test
+pytest.skip(allow_module_level=True)
+
+from ...epure.parser.leaf import DbProxy
+from ...epure.parser.term_parser import TermParser
+from ..epure_classes import db as real_db
 import networkx as nx
 import matplotlib.pyplot as plt
-from ..epure.parser.term_debugger import MatplotTermDebugger
+from ...epure.parser.term_debugger import MatplotTermDebugger
+
 
 
 # def test_show_graph():

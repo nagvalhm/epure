@@ -1,11 +1,13 @@
 from __future__ import annotations
+import pytest
+
 from ..epure import epure
 from ..epure.dbs import GresDb
 # from ..epure.resource.db.constraint import NotNull, Check, Prim, Uniq, Default
 from ..epure.generics import NotNull, Check, Prim, Uniq, Default
 from typing import List, Dict, Tuple, Callable
 from datetime import datetime
-import pytest
+
 import types
 # from uuid import UUID
 from ..epure.resource.gres.jsonb_table import JsonbTable
@@ -149,26 +151,26 @@ class DefaultEpure(ParentClass3):
     #     pass
 
     # @read
-    def read_method(self, tp, dbp, int3_param, float3_param, int2_param):
-        ec_3 = dbp['epure_class3']
-        ec_1 = dbp['epure_class1']
+    # def read_method(self, tp, dbp, int3_param, float3_param, int2_param):
+    #     ec_3 = dbp['epure_class3']
+    #     ec_1 = dbp['epure_class1']
 
-        query1 = (ec_3 << (tp.epure_class == ec_3.node_id
-            | tp.generic_list0 == ec_3.generic_list2) ^
+    #     query1 = (ec_3 << (tp.epure_class == ec_3.node_id
+    #         | tp.generic_list0 == ec_3.generic_list2) ^
 
-            tp.str3 == 'str3_value' 
-            & (tp.int3 > 3 | tp.float3 < 0.8)
+    #         tp.str3 == 'str3_value' 
+    #         & (tp.int3 > 3 | tp.float3 < 0.8)
 
-            ^ec_1 << tp.epure_class1 == ec_1.node_id
+    #         ^ec_1 << tp.epure_class1 == ec_1.node_id
 
-            & tp.int0 < ec_1.int2)
+    #         & tp.int0 < ec_1.int2)
 
-        query2 = (ec_1.int2 == 1111)
+    #     query2 = (ec_1.int2 == 1111)
 
-        return self.resource.read(tp.float3, tp.range0, 
-            tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
-        return (tp.float3, tp.range0, 
-            tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
+    #     return self.resource.read(tp.float3, tp.range0, 
+    #         tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
+    #     return (tp.float3, tp.range0, 
+    #         tp.epure_class, ec_1.node_id, ec_1.int2, query1 & query2)
 
 # @epure('prefix.AliasedTable')
 # class AliasedEpure:

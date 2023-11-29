@@ -2,7 +2,7 @@ from ....epure.epure import Epure, epure
 # from ...test_epure import epure_class1, epure_class2
 from uuid import UUID
 import pytest
-from ...test_epure import EpureClass1
+from ...epure_classes import EpureClass1
 # from epure import Elist
 from ....epure import Elist
 from types import LambdaType, NoneType

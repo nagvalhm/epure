@@ -113,38 +113,39 @@ class Table(DbEntity):
         return node
 
     
-    def read(self, *args, **kwargs) -> Any:        
-        # if not (args or kwargs):
-        #     return self.read_by_fields(**kwargs)
+    # def read(self, *args, **kwargs) -> Any:        
+    #     # if not (args or kwargs):
+    #     #     return self.read_by_fields(**kwargs)
         
-        if kwargs:
-            return self.read_by_kwargs(*args, **kwargs)
+    #     if kwargs:
+    #         return self.read_by_kwargs(*args, **kwargs)
 
-        if args:
-            selector = args[0]
-        else:
-            # args.__add__(self.querying_proxy)
-            selector = self.querying_proxy@True
-            args = args + (selector,)
+    #     if args:
+    #         selector = args[0]
+    #     else:
+    #         # args.__add__(self.querying_proxy)
+    #         selector = self.querying_proxy@True
+    #         args = args + (selector,)
 
-        if isinstance(selector, str):
-            return self.read_by_sql(selector)
+    #     if isinstance(selector, str):
+    #         return self.read_by_sql(selector)
 
-        if callable(selector):
-            return self.read_by_function(selector)
+    #     if callable(selector):
+    #         return self.read_by_function(selector)
 
-        if isinstance(args[-1], Term):
-            selector = args[-1]
-            return self.read_by_term(args[0:-1], selector)
+    #     if isinstance(args[-1], Term):
+    #         selector = args[-1]
+    #         return self.read_by_term(args[0:-1], selector)
         
-        if args:
-            res = self.serialize_read(header=args[0], joins=[], where_clause=args[1], full_names=True)
-            res = res.replace(r"\\","\\")
-            return self.read_by_sql(res)
+    #     if args:
+    #         res = self.serialize_read(header=args[0], joins=[], where_clause=args[1], full_names=True)
+    #         res = res.replace(r"\\","\\")
+    #         return self.read_by_sql(res)
 
-        raise NotImplementedError(f'couldn read by object of type {type(selector)}')
-    
+    #     raise NotImplementedError(f'couldn read by object of type {type(selector)}')
 
+    def read(self, *args, **kwargs) -> Any:
+        
     
     def delete(self, *args, **kwargs):
         return self.delete_by_id(args[0])
