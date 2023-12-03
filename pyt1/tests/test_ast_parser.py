@@ -14,7 +14,9 @@ import textwrap
 import types
 import pdb
 from ..epure.parser.ast_parser.ast_parser import AstParser
-from ..epure.epure import read
+from ..epure.epure import escript, select
+
+import pytest
 
 def foo1():
     return 1
@@ -73,8 +75,47 @@ def test_simple_queries_ast_parser_read_decorator():
         #     # query = tp.f1 == 1 and tp.f2 == var
         #     query = tp.f1.abc == 1 and tp.f2 == 4
         #     return query + param
-        
-        @read
+
+        # @read
+        # def test_raw_str_like_diff_variants(self123):
+
+        #     query = self123.tp.f2.like(r'%percent01R')
+
+        #     query = self123.tp.f2.like(r"%percent02R")
+
+        #     query = not self123.tp.f2.like(r"""%percent03R""")
+
+        #     query = self123.tp.f2.Not_Like(r"""%percent03R""")
+
+        #     like = self123.tp.like
+
+        #     query = self123.tp.f2 != like(r"""%percent03R""")
+
+        #     query = self123.tp.f2 == self123.tp.like(r"""%percent03R""")
+
+        #     import Like
+
+        #     query = self123.tp.f2 != Like(r"""%percent03R""")
+
+
+        #     res = self123.resource.read([self123.tp.f1, self123.tp.f2], query)
+
+        @escript
+        def test_default_vals_w_read(self, abc:str = "cats"):
+            query = self.tp.f2 == abc
+            res = self.resource.read([self.tp.f1, self.tp.f2], query)
+            return abc
+
+        @escript
+        def test_raw_str_like(self123):
+
+            query = self123.tp.f2 == "%a" and self123.tp.f2 == "\%a"
+
+            assert query == "public.ast_parser_test_cls.f2 LIKE '%a' AND public.ast_parser_test_cls.f2 = '\\\\%a'"
+
+            res = self123.resource.read([self123.tp.f1, self123.tp.f2], query)
+                
+        @escript
         def test_diff_cases(self123):
             var = self123.tp.f1
             var.pole = self123.tp.f1
@@ -86,7 +127,11 @@ def test_simple_queries_ast_parser_read_decorator():
 
             query = self123.tp.f2 == '%percent0'
 
-            query = self123.tp.f2 == r'%percent0R'
+            query = self123.tp.f2 == r'%percent01R'
+
+            query = self123.tp.f2 == r"%percent02R"
+
+            query = self123.tp.f2 == r"""%percent03R"""
 
             query = self123.tp.f2 == '\\%percent1'
 
@@ -129,6 +174,8 @@ def test_simple_queries_ast_parser_read_decorator():
 
             query = f"{var}"
 
+            query = "abc" == self123.tp.f2
+
             query = True == True and True == False
 
             query = 4 == var and 45 == var.pole
@@ -163,25 +210,30 @@ def test_simple_queries_ast_parser_read_decorator():
 
             return res
 
-        @read
+        @escript
         def test_wrong_columns_attr_error(self):
             query = 5 == self.tp.col_4 or 5 == self.tp.col_4 and self.tp.col_5 == 234 and self.tp.col_8 == 234
             res = self.resource.read([self.tp.col_4, self.tp.col_5, self.tp.col_8], query)
 
             return res
         
-        @read
+        @escript
         def test_in_sql_func(self342):
             lst = ["br","zcv"]
             query = self342.tp.f4 in ("abc","def") and self342.tp.f8 in lst
             res = self342.resource.read([self342.tp.f4, self342.tp.f8], query)
             return res
         
-        @read
+        @escript
         def test_like_sql_func(self342):
             query = self342.tp.f4 == "%def"
             res = self342.resource.read([self342.tp.f4, self342.tp.f8], query)
             return query
+        
+    AstParserTestCls().test_default_vals_w_read()
+    AstParserTestCls().test_default_vals_w_read("brain")
+        
+    res = AstParserTestCls().test_raw_str_like()
         
     res = AstParserTestCls().test_diff_cases()
     try:
@@ -205,7 +257,7 @@ def test_simple_queries_ast_parser_read_decorator():
             self.last_name = last_name
             self.age = age
 
-        @read
+        @escript
         def find_sql_in_mike_ermantraut_or_wazowsky(self):
             tp = self.tp
             query = tp.name == "Mike" and tp.last_name in ('Wazowsky', 'Ermantraut')
@@ -213,7 +265,7 @@ def test_simple_queries_ast_parser_read_decorator():
             res = self.resource.read([self.tp.name, self.tp.last_name, self.tp.age], query)
             return res
         
-        @read
+        @escript
         def find_sql_like_m(self33):
             tp = self33.tp
             query = tp.name == "M%" or 84 == tp.age
@@ -221,7 +273,7 @@ def test_simple_queries_ast_parser_read_decorator():
             res = self33.resource.read([self33.tp.name, self33.tp.last_name, self33.tp.age], query)
             return res
 
-        @read
+        @escript
         def find_sql_like_V_backshash(self33):
             def test():
                 return 3
@@ -229,6 +281,25 @@ def test_simple_queries_ast_parser_read_decorator():
             query = tp.name == r"\%Victor"
             # assert query == r"public.ast_parser_test_cls2.name = '\\%Victor'"
             res = self33.resource.read([self33.tp.name, self33.tp.last_name, self33.tp.age], query)
+            return res
+        
+        @escript
+        def find_sql_no_header(self33):
+            tp = self33.tp
+            query = tp.name == "Mike"
+            # assert query == r"public.ast_parser_test_cls2.name = '\\%Victor'"
+            res = self33.resource.read(query)
+            return res
+        
+        @escript
+        def find_sql_empty_read(self33):
+            res = self33.resource.read()
+            return res
+        
+        @escript
+        def sql_subquery_select_func(self):
+            tp = self.tp
+            res = tp.last_name in select([tp], tp.name == "Mike")
             return res
         
     erman = AstParserTestCls2("Mike", "Ermantraut", 60)
@@ -260,5 +331,13 @@ def test_simple_queries_ast_parser_read_decorator():
     res3 = erman.find_sql_like_V_backshash()
     assert res3
 
+    res4 = erman.find_sql_no_header()
+    assert res4
+
+    res5 = erman.find_sql_empty_read()
+    assert res5
+
+    res6 = erman.sql_subquery_select_func()
+    assert res6
 
 # def lambda db, tp: tp.

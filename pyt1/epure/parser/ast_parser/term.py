@@ -1,6 +1,8 @@
 from __future__ import annotations
 import types
 from typing import Any
+from uuid import UUID
+import collections.abc
 
 class Term:
 
@@ -22,10 +24,18 @@ class Term:
 
     #compare_ops
     def _in(self, other): #in
-        return f"{self} IN {tuple(other)}"
+        if isinstance(other, collections.abc.MutableSequence):
+            other = tuple(other)
+        
+        if isinstance(other, str):
+            other = '(' + repr(other) + ')'
+            
+        return f"{self} IN {other}"
 
     def _eq(self, other): # ==
-        return f"{self} = {repr(other)}"
+        if type(other) in (UUID, str):
+            other = repr(str(other))
+        return f"{self} = {other}"
 
     # def __eq__(self, other: object) -> str:
     #     return f"({self} = {other})"

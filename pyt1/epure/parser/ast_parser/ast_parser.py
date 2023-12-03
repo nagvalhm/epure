@@ -1,4 +1,4 @@
-from _ast import Assign, Attribute, Constant, Eq, FormattedValue, In, JoinedStr
+from _ast import Assign, Attribute, Call, Constant, Eq, FormattedValue, In, JoinedStr
 import ast
 from ast import Str
 from types import CodeType
@@ -65,7 +65,7 @@ class AstParser(ast.NodeTransformer):
             op_str = "_or" if type(node.op) is ast.Or else "_and"
             # new_node_str = f"(({left_val}) {op_str} ({compare_targ}))"
             # new_node_str = f"{left_val}.{op_str}({compare_targ})"
-            new_node_str = f"{self.first_arg_name}.tp.{op_str}({left_val},{compare_targ})"
+            new_node_str = f"{self.first_arg_name}.tp.{op_str}({left_val}, {compare_targ})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
             self.astTypesDict[new_node_str] = node
@@ -79,30 +79,10 @@ class AstParser(ast.NodeTransformer):
             node = self.handle_In(node)
 
         elif isinstance(node.ops[0], ast.Eq):
-            node = self.handle_Eq(node)
+            node = self.handle_Eq_and_Like(node)
 
         return node
     
-    def visit_Attribute(self, node: Attribute) -> Any:
-
-        left_val = ast.unparse(node.value)
-        node_str = ast.unparse(node)
-
-        if node_str in self.astTypesDict.keys():
-            return node
-
-        if left_val in self.astTypesDict.keys() and\
-        self.astTypesDict[left_val].type == DbProxy:
-            node.type = TableProxy
-            self.astTypesDict[f'{node_str}'] = node
-
-        if left_val in self.astTypesDict.keys() and\
-        self.astTypesDict[left_val].type == TableProxy:
-            node.type = ColumnProxy
-            self.astTypesDict[f'{node_str}'] = node
-        
-        return node
-
     def visit_Assign(self, node: Assign) -> Any:
 
         self.generic_visit(node)
@@ -123,6 +103,47 @@ class AstParser(ast.NodeTransformer):
         issubclass(self.astTypesDict[assign_target].type, Term):
             # self.astTypesDict.pop(assign_target)
             self.astTypesDict = dict(filter(lambda x: assign_target not in x[0].split('.'), self.astTypesDict.items()))
+
+        return node
+    
+    def visit_Attribute(self, node: Attribute) -> Any:
+
+        left_val = ast.unparse(node.value)
+        
+        node = self.handle_getattr(node, left_val)
+        
+        return node
+    
+    def visit_Call(self, node: Call) -> Any:
+
+        self.generic_visit(node)
+
+        if hasattr(node.func,"id") and node.func.id == "getattr":
+            left_val = ast.unparse(node.args[0])
+            node = self.handle_getattr(node, left_val)
+
+        if hasattr(node.func,"id") and node.func.id == "select":
+            node.type = Term
+            self.astTypesDict[f'{ast.unparse(node)}'] = node
+
+        return node
+    
+    def handle_getattr(self, node, left_val):
+
+        node_str = ast.unparse(node)
+
+        if node_str in self.astTypesDict.keys():
+            return node
+
+        if left_val in self.astTypesDict.keys() and\
+        self.astTypesDict[left_val].type == DbProxy:
+            node.type = TableProxy
+            self.astTypesDict[f'{node_str}'] = node
+
+        if left_val in self.astTypesDict.keys() and\
+        self.astTypesDict[left_val].type == TableProxy:
+            node.type = ColumnProxy
+            self.astTypesDict[f'{node_str}'] = node
 
         return node
 
@@ -147,10 +168,10 @@ class AstParser(ast.NodeTransformer):
         if left_val_in_keys and left_val_type in (TableProxy, DbProxy):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be present in '{compare_targ}'")
         
-        if (comp_targ_in_keys and issubclass(comp_targ_type, Term))\
-        or type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set):
+        if not (comp_targ_in_keys and issubclass(comp_targ_type, Term) and isinstance(self.astTypesDict[compare_targ], ast.Call))\
+            and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
             comp_targ_type = type(node.comparators[0])
-            raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type List, Tuple or Set, so it cannot be right operand for SQL 'IN' operator")
+            raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type List, Tuple, Set or select function, so it cannot be right operand for SQL 'IN' operator")
         
         if left_val_in_keys and issubclass(left_val_type, ColumnProxy):
             new_node_str = f"{left_val}._in({compare_targ})"
@@ -160,9 +181,11 @@ class AstParser(ast.NodeTransformer):
 
         return node
     
-    def handle_Eq(self, node: Eq) -> Any:
+    def handle_Eq_and_Like(self, node: Eq) -> Any:
 
         self.generic_visit(node)
+
+        new_node_str = ""
         
         left_val = ast.unparse(node.left)
         compare_targ = ast.unparse(node.comparators)
@@ -170,28 +193,34 @@ class AstParser(ast.NodeTransformer):
         left_val_in_keys = left_val in self.astTypesDict.keys()
         comp_targ_in_keys = compare_targ in self.astTypesDict.keys()
 
-        if not (left_val_in_keys or comp_targ_in_keys):
-            return node
-
         if left_val_in_keys: 
             left_val_type = self.astTypesDict[left_val].type
 
         if comp_targ_in_keys:
             comp_targ_type = self.astTypesDict[compare_targ].type
 
+        if not ((left_val_in_keys and issubclass(left_val_type, ColumnProxy)) or\
+            (comp_targ_in_keys and issubclass(comp_targ_type, ColumnProxy))):
+            return node
+
         if left_val_in_keys and left_val_type in (TableProxy, DbProxy):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be compared to '{compare_targ}'")
 
         elif comp_targ_in_keys and comp_targ_type in (TableProxy, DbProxy):
             raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type '{ColumnProxy}', so it cannot be compared to '{left_val}'")
-        
-        # if "\\" in compare_targ:
-        #     compare_targ = compare_targ.replace(r"\\","\\")
-        
-        if left_val_in_keys and ((compare_targ.count('%') > compare_targ.count('\%'))\
-        or (compare_targ.count('_') > compare_targ.count('\_'))):
+
+        # if left_val_in_keys and ((compare_targ.count('%') > compare_targ.count('\%'))\
+        # or (compare_targ.count('_') > compare_targ.count('\_'))):
+
+        if left_val_in_keys and (compare_targ.count('%') > compare_targ.count('\%'))\
+            and issubclass(left_val_type, ColumnProxy):
             # compare_targ = ast.unparse(self.handle_Like(node.comparators))
             new_node_str = f"{left_val}._like({compare_targ})"
+
+        elif comp_targ_in_keys and (left_val.count('%') > left_val.count('\%'))\
+            and issubclass(comp_targ_type, ColumnProxy):
+            # compare_targ = ast.unparse(self.handle_Like(node.comparators))
+            new_node_str = f"{compare_targ}._like({left_val})"
 
         elif left_val_in_keys and issubclass(left_val_type, ColumnProxy):
             new_node_str = f"{left_val}._eq({compare_targ})"
@@ -201,7 +230,7 @@ class AstParser(ast.NodeTransformer):
             new_node_str = f"{compare_targ}._eq({left_val})"
             # new_node_str = f"{compare_targ} == {left_val}"
 
-        if left_val_in_keys or comp_targ_in_keys:
+        if new_node_str and (left_val_in_keys or comp_targ_in_keys):
             new_node = ast.parse(new_node_str)
             node = new_node.body[0].value
             node.type = Term

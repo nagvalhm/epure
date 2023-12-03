@@ -14,8 +14,10 @@ from uuid import UUID
 # from ..node.elist import ElistMetacls
 from ...parser.ast_parser.ast_parser import AstParser
 from ...parser.proxy_base_cls import ColumnProxyBase
+from copy import deepcopy
 
 from ...errors import DeserializeError
+from ...epure import escript
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -145,6 +147,25 @@ class Table(DbEntity):
     #     raise NotImplementedError(f'couldn read by object of type {type(selector)}')
 
     def read(self, *args, **kwargs) -> Any:
+
+        if kwargs:
+            return self.read_by_kwargs(*args, **kwargs)
+        
+        header = [self.querying_proxy]
+        where_clause = ""
+        
+        if len(args) >= 2:
+            header = args[0]
+            where_clause=args[1]
+        
+        elif len(args) == 1:
+            where_clause = args[0]
+
+        res = self.serialize_read(header=header, joins=[], where_clause=where_clause, full_names=True)
+        res = res.replace(r"\\","\\")
+        return self.read_by_sql(res)
+
+        raise NotImplementedError(f'couldn read by object of type {type(args)}')
         
     
     def delete(self, *args, **kwargs):
@@ -159,26 +180,46 @@ class Table(DbEntity):
     # def read_by_fields(self):
     #     raise NotImplementedError
 
-    def read_by_kwargs(self, header:List[str]=[], operator:str="", **kwargs):
-        term_header = []
-        tp = self.querying_proxy
-        for col_name in header:
-            column = getattr(tp, col_name)
-            term_header.append(column)
+    # def read_by_kwargs(self, header:List[str]=[], operator:str="", **kwargs):
+    #     term_header = []
+    #     tp = self.querying_proxy
+    #     for col_name in header:
+    #         column = getattr(tp, col_name)
+    #         term_header.append(column)
         
-        if not term_header:
-            term_header.append(tp)
-        # from ...parser.leaf import Primitive 
-        # term = term_header @ Primitive(True)
+    #     if not term_header:
+    #         term_header.append(tp)
+    #     # from ...parser.leaf import Primitive 
+    #     # term = term_header @ Primitive(True)
+    #     kwargs_items = list(kwargs.items())
+    #     first_item = kwargs_items[0]
+    #     term = term_header @ getattr(tp, first_item[0]) == first_item[1]
+    #     for (key, val) in kwargs_items[1:]:
+    #         if operator == 'or':
+    #             term = term | getattr(tp, key) == val
+    #         else:
+    #             term = term & getattr(tp, key) == val
+    #     return self.read(term)
+    
+    @escript
+    def read_by_kwargs(self, header:List[str]=[], operator:str="", **kwargs):
+        tp = self.tp
+        _header = deepcopy(header)
+        
+        if not _header:
+            _header.append(tp)
+            
         kwargs_items = list(kwargs.items())
         first_item = kwargs_items[0]
-        term = term_header @ getattr(tp, first_item[0]) == first_item[1]
+        term = getattr(tp, first_item[0]) == first_item[1]
+
         for (key, val) in kwargs_items[1:]:
             if operator == 'or':
-                term = term | getattr(tp, key) == val
+                term = term or getattr(tp, key) == val
             else:
-                term = term & getattr(tp, key) == val
-        return self.read(term)
+                term = term and getattr(tp, key) == val
+        
+        return self.read(_header, term)
 
     def read_by_sql(self, selector):
         res = self.execute(selector)

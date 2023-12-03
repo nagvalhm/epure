@@ -13,6 +13,7 @@ import textwrap
 import inspect
 from .parser.ast_parser.ast_parser import AstParser
 import types
+import collections.abc
 
 
 # from types import FunctionType
@@ -274,10 +275,18 @@ def _create_epure(cls, saver, _Epure):
 def proto(resource:object='', saver:type=Proto, epure_metaclass:type=Epure) -> Callable:
     return epure(resource, saver, epure_metaclass)
 
-def read(func):
+def escript(func):
     def inner(self, *args, **kwargs):
-        self.dbp = DbProxy(self.resource.db)
-        self.tp = self.dbp[self.table.full_name]
+        if isinstance(type(self), Epure):
+            db = self.resource.db
+            full_name = self.table.full_name
+        else:
+            db = self.db
+            full_name = self.full_name
+
+        self.dbp = DbProxy(db)
+        self.tp = self.dbp[full_name]
+
         func_source = inspect.getsource(func)
         dedent_src = textwrap.dedent(func_source)
 
@@ -290,10 +299,14 @@ def read(func):
         # get index of code obj compiled from func
         i = next(i for i, v in enumerate(co.co_consts) if isinstance(v, CodeType))
 
-        fn = types.FunctionType(co.co_consts[i], globals())
+        fn = types.FunctionType(co.co_consts[i], func.__globals__, name=func.__name__,
+                           argdefs=func.__defaults__)
+                        #    ,closure=func.__closure__)
         # fn = types.FunctionType(co, globals())
+        fn = functools.update_wrapper(fn, func)
+        fn.__kwdefaults__ = func.__kwdefaults__
 
-        res = fn(self,*args)
+        res = fn(self,*args,**kwargs)
 
         # exec(co, globals())
 
@@ -304,3 +317,43 @@ def read(func):
         return res
         # return self.resource.read(res)
     return inner
+
+# move to other file
+
+def select(*args, **kwargs):
+
+    header = get_select_header(args[0])
+    body = args[1]
+    
+    if kwargs:
+        # return get_condition_by_kwargs(header, kwargs)
+        body = get_condition_by_kwargs(header[0].__table__.full_name, kwargs)
+
+    # if args:
+    return header[0].__table__.serialize_read(header=header, joins=[], where_clause=body, full_names=True)
+        
+def get_condition_by_kwargs(prefix:str, operator:str="", **kwargs):
+
+    kwargs_items = list(kwargs.items())
+    first_item = kwargs_items[0]
+    # term = getattr(tp, first_item[0]) == first_item[1]
+    term = f"{prefix.table.full_name}.{first_item[0]} = {first_item[1]}"
+
+    for (key, val) in kwargs_items[1:]:
+            if operator == 'or':
+                term += f" OR {prefix.table.full_name}.{key} = {val}"
+            else:
+                term += f" AND {prefix.table.full_name}.{key} = {val}"
+
+    return term
+
+def get_select_header(header):
+    
+    if not isinstance(header, collections.abc.Sequence):
+        header = tuple(header)
+    
+    return header
+
+# move to other file
+
+    
