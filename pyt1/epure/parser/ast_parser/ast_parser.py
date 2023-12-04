@@ -168,7 +168,7 @@ class AstParser(ast.NodeTransformer):
         if left_val_in_keys and left_val_type in (TableProxy, DbProxy):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be present in '{compare_targ}'")
         
-        if not (comp_targ_in_keys and issubclass(comp_targ_type, Term) and isinstance(self.astTypesDict[compare_targ], ast.Call))\
+        if not (comp_targ_in_keys and isinstance(self.astTypesDict[compare_targ], ast.Call) and node.comparators[0].func.id == "select")\
             and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
             comp_targ_type = type(node.comparators[0])
             raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type List, Tuple, Set or select function, so it cannot be right operand for SQL 'IN' operator")

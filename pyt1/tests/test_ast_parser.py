@@ -237,7 +237,7 @@ def test_simple_queries_ast_parser_read_decorator():
         
     res = AstParserTestCls().test_diff_cases()
     try:
-        res = AstParserTestCls().test_wrong_columns()
+        res = AstParserTestCls().test_wrong_columns_attr_error()
         assert False
     except(AttributeError):
         assert True
@@ -302,6 +302,12 @@ def test_simple_queries_ast_parser_read_decorator():
             res = tp.last_name in select([tp], tp.name == "Mike")
             return res
         
+        @escript
+        def sql_subquery_wrong_func(self):
+            tp = self.tp
+            res = tp.last_name in foo1()
+            return res
+        
     erman = AstParserTestCls2("Mike", "Ermantraut", 60)
     erman.save()
     wazow = AstParserTestCls2("Mike", "Wazowsky", 20)
@@ -339,5 +345,11 @@ def test_simple_queries_ast_parser_read_decorator():
 
     res6 = erman.sql_subquery_select_func()
     assert res6
+
+    try:
+        res7 = erman.sql_subquery_wrong_func()
+        assert False
+    except(TypeError):
+        assert True
 
 # def lambda db, tp: tp.
