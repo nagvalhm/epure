@@ -308,6 +308,15 @@ def test_simple_queries_ast_parser_read_decorator():
             res = tp.last_name in foo1()
             return res
         
+        @escript
+        def sql_subquery_select_real_ex(self):
+            tp = self.tp
+            query = tp.name in select([tp.name], tp.age == 50)
+            # assert query == ""
+            res = self.resource.read(query)
+            # self.resource.read([tp.first_name, tp.last_name], tp.node_id in select([self.dbp['tp2'].node_id]))
+            return res
+        
     erman = AstParserTestCls2("Mike", "Ermantraut", 60)
     erman.save()
     wazow = AstParserTestCls2("Mike", "Wazowsky", 20)
@@ -351,5 +360,8 @@ def test_simple_queries_ast_parser_read_decorator():
         assert False
     except(TypeError):
         assert True
+
+    res8 = erman.sql_subquery_select_real_ex()
+    assert res8
 
 # def lambda db, tp: tp.

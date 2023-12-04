@@ -24,11 +24,12 @@ class Term:
 
     #compare_ops
     def _in(self, other): #in
-        if isinstance(other, collections.abc.MutableSequence):
+        if type(other) in (set, list):
             other = tuple(other)
         
-        if isinstance(other, str):
-            other = '(' + repr(other) + ')'
+        if isinstance(other, str) and "WHERE" in other:
+            # other = repr(other)
+            other = '(' + other + ')'
             
         return f"{self} IN {other}"
 

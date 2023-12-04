@@ -320,30 +320,37 @@ def escript(func):
 
 # move to other file
 
-def select(*args, **kwargs):
+def select(*args, include_node_id=False, **kwargs):
 
     header = get_select_header(args[0])
     body = args[1]
     
     if kwargs:
         # return get_condition_by_kwargs(header, kwargs)
-        body = get_condition_by_kwargs(header[0].__table__.full_name, kwargs)
+        body = get_condition_by_kwargs(header[0].__table__.full_name, **kwargs)
 
     # if args:
-    return header[0].__table__.serialize_read(header=header, joins=[], where_clause=body, full_names=True)
+    return header[0].__table__.serialize_read(header=header, joins=[], where_clause=body, full_names=True, include_node_id=include_node_id)
         
 def get_condition_by_kwargs(prefix:str, operator:str="", **kwargs):
 
     kwargs_items = list(kwargs.items())
-    first_item = kwargs_items[0]
+    first_item = list(kwargs_items[0])
     # term = getattr(tp, first_item[0]) == first_item[1]
-    term = f"{prefix.table.full_name}.{first_item[0]} = {first_item[1]}"
+
+    if type(first_item[1]) in (str, UUID):
+        first_item[1] = repr(str(first_item[1]))
+
+    term = f"{prefix}.{first_item[0]} = {first_item[1]}"
 
     for (key, val) in kwargs_items[1:]:
+            if type(val) in (str, UUID):
+                val = repr(str(val))
+
             if operator == 'or':
-                term += f" OR {prefix.table.full_name}.{key} = {val}"
+                term += f" OR {prefix}.{key} = {val}"
             else:
-                term += f" AND {prefix.table.full_name}.{key} = {val}"
+                term += f" AND {prefix}.{key} = {val}"
 
     return term
 

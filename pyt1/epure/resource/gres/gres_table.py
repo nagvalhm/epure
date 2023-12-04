@@ -52,8 +52,9 @@ class GresTable(Table, GresEntity):
     #     res = self.replace_operators(res)
     #     return res
 
-    def serialize_read(self, header, joins, where_clause, full_names) -> str:
-        header = self._add_node_id_fields(header)
+    def serialize_read(self, header, joins, where_clause, full_names, include_node_id:bool=True) -> str:
+        if include_node_id:
+            header = self._add_node_id_fields(header)
         res_header = self.serialize_read_header(header, full_names)
         res_joins = self.serialize_joins(joins)        
 

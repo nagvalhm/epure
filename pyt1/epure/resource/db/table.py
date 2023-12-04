@@ -17,7 +17,7 @@ from ...parser.proxy_base_cls import ColumnProxyBase
 from copy import deepcopy
 
 from ...errors import DeserializeError
-from ...epure import escript
+from ...epure import escript, select
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -148,11 +148,11 @@ class Table(DbEntity):
 
     def read(self, *args, **kwargs) -> Any:
 
-        if kwargs:
-            return self.read_by_kwargs(*args, **kwargs)
+        # if kwargs:
+        #     return self.read_by_kwargs(*args, **kwargs)
         
         header = [self.querying_proxy]
-        where_clause = ""
+        where_clause = None
         
         if len(args) >= 2:
             header = args[0]
@@ -161,7 +161,8 @@ class Table(DbEntity):
         elif len(args) == 1:
             where_clause = args[0]
 
-        res = self.serialize_read(header=header, joins=[], where_clause=where_clause, full_names=True)
+        # res = self.serialize_read(header=header, joins=[], where_clause=where_clause, full_names=True)
+        res = select(header, where_clause, include_node_id=True, **kwargs)
         res = res.replace(r"\\","\\")
         return self.read_by_sql(res)
 
