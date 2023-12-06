@@ -12,7 +12,7 @@ from collections import OrderedDict
 from ..node.proto import Proto
 from uuid import UUID
 # from ..node.elist import ElistMetacls
-from ...parser.ast_parser.ast_parser import AstParser
+from ...parser.inspect_parser.inspect_parser import InspectParser
 from ...parser.proxy_base_cls import ColumnProxyBase
 from copy import deepcopy
 
@@ -45,7 +45,7 @@ class Table(DbEntity):
         return self.resource
 
     def __init__(self, name: str,
-            header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '', parser=AstParser) -> None:        
+            header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '', parser=InspectParser) -> None:        
         check_type('header', header, [TableHeader, dict, NoneType])
         from ...parser.term_parser import TermParser
 

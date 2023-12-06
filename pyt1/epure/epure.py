@@ -8,10 +8,10 @@ from .resource.db.constraint import Foreign, Default, Constraint
 # from .resource.node.elist_metacls import ElistMetacls
 # from .resource.node.elist import ECollectionMetacls
 from uuid import UUID
-from .parser.ast_parser.db_proxy import DbProxy
+from .parser.inspect_parser.db_proxy import DbProxy
 import textwrap
 import inspect
-from .parser.ast_parser.ast_parser import AstParser
+from .parser.inspect_parser.inspect_parser import InspectParser
 import types
 import collections.abc
 
@@ -291,7 +291,7 @@ def escript(func):
         func_source = inspect.getsource(func)
         dedent_src = textwrap.dedent(func_source)
 
-        func_parsed = AstParser().parse(dedent_src)
+        func_parsed = InspectParser().parse(dedent_src)
         
         # ast.fix_missing_locations(changed_tree)
 

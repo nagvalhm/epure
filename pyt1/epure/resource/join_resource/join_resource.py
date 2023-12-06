@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ...parser.ast_parser.table_proxy import TableProxy
+    from ...parser.inspect_parser.table_proxy import TableProxy
     # from ...resource.db.table import Table
 
 class Join:

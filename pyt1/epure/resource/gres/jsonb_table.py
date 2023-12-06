@@ -7,7 +7,7 @@ from ..db.table_header import TableHeader
 from ..db.table_column import TableColumn
 from ..db.table_storage import TableStorage
 from ..resource import Resource
-from ...parser.ast_parser.ast_parser import AstParser
+from ...parser.inspect_parser.inspect_parser import InspectParser
 
 class JsonbHeader(GresHeader):
     def __contains__(self, other: Any) -> bool:
@@ -25,7 +25,7 @@ class JsonbTable(GresTable):
     header: JsonbHeader
 
     def __init__(self, name: str,
-            header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '', parser=AstParser) -> None:        
+            header:Union[TableHeader, Dict[str, Any]]=None, resource:Resource=None, namespace:str = '', parser=InspectParser) -> None:        
         check_type('header', header, [TableHeader, dict, NoneType])        
         # header['jsonb___data'] = Any
         header = JsonbHeader(table=self)

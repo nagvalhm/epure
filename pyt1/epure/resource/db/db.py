@@ -11,7 +11,7 @@ from .table_storage import TableStorage
 from urllib.parse import urlparse
 from ...errors import EpureError
 from ...helpers.type_helper import check_type
-from ...parser.ast_parser.ast_parser import AstParser
+from ...parser.inspect_parser.inspect_parser import InspectParser
 
 
 
@@ -44,7 +44,7 @@ class Db(TableStorage):
                 log_level:int = logging.NOTSET,                
                 default_table_type:Type[Table]=None,
                 migrate_on_delete:bool=False,
-                parser:Any = AstParser
+                parser:Any = InspectParser
                 ):
         
 

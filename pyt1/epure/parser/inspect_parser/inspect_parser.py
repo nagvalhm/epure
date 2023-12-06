@@ -10,7 +10,8 @@ from .db_proxy import DbProxy
 from .table_proxy import TableProxy
 from .column_proxy import ColumnProxy
 
-class AstParser(ast.NodeTransformer):
+# class AstParser(ast.NodeTransformer):
+class InspectParser(ast.NodeTransformer):
 
     astTypesDict:Dict[str, Any]
     column_proxy_cls=ColumnProxy

@@ -19,7 +19,7 @@ from ...errors import DbError
 from ..file.json_file import JsonFile
 from .jsonb_table import JsonbTable
 from decimal import Decimal
-from ...parser.ast_parser.ast_parser import AstParser
+from ...parser.inspect_parser.inspect_parser import InspectParser
 
 class GresDb(Db):
 
@@ -32,7 +32,7 @@ class GresDb(Db):
     def __init__(self, connect_str:str='', database:str='', user:str='', password:str='',
              host:str='', port:str='', default_namespace='', log_level:int = logging.NOTSET,
              migrate_on_delete:bool=False,
-             parser=AstParser):
+             parser=InspectParser):
 
         super().__init__(connect_str, 
             database=database, 
