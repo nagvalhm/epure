@@ -14,7 +14,7 @@ import textwrap
 import types
 import pdb
 from ..epure.parser.ast_parser.ast_parser import AstParser
-from ..epure.epure import escript, select
+from ..epure.epure import escript
 
 import pytest
 
@@ -299,7 +299,7 @@ def test_simple_queries_ast_parser_read_decorator():
         @escript
         def sql_subquery_select_func(self):
             tp = self.tp
-            res = tp.last_name in select([tp], tp.name == "Mike")
+            res = tp.last_name in tp.select([tp], tp.name == "Mike")
             return res
         
         @escript
@@ -311,7 +311,7 @@ def test_simple_queries_ast_parser_read_decorator():
         @escript
         def sql_subquery_select_real_ex(self):
             tp = self.tp
-            query = tp.name in select([tp.name], tp.age == 50)
+            query = tp.name in tp.select([tp.name], tp.age == 50)
             # assert query == ""
             res = self.resource.read(query)
             # self.resource.read([tp.first_name, tp.last_name], tp.node_id in select([self.dbp['tp2'].node_id]))

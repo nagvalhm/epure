@@ -7,7 +7,13 @@ class DbProxy(Term):
         self.__db__ = db
         super().__init__()
 
-    def __getitem__(self, key:str):
+    # def __getitem__(self, key:str):
+    #     if key not in self.__db__:
+    #         raise DbError(f'table {key} not in db {self.__db__.full_name}')
+    #     res = TableProxy(self.__db__, self.__db__[key])
+    #     return res
+    
+    def __getattr__(self, key:str) -> TableProxy:
         if key not in self.__db__:
             raise DbError(f'table {key} not in db {self.__db__.full_name}')
         res = TableProxy(self.__db__, self.__db__[key])

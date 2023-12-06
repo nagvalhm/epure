@@ -17,7 +17,7 @@ from ...parser.proxy_base_cls import ColumnProxyBase
 from copy import deepcopy
 
 from ...errors import DeserializeError
-from ...epure import escript, select
+from ...epure import escript
 
 if TYPE_CHECKING:
     from .table_storage import TableStorage
@@ -153,8 +153,14 @@ class Table(DbEntity):
         
         header = [self.querying_proxy]
         where_clause = None
+        joins = []
+
+        if len(args) >= 3:
+            header = args[0]
+            joins = args[1]
+            where_clause = args[2]
         
-        if len(args) >= 2:
+        elif len(args) == 2:
             header = args[0]
             where_clause=args[1]
         
@@ -162,7 +168,7 @@ class Table(DbEntity):
             where_clause = args[0]
 
         # res = self.serialize_read(header=header, joins=[], where_clause=where_clause, full_names=True)
-        res = select(header, where_clause, include_node_id=True, **kwargs)
+        res = self.select(header, where_clause, joins=joins,include_node_id=True, **kwargs)
         res = res.replace(r"\\","\\")
         return self.read_by_sql(res)
 
@@ -483,3 +489,61 @@ class Table(DbEntity):
         #             res.append(tp.node_id)
         #             columns.append(tp.node_id.str(False, True))
         # return res
+
+    def select(self, *args, joins=[], include_node_id=False, **kwargs):
+
+        # header = get_select_header(args[0])
+        body = args[1]
+        
+        if kwargs:
+            # return get_condition_by_kwargs(header, kwargs)
+            body = self.get_condition_by_kwargs(**kwargs)
+
+    # if args:
+        return self.serialize_read(header=args[0], joins=joins, where_clause=body, full_names=True, include_node_id=include_node_id)
+        
+    # @escript
+    # def get_condition_by_kwargs(self, operator:str="", **kwargs):
+
+    #     kwargs_items = list(kwargs.items())
+    #     first_item = list(kwargs_items[0])
+    #     # term = getattr(tp, first_item[0]) == first_item[1]
+
+    #     if type(first_item[1]) in (str, UUID):
+    #         first_item[1] = repr(str(first_item[1]))
+
+    #     term = f"{prefix}.{first_item[0]} = {first_item[1]}"
+
+    #     for (key, val) in kwargs_items[1:]:
+    #             if type(val) in (str, UUID):
+    #                 val = repr(str(val))
+
+    #             if operator == 'or':
+    #                 term += f" OR {prefix}.{key} = {val}"
+    #             else:
+    #                 term += f" AND {prefix}.{key} = {val}"
+
+    #     return term
+
+    @escript
+    def get_condition_by_kwargs(self, operator="", **kwargs):
+        tp = self.tp
+            
+        kwargs_items = list(kwargs.items())
+        first_item = kwargs_items[0]
+        term = getattr(tp, first_item[0]) == first_item[1]
+
+        for (key, val) in kwargs_items[1:]:
+            if operator == 'or':
+                term = term or getattr(tp, key) == val
+            else:
+                term = term and getattr(tp, key) == val
+        
+        return term
+
+    # def get_select_header(header):
+        
+    #     if not isinstance(header, collections.abc.Sequence):
+    #         header = tuple(header)
+        
+    #     return header

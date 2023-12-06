@@ -91,18 +91,19 @@ class GresTable(Table, GresEntity):
                 raise EpureParseError('select header item must be ColumnProxy or TableProxy')
         res = res[:-1]
 
-        first_item = header[0]
-        table_name = ''
-        # if isinstance(first_item, ColumnProxy):
-        if isinstance(first_item, ColumnProxyBase):
-            table_name = first_item.__table__.full_name
-        # elif isinstance(first_item, TableProxy):
-        elif isinstance(first_item, TableProxyBase):
-            table_name = str(first_item)
-        elif isinstance(first_item, str):
-            first_item = first_item.split('.')
-            table_name = f'{first_item[0]}.{first_item[1]}'
-        res = res + f' FROM {table_name}'
+        # first_item = header[0]
+        # table_name = ''
+        # # if isinstance(first_item, ColumnProxy):
+        # if isinstance(first_item, ColumnProxyBase):
+        #     table_name = first_item.__table__.full_name
+        # # elif isinstance(first_item, TableProxy):
+        # elif isinstance(first_item, TableProxyBase):
+        #     table_name = str(first_item)
+        # elif isinstance(first_item, str):
+        #     first_item = first_item.split('.')
+        #     table_name = f'{first_item[0]}.{first_item[1]}'
+        # res = res + f' FROM {table_name}'
+        res = res + f' FROM {self.full_name}'
         return res
 
 
@@ -124,7 +125,7 @@ class GresTable(Table, GresEntity):
         return res
 
     def serialize_join(self, join:JoinOperation):
-        return f'{join.join_type} JOIN {join.table} on {join.on_clause} \n'
+        return f'{join.join_type} JOIN {join.table_proxy.__table__.full_name} on {join.on_clause} \n'
 
         
 

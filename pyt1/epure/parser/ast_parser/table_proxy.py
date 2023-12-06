@@ -3,16 +3,17 @@ from .term import Term
 from typing import Any
 from .column_proxy import ColumnProxy
 from ..proxy_base_cls import TableProxyBase
+from ...resource.join_resource.join_resource import JoinResource
 
 class TableProxy(Term, TableProxyBase):
 
     def __init__(self, db, table):
         self.__db__ = db
         self.__table__ = table
-        # self.__qp_name__ = self.serialize(parentheses=False, full_names=True)
+        self.__qp_name__ = self.serialize(parentheses=False, full_names=True)
         super().__init__()
 
-    def __getattr__(self, attr_name: str) -> Any:
+    def __getattr__(self, attr_name: str) -> ColumnProxy:
         # if self.__is_copy__:
             # raise AttributeError
         if attr_name not in self.__table__.header:
@@ -43,5 +44,10 @@ class TableProxy(Term, TableProxyBase):
 
         return res
     
-    def join(self, *args, lambda_f):
-        pass
+    def join(self, table_proxy:TableProxy, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
+        join_resource =  JoinResource(self)
+        join_resource.join(table_proxy, on_clause, join_type, alias)
+        return join_resource
+    
+    def select(self, *args, joins=[], include_node_id=False, **kwargs):
+        self.__table__.select(*args, joins=joins, include_node_id=include_node_id, **kwargs)

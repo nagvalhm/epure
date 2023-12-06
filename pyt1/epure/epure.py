@@ -285,7 +285,8 @@ def escript(func):
             full_name = self.full_name
 
         self.dbp = DbProxy(db)
-        self.tp = self.dbp[full_name]
+        # self.tp = self.dbp[full_name]
+        self.tp = getattr(self.dbp, full_name)
 
         func_source = inspect.getsource(func)
         dedent_src = textwrap.dedent(func_source)
@@ -320,46 +321,46 @@ def escript(func):
 
 # move to other file
 
-def select(*args, include_node_id=False, **kwargs):
+# def select(self, *args, joins=[], include_node_id=False, **kwargs):
 
-    header = get_select_header(args[0])
-    body = args[1]
+#     header = get_select_header(args[0])
+#     body = args[1]
     
-    if kwargs:
-        # return get_condition_by_kwargs(header, kwargs)
-        body = get_condition_by_kwargs(header[0].__table__.full_name, **kwargs)
+#     if kwargs:
+#         # return get_condition_by_kwargs(header, kwargs)
+#         body = get_condition_by_kwargs(header[0].__table__.full_name, **kwargs)
 
-    # if args:
-    return header[0].__table__.serialize_read(header=header, joins=[], where_clause=body, full_names=True, include_node_id=include_node_id)
+#     # if args:
+#     return self.serialize_read(header=header, joins=joins, where_clause=body, full_names=True, include_node_id=include_node_id)
         
-def get_condition_by_kwargs(prefix:str, operator:str="", **kwargs):
+# def get_condition_by_kwargs(prefix:str, operator:str="", **kwargs):
 
-    kwargs_items = list(kwargs.items())
-    first_item = list(kwargs_items[0])
-    # term = getattr(tp, first_item[0]) == first_item[1]
+#     kwargs_items = list(kwargs.items())
+#     first_item = list(kwargs_items[0])
+#     # term = getattr(tp, first_item[0]) == first_item[1]
 
-    if type(first_item[1]) in (str, UUID):
-        first_item[1] = repr(str(first_item[1]))
+#     if type(first_item[1]) in (str, UUID):
+#         first_item[1] = repr(str(first_item[1]))
 
-    term = f"{prefix}.{first_item[0]} = {first_item[1]}"
+#     term = f"{prefix}.{first_item[0]} = {first_item[1]}"
 
-    for (key, val) in kwargs_items[1:]:
-            if type(val) in (str, UUID):
-                val = repr(str(val))
+#     for (key, val) in kwargs_items[1:]:
+#             if type(val) in (str, UUID):
+#                 val = repr(str(val))
 
-            if operator == 'or':
-                term += f" OR {prefix}.{key} = {val}"
-            else:
-                term += f" AND {prefix}.{key} = {val}"
+#             if operator == 'or':
+#                 term += f" OR {prefix}.{key} = {val}"
+#             else:
+#                 term += f" AND {prefix}.{key} = {val}"
 
-    return term
+#     return term
 
-def get_select_header(header):
+# def get_select_header(header):
     
-    if not isinstance(header, collections.abc.Sequence):
-        header = tuple(header)
+#     if not isinstance(header, collections.abc.Sequence):
+#         header = tuple(header)
     
-    return header
+#     return header
 
 # move to other file
 
