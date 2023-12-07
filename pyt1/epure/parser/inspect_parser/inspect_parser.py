@@ -1,6 +1,5 @@
-from _ast import Assign, Attribute, Call, Constant, Eq, FormattedValue, In, JoinedStr
+from _ast import Assign, Attribute, Call, In, Not, UnaryOp
 import ast
-from ast import Str
 from types import CodeType
 from typing import Any, Dict
 # import inspect
@@ -16,6 +15,20 @@ class InspectParser(ast.NodeTransformer):
     astTypesDict:Dict[str, Any]
     column_proxy_cls=ColumnProxy
     table_proxy_cls=TableProxy
+    ast_type_method_name_dict:Dict[ast.cmpop, str] = {
+        ast.Eq: "__eq__",
+        ast.NotEq: "__ne__",
+        ast.Lt: "__lt__",
+        ast.LtE: "__le__",
+        ast.Gt: "__gt__",
+        ast.GtE: "__ge__",
+        ast.In: "_in",
+        ast.NotIn: "not_in",
+        ast.Or: "_or",
+        ast.And: "_and",
+        ast.Is: "_is",
+        ast.IsNot: "is_not"
+    }
 
     def __init__(self) -> None:
         self.astTypesDict = {}
@@ -26,16 +39,6 @@ class InspectParser(ast.NodeTransformer):
         # dedent_src = textwrap.dedent(func_source)
         func_tree = ast.parse(func)
         func_args = func_tree.body[0].args.args
-
-        # if func_args[0].arg == "self":
-        #     func_args.pop(0)
-
-        # if args:
-        #     for i in range(len(func_args)):
-        #         if issubclass(type(args[i]), Term):
-        #             func_args[i].type = type(args[i])
-        #             self.astTypesDict[func_args[i].arg] = func_args[i]
-
         self.first_arg_name = func_args[0].arg
 
         attr_tp = ast.Attribute()
@@ -46,7 +49,6 @@ class InspectParser(ast.NodeTransformer):
         self.astTypesDict[f'{self.first_arg_name}.tp'] = attr_tp
         self.astTypesDict[f'{self.first_arg_name}.dbp'] = attr_dbp
 
-        # visitor = AstParser()
         changed_tree = self.visit(func_tree)
         fixed_tree = ast.fix_missing_locations(changed_tree)
         return fixed_tree
@@ -62,11 +64,22 @@ class InspectParser(ast.NodeTransformer):
         comp_targ_in_keys = compare_targ in self.astTypesDict.keys()
 
         if left_val_in_keys and comp_targ_in_keys:
-            # op_str = "|" if type(node.op) is ast.Or else "&"
-            op_str = "_or" if type(node.op) is ast.Or else "_and"
-            # new_node_str = f"(({left_val}) {op_str} ({compare_targ}))"
-            # new_node_str = f"{left_val}.{op_str}({compare_targ})"
+            # op_str = "_or" if type(node.op) is ast.Or else "_and"
+            op_str = self.ast_type_method_name_dict[type(node.op)]
             new_node_str = f"{self.first_arg_name}.tp.{op_str}({left_val}, {compare_targ})"
+            node = ast.parse(new_node_str).body[0].value
+            node.type = Term
+            self.astTypesDict[new_node_str] = node
+        
+        return node
+    
+    def visit_UnaryOp(self, node: UnaryOp) -> Any:
+
+        self.generic_visit(node)
+
+        if type(node.op) == Not:
+            node_str = ast.unparse(node.operand)
+            new_node_str = f"{self.first_arg_name}.tp._not({node_str})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
             self.astTypesDict[new_node_str] = node
@@ -75,12 +88,13 @@ class InspectParser(ast.NodeTransformer):
     
     def visit_Compare(self, node: ast.Compare) -> Any:
 
-        # self.generic_visit(node)
-        if isinstance(node.ops[0], ast.In):
-            node = self.handle_In(node)
+        self.generic_visit(node)
 
-        elif isinstance(node.ops[0], ast.Eq):
-            node = self.handle_Eq_and_Like(node)
+        # self.generic_visit(node)
+        if type(node.ops[0]) in (ast.In, ast.NotIn):
+            node = self.handle_In_and_Not_In(node)
+        else:
+            node = self.handle_Compare_Op(node)
 
         return node
     
@@ -109,6 +123,8 @@ class InspectParser(ast.NodeTransformer):
     
     def visit_Attribute(self, node: Attribute) -> Any:
 
+        self.generic_visit(node)
+
         left_val = ast.unparse(node.value)
         
         node = self.handle_getattr(node, left_val)
@@ -118,18 +134,30 @@ class InspectParser(ast.NodeTransformer):
     def visit_Call(self, node: Call) -> Any:
 
         self.generic_visit(node)
+        caller = None
+
+        if hasattr(node.func, "value"):
+            caller = ast.unparse(node.func.value)
 
         if hasattr(node.func,"id") and node.func.id == "getattr":
             left_val = ast.unparse(node.args[0])
             node = self.handle_getattr(node, left_val)
 
-        if hasattr(node.func,"id") and node.func.id == "select":
+        elif caller in self.astTypesDict and\
+            hasattr(node.func,"attr") and node.func.attr == "select":
+            node.type = Term
+            self.astTypesDict[f'{ast.unparse(node)}'] = node
+
+        elif caller in self.astTypesDict and\
+            hasattr(node.func,"attr") and node.func.attr == "like":
             node.type = Term
             self.astTypesDict[f'{ast.unparse(node)}'] = node
 
         return node
     
     def handle_getattr(self, node, left_val):
+
+        self.generic_visit(node)
 
         node_str = ast.unparse(node)
 
@@ -148,7 +176,7 @@ class InspectParser(ast.NodeTransformer):
 
         return node
 
-    def handle_In(self, node: In) -> Any:
+    def handle_In_and_Not_In(self, node: In) -> Any:
         self.generic_visit(node)
 
         left_val = ast.unparse(node.left)
@@ -169,20 +197,21 @@ class InspectParser(ast.NodeTransformer):
         if left_val_in_keys and left_val_type in (TableProxy, DbProxy):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be present in '{compare_targ}'")
         
-        if not (comp_targ_in_keys and isinstance(self.astTypesDict[compare_targ], ast.Call) and node.comparators[0].func.id == "select")\
-            and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
+        if not (comp_targ_in_keys and isinstance(self.astTypesDict[compare_targ], ast.Call) and node.comparators[0].func.attr == "select") and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
             comp_targ_type = type(node.comparators[0])
-            raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type List, Tuple, Set or select function, so it cannot be right operand for SQL 'IN' operator")
+            raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type List, Tuple, Set or select method, so it cannot be right operand for SQL 'IN' operator")
         
         if left_val_in_keys and issubclass(left_val_type, ColumnProxy):
-            new_node_str = f"{left_val}._in({compare_targ})"
+            op_method = self.ast_type_method_name_dict[type(node.ops[0])]
+            new_node_str = f"{left_val}.{op_method}({compare_targ})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
             self.astTypesDict[new_node_str] = node
 
         return node
     
-    def handle_Eq_and_Like(self, node: Eq) -> Any:
+    # def handle_Eq_and_Like(self, node: Eq) -> Any:
+    def handle_Compare_Op(self, node: Any) -> Any:
 
         self.generic_visit(node)
 
@@ -213,22 +242,23 @@ class InspectParser(ast.NodeTransformer):
         # if left_val_in_keys and ((compare_targ.count('%') > compare_targ.count('\%'))\
         # or (compare_targ.count('_') > compare_targ.count('\_'))):
 
-        if left_val_in_keys and (compare_targ.count('%') > compare_targ.count('\%'))\
-            and issubclass(left_val_type, ColumnProxy):
-            # compare_targ = ast.unparse(self.handle_Like(node.comparators))
-            new_node_str = f"{left_val}._like({compare_targ})"
+        # if left_val_in_keys and (compare_targ.count('%') > compare_targ.count('\%'))\
+        #     and issubclass(left_val_type, ColumnProxy):
+        #     # compare_targ = ast.unparse(self.handle_Like(node.comparators))
+        #     new_node_str = f"{left_val}._like({compare_targ})"
 
-        elif comp_targ_in_keys and (left_val.count('%') > left_val.count('\%'))\
-            and issubclass(comp_targ_type, ColumnProxy):
-            # compare_targ = ast.unparse(self.handle_Like(node.comparators))
-            new_node_str = f"{compare_targ}._like({left_val})"
+        # elif comp_targ_in_keys and (left_val.count('%') > left_val.count('\%'))\
+        #     and issubclass(comp_targ_type, ColumnProxy):
+        #     # compare_targ = ast.unparse(self.handle_Like(node.comparators))
+        #     new_node_str = f"{compare_targ}._like({left_val})"
+        op_method = self.ast_type_method_name_dict[type(node.ops[0])]
 
-        elif left_val_in_keys and issubclass(left_val_type, ColumnProxy):
-            new_node_str = f"{left_val}._eq({compare_targ})"
+        if left_val_in_keys and issubclass(left_val_type, ColumnProxy):
+            new_node_str = f"{left_val}.{op_method}({compare_targ})"
             # new_node_str = f"{left_val} == {compare_targ}"
 
         elif comp_targ_in_keys and issubclass(comp_targ_type, ColumnProxy):
-            new_node_str = f"{compare_targ}._eq({left_val})"
+            new_node_str = f"{compare_targ}.{op_method}({left_val})"
             # new_node_str = f"{compare_targ} == {left_val}"
 
         if new_node_str and (left_val_in_keys or comp_targ_in_keys):

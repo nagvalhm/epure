@@ -50,4 +50,6 @@ class TableProxy(Term, TableProxyBase):
         return join_resource
     
     def select(self, *args, joins=[], include_node_id=False, **kwargs):
-        self.__table__.select(*args, joins=joins, include_node_id=include_node_id, **kwargs)
+        if type(args[0]) not in (tuple,list,set):
+            raise ValueError(f"first arg must be tuple, list or set, not {args[0]}")
+        return "(" + self.__table__.select(*args, joins=joins, include_node_id=include_node_id, **kwargs) + ")"

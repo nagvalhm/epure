@@ -62,7 +62,7 @@ class GresTable(Table, GresEntity):
             res = f'{res_header} \n {res_joins} WHERE \n {where_clause}'
         else:
             res = f'{res_header} \n {res_joins}'
-        res = self.replace_operators(res)
+        # res = self.replace_operators(res)
         return res
     
     def serialize_for_delete(self, node_id) -> str:
@@ -108,12 +108,12 @@ class GresTable(Table, GresEntity):
 
 
 
-    def replace_operators(self, where_clause:str):
-        if not (self.db and self.db.py_db_operators):
-            return where_clause
-        for py_op, db_op in self.db.py_db_operators.items():
-            where_clause = where_clause.replace(f' {py_op} ', f' {db_op} ')
-        return where_clause
+    # def replace_operators(self, where_clause:str):
+    #     if not (self.db and self.db.py_db_operators):
+    #         return where_clause
+    #     for py_op, db_op in self.db.py_db_operators.items():
+    #         where_clause = where_clause.replace(f' {py_op} ', f' {db_op} ')
+    #     return where_clause
 
 
 

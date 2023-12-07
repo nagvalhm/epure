@@ -13,6 +13,23 @@ class DbEntityResource(Resource):
     default_namespace:str
     py_db_operators:Dict[str, str] = {
         '==': '=',
+        '!=': '<>',
+        '<': '<',
+        '<=': '<=',
+        '>': '>',
+        '>=': '>=',
+        'not': 'NOT',
+        'not in': 'NOT IN',
+        'and': 'AND',
+        # 'all': 'ALL',
+        # 'any': 'ANY',
+        # 'in range':'BETWEEN',
+        'in': 'IN',
+        'like': 'LIKE',
+        'or': 'OR',
+        # 'some':'SOME',
+        'is': 'IS',
+        'is not': 'IS NOT'
     }
     json_serializer:Savable
     # py_db_key_words:Dict[str, str] = {
@@ -64,3 +81,14 @@ class DbEntityResource(Resource):
             return py_type(f"{complex_tuple[0]}+{complex_tuple[1]}j")
         return val
         # return py_type(val) instead of 54,55.
+
+    def serialize_op(self, operator:str, first_operand:str='', second_operand:str='') -> str:
+        
+        sql_op = self.py_db_operators[operator]
+
+        if second_operand:
+            res = f'{first_operand} {sql_op} {second_operand}'
+        else:
+            res = f'{sql_op} {first_operand}'
+
+        return res

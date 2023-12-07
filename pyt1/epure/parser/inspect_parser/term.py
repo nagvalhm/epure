@@ -6,47 +6,97 @@ import collections.abc
 
 class Term:
 
+    def is_str_or_uuid(self, other:Any) -> bool:
+        if isinstance(other,str) and "SELECT" not in other\
+            or isinstance(other, UUID):
+            return True
+
+        return False
+
     #bool_ops
     def _and(self, left, right): #and
-        return f"{left} AND {right}"
+        return self.__db__.serialize_op('and', str(left), str(right))
     
     def _or(self, left, right): #or
-        return f"{left} OR {right}"
-
-    # def __and__(self, other) -> str:
-    #     return f"{self} AND {other}"    
+        return self.__db__.serialize_op('or', str(left), str(right))
     
-    # def __or__(self, other: Any) -> str:
-    #     return f"{self} OR {other}"
-    
-    # def __ror__(self, other: Any) -> str:
-    #     return f"{other} OR {self}"
-
     #compare_ops
+    def _not(self, other): #not
+        return self.__db__.serialize_op('not', str(other))
+
+    def not_in(self, other): #not in
+        if type(other) in (set, list):
+            other = tuple(other)
+        
+        # if isinstance(other, str) and "SELECT" in other:
+        #     # other = repr(other)
+        #     other = '(' + other + ')'
+        
+        return self.__db__.serialize_op('not in', str(self), str(other))
+    
     def _in(self, other): #in
         if type(other) in (set, list):
             other = tuple(other)
         
-        if isinstance(other, str) and "WHERE" in other:
-            # other = repr(other)
-            other = '(' + other + ')'
+        # if isinstance(other, str) and "SELECT" in other:
+        #     # other = repr(other)
+        #     other = '(' + other + ')'
             
-        return f"{self} IN {other}"
+        return self.__db__.serialize_op('in', str(self), str(other))
 
-    def _eq(self, other): # ==
-        if type(other) in (UUID, str):
+    def __eq__(self, other): # ==
+        if self.is_str_or_uuid(other):
             other = repr(str(other))
-        return f"{self} = {other}"
+        return self.__db__.serialize_op('==', str(self), str(other))
+    
+    def __lt__(self, other): #<
+        if self.is_str_or_uuid(other):
+            other = repr(str(other))
+        return self.__db__.serialize_op('<', str(self), str(other))
 
-    # def __eq__(self, other: object) -> str:
-    #     return f"({self} = {other})"
+    def __le__(self, other): #<=
+        if self.is_str_or_uuid(other):
+            other = repr(str(other))
+        return self.__db__.serialize_op('<=', str(self), str(other))
+
+    def __ne__(self, other): #!=
+        if self.is_str_or_uuid(other):
+            other = repr(str(other))
+        return self.__db__.serialize_op('!=', str(self), str(other))
+
+    def __gt__(self, other): #>
+        if self.is_str_or_uuid(other):
+            other = repr(str(other))
+        return self.__db__.serialize_op('>', str(self), str(other))
+
+    def __ge__(self, other): #>=
+        if self.is_str_or_uuid(other):
+            other = repr(str(other))
+        return self.__db__.serialize_op('>=', str(self), str(other))
+    
+    def _is(self, other): # is
+        if other != None:
+            raise TypeError(f"operator IS can be used only with NULL value, but not with {other}")
+        return self.__db__.serialize_op('is', str(self), "NULL")
+        
+    def is_not(self, other): # is not
+        if other != None:
+            raise TypeError(f"operator IS NOT can be used only with NULL value, but not with {other}")
+        return self.__db__.serialize_op('is not', str(self), "NULL")
     
     #non-existent in python
-    def _like(self, other):
-        return f"{self} LIKE {repr(other)}"
+    def like(self, other):
+        if type(other) in (UUID, str):
+            other = repr(str(other))
+        return self.__db__.serialize_op('like', str(self), str(other))
+    
+    #all
+
+    #any
+
+    #between
+
+    #some
     
     def __str__(self):
         return self.serialize(True)
-    
-    def str(self, parentheses=False, full_names=False, translator:function=None):
-        return self.serialize(parentheses, full_names, translator)

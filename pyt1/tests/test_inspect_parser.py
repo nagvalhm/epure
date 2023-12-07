@@ -98,9 +98,9 @@ def test_simple_queries_inspect_parser_read_decorator():
         @escript
         def test_raw_str_like(self123):
 
-            query = self123.tp.f2 == "%a" and self123.tp.f2 == "\%a"
+            query = self123.tp.f2.like("%a") and self123.tp.f2.like("\%a")
 
-            assert query == "public.inspect_parser_test_cls.f2 LIKE '%a' AND public.inspect_parser_test_cls.f2 = '\\\\%a'"
+            assert query == "public.inspect_parser_test_cls.f2 LIKE '%a' AND public.inspect_parser_test_cls.f2 LIKE '\\\\%a'"
 
             res = self123.resource.read([self123.tp.f1, self123.tp.f2], query)
                 
@@ -114,52 +114,52 @@ def test_simple_queries_inspect_parser_read_decorator():
 
             tptst = self123.tp
 
-            query = self123.tp.f2 == '%percent0'
+            query = self123.tp.f2.like('%percent0')
 
-            query = self123.tp.f2 == r'%percent01R'
+            query = self123.tp.f2.like(r'%percent01R')
 
-            query = self123.tp.f2 == r"%percent02R"
+            query = self123.tp.f2.like(r"%percent02R")
 
-            query = self123.tp.f2 == r"""%percent03R"""
+            query = self123.tp.f2.like(r"""%percent03R""")
 
-            query = self123.tp.f2 == '\\%percent1'
+            query = self123.tp.f2.like('\\%percent1')
 
-            query = self123.tp.f2 == r'\\%percent1R'
+            query = self123.tp.f2.like(r'\\%percent1R')
             
-            query = self123.tp.f2 == '%\\%percent\\%2'
+            query = self123.tp.f2.like('%\\%percent\\%2')
             
-            query = self123.tp.f2 == r'%\\%percent\\%2R'
+            query = self123.tp.f2.like(r'%\\%percent\\%2R')
 
-            query = self123.tp.f2 == '%\\%percent\\%%3'
+            query = self123.tp.f2.like('%\\%percent\\%%3')
 
-            query = self123.tp.f2 == r'%\\%percent\\%%3R'
+            query = self123.tp.f2.like(r'%\\%percent\\%%3R')
 
-            query = self123.tp.f2 == 'percent4'
+            query = self123.tp.f2.like('percent4')
 
-            query = self123.tp.f2 == r'percent4R'
+            query = self123.tp.f2.like(r'percent4R')
 
-            query = self123.tp.f2 == '_undscore5'
+            query = self123.tp.f2.like('_undscore5')
 
-            query = self123.tp.f2 == r'_undscore5R'
+            query = self123.tp.f2.like(r'_undscore5R')
 
-            query = self123.tp.f2 == '\\_undscore6'
+            query = self123.tp.f2.like('\\_undscore6')
 
-            query = self123.tp.f2 == r'\\_undscore6R'
+            query = self123.tp.f2.like(r'\\_undscore6R')
             
-            query = self123.tp.f2 == '_\\_undscore\\_7'
+            query = self123.tp.f2.like('_\\_undscore\\_7')
 
-            query = self123.tp.f2 == r'_\\_undscore\\_7R'
+            query = self123.tp.f2.like(r'_\\_undscore\\_7R')
 
-            query = self123.tp.f2 == '_\\_undscore\\__8'
+            query = self123.tp.f2.like('_\\_undscore\\__8')
 
-            query = self123.tp.f2 == r'_\\_undscore\\__8R'
+            query = self123.tp.f2.like(r'_\\_undscore\\__8R')
 
-            query = tptst.f2 == '_\\_undscore\\__8' and tptst.f2 == r'_\\_undscore\\__8R'
+            query = tptst.f2.like('_\\_undscore\\__8') and tptst.f2.like(r'_\\_undscore\\__8R')
 
             # unterminated string literal case
             # query = self123.tp.f2 == 'undscore9\\'
 
-            query = self123.tp.f2 == r'undscore9\\R'
+            query = self123.tp.f2.like(r'undscore9\\R')
 
             query = f"{var}"
 
@@ -215,8 +215,15 @@ def test_simple_queries_inspect_parser_read_decorator():
         
         @escript
         def test_like_sql_func(self342):
-            query = self342.tp.f4 == "%def"
+            query = self342.tp.f4.like("%def")
             res = self342.resource.read([self342.tp.f4, self342.tp.f8], query)
+            return query
+        
+        @escript
+        def test_no_sql_operator(self342):
+            query = self342.tp.f4 > 3 and not self342.tp.f4 < 20
+            assert query == "public.inspect_parser_test_cls.f4 > 3 AND NOT public.inspect_parser_test_cls.f4 < 20"
+            # res = self342.resource.read([self342.tp.f4, self342.tp.f8], query)
             return query
         
     InspectParserTestCls().test_default_vals_w_read()
@@ -234,6 +241,10 @@ def test_simple_queries_inspect_parser_read_decorator():
     res = InspectParserTestCls().test_in_sql_func()
 
     res = InspectParserTestCls().test_like_sql_func()
+
+    res = InspectParserTestCls().test_no_sql_operator()
+
+def test_inspect_parser_like_comp_etc():
 
     @epure()
     class InspectParserTestCls2:
@@ -257,7 +268,7 @@ def test_simple_queries_inspect_parser_read_decorator():
         @escript
         def find_sql_like_m(self33):
             tp = self33.tp
-            query = tp.name == "M%" or 84 == tp.age
+            query = tp.name.like("M%") or 84 == tp.age
             assert query == "public.inspect_parser_test_cls2.name LIKE 'M%' OR public.inspect_parser_test_cls2.age = 84"
             res = self33.resource.read([self33.tp.name, self33.tp.last_name, self33.tp.age], query)
             return res
@@ -267,7 +278,7 @@ def test_simple_queries_inspect_parser_read_decorator():
             def test():
                 return 3
             tp = self33.tp
-            query = tp.name == r"\%Victor"
+            query = tp.name.like(r"%Victor")
             # assert query == r"public.inspect_parser_test_cls2.name = '\\%Victor'"
             res = self33.resource.read([self33.tp.name, self33.tp.last_name, self33.tp.age], query)
             return res
@@ -301,11 +312,80 @@ def test_simple_queries_inspect_parser_read_decorator():
         def sql_subquery_select_real_ex(self):
             tp = self.tp
             query = tp.name in tp.select([tp.name], tp.age == 50)
-            # assert query == ""
+            assert query == 'public.inspect_parser_test_cls2.name IN (SELECT public.inspect_parser_test_cls2.name as public___inspect_parser_test_cls2___name FROM public.inspect_parser_test_cls2 \n  WHERE \n public.inspect_parser_test_cls2.age = 50)'
             res = self.resource.read(query)
             # self.resource.read([tp.first_name, tp.last_name], tp.node_id in select([self.dbp['tp2'].node_id]))
             return res
         
+        @escript
+        def test_not_eq(self):
+            tp = self.tp
+
+            query1 = tp.name != "Mike" and tp.last_name not in ("Ermantraut", "Traumb")
+            assert query1 == "public.inspect_parser_test_cls2.name <> 'Mike' AND public.inspect_parser_test_cls2.last_name NOT IN ('Ermantraut', 'Traumb')"
+            res1 = self.resource.read(query1)
+
+            query2 = tp.last_name not in ("Ermantraut", "Traumb") and not tp.name != "Mike"
+            assert query2 == "public.inspect_parser_test_cls2.last_name NOT IN ('Ermantraut', 'Traumb') AND NOT public.inspect_parser_test_cls2.name <> 'Mike'"
+            res2 = self.resource.read(query2)
+
+            query3 = not tp.age >= 30 or tp.name > "Mike"
+            assert query3 == "NOT public.inspect_parser_test_cls2.age >= 30 OR public.inspect_parser_test_cls2.name > 'Mike'"
+            res3 = self.resource.read(query3)
+
+            query4 = tp.name < "Mike" and not tp.age <= 30
+            assert query4 == "public.inspect_parser_test_cls2.name < 'Mike' AND NOT public.inspect_parser_test_cls2.age <= 30"
+            res4 = self.resource.read(query4)
+
+            # expect error bc column returns more than one val
+
+            # query5 = tp.name > tp.select([tp.name], tp.age <= 30)
+            # assert query5 == 'public.inspect_parser_test_cls2.name > (SELECT public.inspect_parser_test_cls2.name as public___inspect_parser_test_cls2___name FROM public.inspect_parser_test_cls2 \n  WHERE \n public.inspect_parser_test_cls2.age <= 30)'
+            # res5 = self.resource.read(query5)
+
+            query6 = tp.name in tp.select([tp.name], tp.age <= 30)
+            assert query6 == "public.inspect_parser_test_cls2.name IN (SELECT public.inspect_parser_test_cls2.name as public___inspect_parser_test_cls2___name FROM public.inspect_parser_test_cls2 \n  WHERE \n public.inspect_parser_test_cls2.age <= 30)"
+            res6 = self.resource.read(query6)
+
+            # expect Value error bc header is not passed into select
+            
+            # try:
+            #     query8 = tp.name > tp.select(tp.age <= 30)
+            #     assert False
+            # except ValueError:
+            #     assert True
+
+            # expect error raise with wrong type
+            # try:
+            #     query7 = tp.last_name > ('bf', 'gena')
+            #     assert False
+            # except TypeError:
+            #     assert True 
+
+            return res4
+        
+        @escript
+        def test_is_and_is_not(self, val):
+            tp = self.tp
+
+            query1 = tp.name != "Mike" and tp.last_name is not None
+            assert query1 == "public.inspect_parser_test_cls2.name <> 'Mike' AND public.inspect_parser_test_cls2.last_name IS NOT NULL"
+            res1 = self.resource.read(query1)
+
+            query2 = not tp.name != "Mike" or not tp.last_name is None
+            assert query2 == "NOT public.inspect_parser_test_cls2.name <> 'Mike' OR NOT public.inspect_parser_test_cls2.last_name IS NULL"
+            res2 = self.resource.read(query2)
+
+            try:
+                query4 = tp.last_name is "None"
+                assert False
+            except TypeError:
+                assert True
+
+            query2 = not tp.name != "Mike" or not tp.last_name is not val
+            assert query2 == "NOT public.inspect_parser_test_cls2.name <> 'Mike' OR NOT public.inspect_parser_test_cls2.last_name IS NOT NULL"
+
+
     erman = InspectParserTestCls2("Mike", "Ermantraut", 60)
     erman.save()
     wazow = InspectParserTestCls2("Mike", "Wazowsky", 20)
@@ -352,5 +432,11 @@ def test_simple_queries_inspect_parser_read_decorator():
 
     res8 = erman.sql_subquery_select_real_ex()
     assert res8
+
+    res9 = erman.test_not_eq()
+    assert res9
+
+    res10 = erman.test_is_and_is_not(None)
+    # assert res10
 
 # def lambda db, tp: tp.

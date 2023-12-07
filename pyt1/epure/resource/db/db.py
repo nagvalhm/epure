@@ -81,7 +81,7 @@ class Db(TableStorage):
 
         if isinstance(db_entity, Table):
             return self.create_table(db_entity)
-        raise NotImplementedError(f'createion not implemented for type {type(db_entity)}')
+        raise NotImplementedError(f'creation not implemented for type {type(db_entity)}')
 
 
     def update(self, db_entity: Savable) -> DbEntity:
@@ -101,7 +101,7 @@ class Db(TableStorage):
             # script = script.replace("\n", "")
             result = self._execute(script)
         except Exception as ex:
-            err = EpureError(f'unnable execute script {script}: {ex}') \
+            err = EpureError(f'unnable to execute script {script}: {ex}') \
                 .with_traceback(ex.__traceback__)
             if self.logger:
                 self.logger.error(err, exc_info=True)
@@ -137,4 +137,3 @@ class Db(TableStorage):
         if self.logger.root.level >= logging.DEBUG:
             return '\n'
         return ''
-            
