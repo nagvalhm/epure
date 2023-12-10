@@ -1,4 +1,4 @@
-from _ast import Assign, Attribute, Call, In, Not, UnaryOp
+from _ast import Assign, Attribute, Call, FunctionDef, In, Not, UnaryOp
 import ast
 from types import CodeType
 from typing import Any, Dict
@@ -52,6 +52,16 @@ class InspectParser(ast.NodeTransformer):
         changed_tree = self.visit(func_tree)
         fixed_tree = ast.fix_missing_locations(changed_tree)
         return fixed_tree
+    
+    # def visit_FunctionDef(self, node: FunctionDef) -> Any:
+        
+    #     self.generic_visit(node)
+
+    #     if node.decorator_list:
+    #         i = next(i for i, v in enumerate(node.decorator_list) if v.id == "escript")
+    #         node.decorator_list.pop(i)
+
+    #     return node
     
     def visit_BoolOp(self, node: ast.BoolOp) -> Any:
 

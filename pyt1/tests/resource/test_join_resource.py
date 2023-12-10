@@ -53,6 +53,8 @@ TestOrder(bob_id, "2022-05-11", office1_id).save()
 
 
 @escript
+
+
 def test_two_joins(self):
     tp = self.tp
     dbp = self.dbp
@@ -63,13 +65,18 @@ def test_two_joins(self):
 
     join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.node_id)
 
+    lst = ["bde"]
+
+    query = tp.name in ("abc","def") and tp.name in lst
+    
+
     res_header = join_res.read([test_office_tp.adress, tp.name, tp, test_order_tp, tp.country], test_office_tp.adress == "Washington str.")
 
     res_no_header = join_res.read(test_office_tp.adress == "Washington str.")
 
     res_empty = join_res.read()
 
-    return join_res
+    return query
 
 
 TestCustomer.test_join = test_two_joins

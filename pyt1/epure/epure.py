@@ -7,13 +7,15 @@ from .errors import EpureError, DefaultConstraintError
 from .resource.db.constraint import Foreign, Default, Constraint
 # from .resource.node.elist_metacls import ElistMetacls
 # from .resource.node.elist import ECollectionMetacls
-from uuid import UUID
+from uuid import uuid4
 from .parser.inspect_parser.db_proxy import DbProxy
 import textwrap
 import inspect
 from .parser.inspect_parser.inspect_parser import InspectParser
 import types
-import collections.abc
+import ast
+from importlib import import_module
+import os
 
 
 # from types import FunctionType
@@ -275,6 +277,7 @@ def _create_epure(cls, saver, _Epure):
 def proto(resource:object='', saver:type=Proto, epure_metaclass:type=Epure) -> Callable:
     return epure(resource, saver, epure_metaclass)
 
+
 def escript(func):
     def inner(self, *args, **kwargs):
         if isinstance(type(self), Epure):
@@ -289,11 +292,74 @@ def escript(func):
         self.tp = getattr(self.dbp, full_name)
 
         func_source = inspect.getsource(func)
+
         dedent_src = textwrap.dedent(func_source)
 
-        func_parsed = InspectParser().parse(dedent_src)
+        parsed_tree = InspectParser().parse(dedent_src)
+
+        ast.fix_missing_locations(parsed_tree)
+
+        code_src_splited = inspect.getsourcelines(func)[0]
+
+        index_def_str = next(index for index, string in enumerate(code_src_splited) if "def " in string)
+
+        code_src_no_def = code_src_splited[index_def_str+1:]
+
+        src_lines_dict = dict(enumerate(code_src_no_def))
+
+        br_lines_dict = [k for k, v in src_lines_dict.items() if v=='\n']
+
+        new_func_src = ast.unparse(parsed_tree)
+
+        func_name = parsed_tree.body[0].name
+
+        file_name = func_name + ".py"
         
-        # ast.fix_missing_locations(changed_tree)
+        with open(file_name, 'w') as f:
+            f.write(new_func_src)
+
+        # mod = import_module(file_name)
+
+        # res = getattr(mod, func_name)(self,*args,**kwargs)
+
+        # code_block = compile(open(file_name).read(), file_name, 'exec')
+
+        code_block = compile(open(file_name).read(), file_name, 'exec')
+
+        # code_block = compile(func_parsed, "debug_parser.py", "exec")
+
+        exec(code_block)
+
+        area_func = locals()[func_name]
+
+        # res = area_func(self,*args,**kwargs)
+
+        fn_code = area_func.__code__
+        n_fn_code = func.__code__
+
+        cod = CodeType(
+        fn_code.co_argcount,
+        fn_code.co_posonlyargcount,
+        fn_code.co_kwonlyargcount,
+        fn_code.co_nlocals,
+        fn_code.co_stacksize,
+        fn_code.co_flags,
+        fn_code.co_code,
+        fn_code.co_consts,
+        fn_code.co_names,
+        fn_code.co_varnames,
+        n_fn_code.co_filename,
+        fn_code.co_name,
+        n_fn_code.co_firstlineno,
+        fn_code.co_lnotab,
+        fn_code.co_freevars,
+        fn_code.co_cellvars)
+
+        func.__code__ = code_block
+
+        # res = func(self,*args,**kwargs)
+
+        os.remove(file_name)
 
         co = compile(func_parsed, "debug_parser.py", "exec")
 
@@ -309,10 +375,10 @@ def escript(func):
 
         res = fn(self,*args,**kwargs)
 
-        # exec(co, globals())
+        # func.__code__ = fn.__code__
 
+        # res = func(self,*args,**kwargs)
         
-
         # res = self.resource.read(res)
         
         return res

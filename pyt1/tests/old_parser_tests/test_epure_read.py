@@ -1,7 +1,7 @@
 import pytest
 
 # skip the test
-pytest.skip(allow_module_level=True)
+# pytest.skip(allow_module_level=True)
 
 # from .test_epure import default_epure
 from ..epure_classes import DefaultEpure
