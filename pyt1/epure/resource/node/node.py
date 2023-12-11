@@ -74,6 +74,14 @@ class TableNode(Node):
     @property
     def table(self) -> Savable:
         return self.resource
+    
+    # @property
+    # def tp(self): # doesnt raise error when called
+    #     raise AttributeError("property tp cannot be accessed outside of method decorated by @escript decorator")
+    
+    # @property
+    # def dbp(self): # doesnt raise error when called
+    #     raise AttributeError("property dbp cannot be accessed outside of method decorated by @escript decorator")
 
     @classmethod
     def from_dict_deep(_cls, _dict:Dict[str, Any])->object:

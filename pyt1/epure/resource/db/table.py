@@ -208,25 +208,25 @@ class Table(DbEntity):
     #             term = term & getattr(tp, key) == val
     #     return self.read(term)
     
-    @escript
-    def read_by_kwargs(self, header:List[str]=[], operator:str="", **kwargs):
-        tp = self.tp
-        _header = deepcopy(header)
+    # @escript
+    # def read_by_kwargs(self, header:List[str]=[], operator:str="", **kwargs):
+    #     tp = self.tp
+    #     _header = deepcopy(header)
         
-        if not _header:
-            _header.append(tp)
+    #     if not _header:
+    #         _header.append(tp)
             
-        kwargs_items = list(kwargs.items())
-        first_item = kwargs_items[0]
-        term = getattr(tp, first_item[0]) == first_item[1]
+    #     kwargs_items = list(kwargs.items())
+    #     first_item = kwargs_items[0]
+    #     term = getattr(tp, first_item[0]) == first_item[1]
 
-        for (key, val) in kwargs_items[1:]:
-            if operator == 'or':
-                term = term or getattr(tp, key) == val
-            else:
-                term = term and getattr(tp, key) == val
+    #     for (key, val) in kwargs_items[1:]:
+    #         if operator == 'or':
+    #             term = term or getattr(tp, key) == val
+    #         else:
+    #             term = term and getattr(tp, key) == val
         
-        return self.read(_header, term)
+    #     return self.read(_header, term)
 
     def read_by_sql(self, selector):
         res = self.execute(selector)

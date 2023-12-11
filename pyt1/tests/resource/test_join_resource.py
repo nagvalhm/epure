@@ -41,6 +41,10 @@ class TestOrder:
         self.order_date = order_date
         self.office_id = office_id
 
+    # @escript
+    # def abc(self):
+    #     return 1+1
+
 TestOrder(nico_id, "2022-03-15", office1_id).save()
 TestOrder(victor_id, "2022-03-10", office2_id).save()
 TestOrder(nico_id, "2022-03-15", office1_id).save()
@@ -52,15 +56,27 @@ TestOrder(bob_id, "2022-09-15", office3_id).save()
 TestOrder(bob_id, "2022-05-11", office1_id).save()
 
 
-@escript
 
+# TestOrder(bob_id, "2022-05-11", office1_id).abc()
+
+# TestOrder(bob_id, "2022-05-11", office1_id).abc()
+
+def foo(foo):
+    return foo
+
+def foo2():
+    return "adv"
+
+@escript
+# @foo
 
 def test_two_joins(self):
     tp = self.tp
     dbp = self.dbp
     test_order_tp = dbp.test_order
     test_office_tp = dbp.test_shippment_office
-
+    lst = ["bde"]
+    
     join_res = tp.join(test_order_tp, tp.node_id == test_order_tp.test_customer_id)
 
     join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.node_id)

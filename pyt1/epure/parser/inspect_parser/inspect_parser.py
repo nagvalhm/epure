@@ -47,6 +47,7 @@ class InspectParser(ast.NodeTransformer):
         attr_dbp.type = DbProxy
 
         self.astTypesDict[f'{self.first_arg_name}.tp'] = attr_tp
+        self.astTypesDict[f'{self.first_arg_name}.querying_proxy'] = attr_tp
         self.astTypesDict[f'{self.first_arg_name}.dbp'] = attr_dbp
 
         changed_tree = self.visit(func_tree)
