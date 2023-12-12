@@ -5,3 +5,6 @@ from .epure import Epure as Epure
 # from .resource.db.constraint import Constraint as Constraint
 from .resource.node.elist import Elist as Elist
 from .resource.node.elist import Eset as Eset
+from .epure import escript as escript
+from .parser.inspect_parser.table_proxy import TableProxy as TableProxy 
+from .parser.inspect_parser.column_proxy import ColumnProxy as ColumnProxy

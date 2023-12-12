@@ -16,7 +16,9 @@ import types
 import ast
 from importlib import import_module
 import os
+from typing import Any, Callable, TypeVar
 
+DecoratedCallable = TypeVar("DecoratedCallable", bound=Callable[..., Any])
 
 # from types import FunctionType
 from .resource.node.node import TableNode
@@ -277,85 +279,39 @@ def _create_epure(cls, saver, _Epure):
 def proto(resource:object='', saver:type=Proto, epure_metaclass:type=Epure) -> Callable:
     return epure(resource, saver, epure_metaclass)
 
-
-def escript(func):
-# def inner(self, *args, **kwargs):
-    # if isinstance(type(self), Epure):
-    #     db = self.resource.db
-    #     full_name = self.table.full_name
-    # else:
-    #     db = self.db
-    #     full_name = self.full_name
-
-    # self.dbp = DbProxy(db)
-    # self.tp = self.dbp[full_name]
-    # self.tp = getattr(self.dbp, full_name)
-
-    func_source = inspect.getsource(func)
-
-    dedent_src = textwrap.dedent(func_source)
-
-    parsed_tree = InspectParser().parse(dedent_src)
-
-    ast.fix_missing_locations(parsed_tree)
-
-    # code_src_splited = inspect.getsourcelines(func)[0]
-
-    # index_def_str = next(index for index, string in enumerate(code_src_splited) if "def " in string)
-
-    code_src_splited = dedent_src.splitlines(True)
-
-    line_index = code_src_splited.index("@escript\n")
-
-    # code_src_splited[line_index] = "#@escript\n"
-
-    # code_src_no_def = code_src_splited[index_def_str+1:]
+def _get_func_br_lines(func_str) -> List[int]:
+    
+    code_src_splited = func_str.splitlines(True)
 
     src_lines_dict = dict(enumerate(code_src_splited))
 
     br_lines_list = [k for k, v in src_lines_dict.items() if v=='\n' or ("#" in v and v.strip().startswith('#'))]
 
-    new_func_src = ast.unparse(parsed_tree)
+    return br_lines_list
 
-    new_func_list = new_func_src.splitlines(True)
+def _insert_br_lines(func_str:str, br_lines_list:List[int]) -> str:
 
-    # new_func_list.insert(line_index, '#@escript\n')
+    new_func_list = func_str.splitlines(True)
 
     for i in br_lines_list:
         new_func_list.insert(i, '\n')
 
-    new_func_src = "".join(new_func_list)
+    func_str = "".join(new_func_list)
 
-    func_name = parsed_tree.body[0].name
+    return func_str
+
+def _compile_func(func:Callable, new_func_w_br_lines:str, func_name:str) -> CodeType:
 
     file_name = func_name + ".py"
-    
-    # with open(file_name, 'w') as f:
-    #     f.write(new_func_src)
 
-    # mod = import_module(file_name)
-
-    # res = getattr(mod, func_name)(self,*args,**kwargs)
-
-    # code_block = compile(open(file_name).read(), file_name, 'exec')
-
-    # code_block = compile(open(file_name).read(), file_name, 'exec')
-    code_block = compile(new_func_src, file_name, 'exec')
-
-    # code_block = compile(func_parsed, "debug_parser.py", "exec")
-
-    # exec(code_block)
-
-    # area_func = locals()[func_name]
+    code_block = compile(new_func_w_br_lines, file_name, 'exec')
 
     i = next(i for i, v in enumerate(code_block.co_consts) if isinstance(v, CodeType))
 
-
-    # fn_code = area_func.__code__
     fn_code = code_block.co_consts[i]
     n_fn_code = func.__code__
 
-    cod = CodeType(
+    new_code = CodeType(
     fn_code.co_argcount,
     fn_code.co_posonlyargcount,
     fn_code.co_kwonlyargcount,
@@ -374,35 +330,31 @@ def escript(func):
     fn_code.co_freevars,
     fn_code.co_cellvars)
 
-    func.__code__ = cod
-    # func.__code__ = code_block
+    return new_code
 
-    # os.remove(file_name)
+def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
 
-    # co = compile(parsed_tree, "debug_parser.py", "exec")
+    func_source = inspect.getsource(func)
 
-    # # get index of code obj compiled from func
-    # i = next(i for i, v in enumerate(co.co_consts) if isinstance(v, CodeType))
+    dedent_src = textwrap.dedent(func_source)
 
-    # fn = types.FunctionType(co.co_consts[i], func.__globals__, name=func.__name__,
-    #                     argdefs=func.__defaults__)
-    #                 #    ,closure=func.__closure__)
-    # # fn = types.FunctionType(co, globals())
-    # fn = functools.update_wrapper(fn, func)
-    # fn.__kwdefaults__ = func.__kwdefaults__
+    br_lines_list = _get_func_br_lines(dedent_src)
 
-    # res = fn(self,*args,**kwargs)
+    parsed_tree = InspectParser().parse(dedent_src)
 
-    # func.__code__ = fn.__code__
+    ast.fix_missing_locations(parsed_tree)
 
-    # res = func(self,*args,**kwargs)
-    
-    # res = self.resource.read(res)
-    
-    # return fn
-    # return self.resource.read(res)
+    new_func_str = ast.unparse(parsed_tree)
 
-    def inner(self, *args, **kwargs):
+    new_func_w_br_lines = _insert_br_lines(new_func_str, br_lines_list)
+
+    func_name = parsed_tree.body[0].name
+
+    new_func_code = _compile_func(func, new_func_w_br_lines, func_name)
+
+    func.__code__ = new_func_code
+
+    def inner(self, *args, **kwargs) -> Any:
         #temporary holders for tp, db proberties
         # tp_err_prop = getattr(self, "tp")
         # dbp_err_prop = getattr(self, "tp")
@@ -418,60 +370,10 @@ def escript(func):
         self.tp = getattr(self.dbp, full_name)
 
         res = func(self, *args, **kwargs)
-        # res = area_func(self, *args, **kwargs)
 
         delattr(self, "dbp")
         delattr(self, "tp")
-
-        # self.tp = tp_err_prop
-        # self.dbp = dbp_err_prop
+        
         return res
 
     return inner
-
-# move to other file
-
-# def select(self, *args, joins=[], include_node_id=False, **kwargs):
-
-#     header = get_select_header(args[0])
-#     body = args[1]
-    
-#     if kwargs:
-#         # return get_condition_by_kwargs(header, kwargs)
-#         body = get_condition_by_kwargs(header[0].__table__.full_name, **kwargs)
-
-#     # if args:
-#     return self.serialize_read(header=header, joins=joins, where_clause=body, full_names=True, include_node_id=include_node_id)
-        
-# def get_condition_by_kwargs(prefix:str, operator:str="", **kwargs):
-
-#     kwargs_items = list(kwargs.items())
-#     first_item = list(kwargs_items[0])
-#     # term = getattr(tp, first_item[0]) == first_item[1]
-
-#     if type(first_item[1]) in (str, UUID):
-#         first_item[1] = repr(str(first_item[1]))
-
-#     term = f"{prefix}.{first_item[0]} = {first_item[1]}"
-
-#     for (key, val) in kwargs_items[1:]:
-#             if type(val) in (str, UUID):
-#                 val = repr(str(val))
-
-#             if operator == 'or':
-#                 term += f" OR {prefix}.{key} = {val}"
-#             else:
-#                 term += f" AND {prefix}.{key} = {val}"
-
-#     return term
-
-# def get_select_header(header):
-    
-#     if not isinstance(header, collections.abc.Sequence):
-#         header = tuple(header)
-    
-#     return header
-
-# move to other file
-
-    
