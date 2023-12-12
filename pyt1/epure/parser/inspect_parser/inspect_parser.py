@@ -208,9 +208,9 @@ class InspectParser(ast.NodeTransformer):
         if left_val_in_keys and left_val_type in (TableProxy, DbProxy):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be present in '{compare_targ}'")
         
-        if not (comp_targ_in_keys and isinstance(self.astTypesDict[compare_targ], ast.Call) and node.comparators[0].func.attr == "select") and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
-            comp_targ_type = type(node.comparators[0])
-            raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type List, Tuple, Set or select method, so it cannot be right operand for SQL 'IN' operator")
+        # if not (comp_targ_in_keys and isinstance(self.astTypesDict[compare_targ], ast.Call) and node.comparators[0].func.attr == "select") and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
+            # comp_targ_type = type(node.comparators[0])
+            # raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type List, Tuple, Set or select method, so it cannot be right operand for SQL 'IN' operator")
         
         if left_val_in_keys and issubclass(left_val_type, ColumnProxy):
             op_method = self.ast_type_method_name_dict[type(node.ops[0])]
@@ -279,10 +279,6 @@ class InspectParser(ast.NodeTransformer):
             self.astTypesDict[new_node_str] = node
         
         return node
-    
-    # def handle_Like(self, node) -> Any:
-
-    #    node_str = ast.unparse(node)
 
     # def visit_Str(self, node: Str) -> Any:
         

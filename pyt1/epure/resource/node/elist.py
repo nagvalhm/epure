@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from .node import TableNode
 from typing import List, Any, Type, Generic, Set, Dict
 from uuid import UUID, uuid4
-from ...epure import Epure, epure
+from ...epure import Epure, epure, escript
 from types import NoneType
 # from .elist_metacls import ElistMetacls
 from .elist_metacls import ECollectionMetacls
@@ -134,6 +134,7 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
     #         return self.entries.__eq__(__value.entries)
     #     return self.entries.__eq__(__value)
 
+    @escript
     def read(self, *args, **kwargs):
         if not isinstance(self.py_type, Epure):
             return
@@ -147,8 +148,8 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
         if len(node_id_dict) == 0:
             return
 
-        res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
-        # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.values()))
+        # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
+        res = self.py_type.resource.read(self.tp.node_id in list(node_id_dict.keys()))
 
         for val in res:
             node_id_dict[val.node_id].value = val
