@@ -28,6 +28,9 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
             for val in _list:
                 self.append(val)
 
+    def get_collection_epure(self, table=None, parent_obj=None, field_name=None):  
+        return self.collection_epure
+
     def save(self, asynch:bool=False) -> UUID:
             
         if not hasattr(self,"node_id") or not self.node_id:
@@ -183,7 +186,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
         super(set, self).__init__()
         if collection_resourse != None:
             self.collection_epure = self.get_collection_epure(collection_resourse)
-            
+
         self.deleted_entries = []
         if isinstance(_set[0], self.collection_epure):
                 self.node_id = _set[0].collection_node_id
@@ -282,11 +285,16 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
 
 
-    def get_collection_epure(self, name):        
+    def get_collection_epure(self, table=None, parent_obj=None, field_name=None):        
         from .node import EsetTableNode
 
-        if isinstance(name, Table):
+        if table != None:
             name = name.full_name
+        else:
+            from ...named import SnakeCaseNamed
+            name = f'{parent_obj.__class__.__name__}___{field_name}'
+            name = SnakeCaseNamed(name).full_name
+
 
         if name in Epure.EDb:
             res = Epure.EDb.get_epure_by_table_name(name)

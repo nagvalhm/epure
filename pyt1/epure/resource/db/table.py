@@ -346,13 +346,8 @@ class Table(DbEntity):
 
             elif isinstance(field_type, ECollectionMetacls):
                 collection_node_id = attrs[field_name]
-                
-                from ...named import SnakeCaseNamed
-                collection_epure_name = f'{res.__name__}___{field_name}'
-                collection_epure_name = SnakeCaseNamed(collection_epure_name).full_name
-                collection_epure = field_type.collection_epure
-                if collection_epure_name in self.db:
-                    collection_epure = self.db.get_epure_by_table_name(collection_epure_name)
+
+                collection_epure = field_type.get_collection_epure(parent_obj=res, field_name=field_name)
                 
                 if lazy_read:
                     promise = ElistPromise(collection_epure.resource, collection_node_id, field_type)
