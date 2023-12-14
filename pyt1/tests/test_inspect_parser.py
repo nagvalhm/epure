@@ -311,6 +311,7 @@ def test_inspect_parser_like_comp_etc():
         @escript
         def sql_subquery_select_real_ex(self):
             tp = self.tp
+            tp_oraculs_dom_tasks = self.dbp.oraculs_domain.tasks
             query = tp.name in tp.select([tp.name], tp.age == 50)
             assert query == 'public.inspect_parser_test_cls2.name IN (SELECT public.inspect_parser_test_cls2.name as public___inspect_parser_test_cls2___name FROM public.inspect_parser_test_cls2 \n  WHERE \n public.inspect_parser_test_cls2.age = 50)'
             res = self.resource.read(query)

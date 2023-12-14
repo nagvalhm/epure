@@ -16,6 +16,7 @@ def test_read_section(config):
 
 def test_read_nested_section(config):
     db_user = config.section1.section2.db_user
+    an_db_user = config.section1.db_port
     assert strict_eq(db_user, 'user')
 
     pi_begins = config.section1.section2.section3.pi_begins
