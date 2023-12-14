@@ -345,17 +345,17 @@ class Table(DbEntity):
                     setattr(res, field_name, node)
 
             elif isinstance(field_type, ECollectionMetacls):
-                collection_node_id = attrs[field_name]
+                eset_id = attrs[field_name]
 
                 collection_epure = field_type.get_collection_epure(parent_obj=res, field_name=field_name)
                 
                 if lazy_read:
-                    promise = ElistPromise(collection_epure.resource, collection_node_id, field_type)
+                    promise = ElistPromise(collection_epure.resource, eset_id, field_type)
                     # setattr(res, field_name, promise)
                     delattr(res, field_name)
                     res.__promises_dict__[field_name] = promise
                 elif not lazy_read:
-                    list_values_rows = collection_epure.resource.read(collection_node_id=collection_node_id)
+                    list_values_rows = collection_epure.resource.read(eset_id=eset_id)
                     node = field_type(list_values_rows)
                     setattr(res, field_name, node)
         return res

@@ -21,7 +21,7 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
         self.entries = []
         self.deleted_entries = []
         if isinstance(_list[0], self.collection_epure):
-            self.node_id = _list[0].collection_node_id
+            self.node_id = _list[0].eset_id
             _list.sort(key= lambda x: x.value_order)
             self.entries = _list
         else:
@@ -43,7 +43,7 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
                 raise TypeError(f"value '{item.value}' of type '{type(item.value)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
             
-            item.collection_node_id = self.node_id
+            item.eset_id = self.node_id
             item.value_order = i
 
             # if hasattr(val, "__deleted__") and val.__deleted__:
@@ -189,7 +189,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
         self.deleted_entries = []
         if isinstance(_set[0], self.collection_epure):
-                self.node_id = _set[0].collection_node_id
+                self.node_id = _set[0].eset_id
                 super(self.__class__, self).update(_set)
         else:
             for item in _set:
@@ -223,7 +223,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
                 raise TypeError(f"value '{item.value}' of type '{type(item.value)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
             
-            item.collection_node_id = self.node_id
+            item.eset_id = self.node_id
 
             # if hasattr(val, "__deleted__") and val.__deleted__:
             #     self.resource.delete(val)
@@ -301,7 +301,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
             return res
     
         obj = type(name, (object,), {})
-        obj.__annotations__ = {"collection_node_id":UUID, "value":self.py_type}
+        obj.__annotations__ = {"eset_id":UUID, "value":self.py_type}
         res = epure(resource=f'ecollections.{name}',saver=EsetTableNode)(obj)
 
         return res

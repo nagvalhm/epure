@@ -42,9 +42,9 @@ class ECollectionMetacls(type):
         from .elist import Elist
 
         if issubclass(self, Elist):
-            name = f"{param.__name__}__list"
+            name = f"elist__{param.__name__}"
         else:
-            name = f"{param.__name__}__set"
+            name = f"eset__{param.__name__}"
 
         if name in self.ecollections:
             return self.ecollections[name]
@@ -60,10 +60,10 @@ class ECollectionMetacls(type):
         # res.collection_epure = epure(saver=EsetTableNode)(obj)
         
         if issubclass(self, Elist):
-            obj.__annotations__ = {"collection_node_id":UUID, "value_order":int, "value":param}
+            obj.__annotations__ = {"eset_id":UUID, "value_order":int, "value":param}
             res.collection_epure = epure(resource=f'ecollections.{name}')(obj)
         else:
-            obj.__annotations__ = {"collection_node_id":UUID, "value":param}
+            obj.__annotations__ = {"eset_id":UUID, "value":param}
             res.collection_epure = epure(resource=f'ecollections.{name}', saver=EsetTableNode)(obj)
         
         self.ecollections[name] = res

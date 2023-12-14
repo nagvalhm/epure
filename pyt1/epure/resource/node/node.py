@@ -134,8 +134,8 @@ class TableNode(Node):
 
             if isinstance(cls_attr_type, ECollectionMetacls) and not val_type_match_cls_attr_type: # check if attr is elist
                 try: 
-                    collection_node_id = UUID(val)
-                    promise = ElistPromise(cls_attr_type.list_epure.resource, collection_node_id, cls_attr_type)
+                    eset_id = UUID(val)
+                    promise = ElistPromise(cls_attr_type.list_epure.resource, eset_id, cls_attr_type)
                     instance.__promises_dict__[field_name] = promise
                     continue
                 except(Exception):

@@ -19,7 +19,7 @@ class ElistPromise(NodePromise):
         return super().__init__(resource, node_id)
 
     def get(self):
-        list_values = self.resource.read(collection_node_id=self.node_id)
+        list_values = self.resource.read(eset_id=self.node_id)
         node = self.py_type(list_values)
         # setattr(res, field_name, node)
         return node
