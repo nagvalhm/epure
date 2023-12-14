@@ -346,13 +346,21 @@ class Table(DbEntity):
 
             elif isinstance(field_type, ECollectionMetacls):
                 collection_node_id = attrs[field_name]
+                
+                from ...named import SnakeCaseNamed
+                collection_epure_name = f'{res.__name__}___{field_name}'
+                collection_epure_name = SnakeCaseNamed(collection_epure_name).full_name
+                collection_epure = field_type.collection_epure
+                if collection_epure_name in self.db:
+                    collection_epure = self.db.get_epure_by_table_name(collection_epure_name)
+                
                 if lazy_read:
-                    promise = ElistPromise(field_type.collection_epure.resource, collection_node_id, field_type)
+                    promise = ElistPromise(collection_epure.resource, collection_node_id, field_type)
                     # setattr(res, field_name, promise)
                     delattr(res, field_name)
                     res.__promises_dict__[field_name] = promise
                 elif not lazy_read:
-                    list_values_rows = field_type.collection_epure.resource.read(collection_node_id=collection_node_id)
+                    list_values_rows = collection_epure.resource.read(collection_node_id=collection_node_id)
                     node = field_type(list_values_rows)
                     setattr(res, field_name, node)
         return res

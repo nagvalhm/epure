@@ -7,6 +7,7 @@ from ...epure import Epure, epure, escript
 from types import NoneType
 # from .elist_metacls import ElistMetacls
 from .elist_metacls import ECollectionMetacls
+from ..db.table import Table
 
 class Elist(TableNode, List, metaclass=ECollectionMetacls):
 # class Elist(TableNode, List):
@@ -178,8 +179,11 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
     collection_epure:Epure = None
     node_id:UUID
 
-    def __init__(self, _set:Set) -> None:
+    def __init__(self, _set:Set, collection_resourse=None) -> None:
         super(set, self).__init__()
+        if collection_resourse != None:
+            self.collection_epure = self.get_collection_epure(collection_resourse)
+            
         self.deleted_entries = []
         if isinstance(_set[0], self.collection_epure):
                 self.node_id = _set[0].collection_node_id
@@ -275,3 +279,21 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
                 return True
 
         # return super().__contains__(__o)
+
+
+
+    def get_collection_epure(self, name):        
+        from .node import EsetTableNode
+
+        if isinstance(name, Table):
+            name = name.full_name
+
+        if name in Epure.EDb:
+            res = Epure.EDb.get_epure_by_table_name(name)
+            return res
+    
+        obj = type(name, (object,), {})
+        obj.__annotations__ = {"collection_node_id":UUID, "value":self.py_type}
+        res = epure(resource=f'ecollections.{name}',saver=EsetTableNode)(obj)
+
+        return res

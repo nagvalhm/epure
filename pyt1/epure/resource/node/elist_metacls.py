@@ -61,10 +61,10 @@ class ECollectionMetacls(type):
         
         if issubclass(self, Elist):
             obj.__annotations__ = {"collection_node_id":UUID, "value_order":int, "value":param}
-            res.collection_epure = epure()(obj)
+            res.collection_epure = epure(resource=f'ecollections.{name}')(obj)
         else:
             obj.__annotations__ = {"collection_node_id":UUID, "value":param}
-            res.collection_epure = epure(saver=EsetTableNode)(obj)
+            res.collection_epure = epure(resource=f'ecollections.{name}', saver=EsetTableNode)(obj)
         
         self.ecollections[name] = res
 

@@ -75,6 +75,21 @@ class TableNode(Node):
     def table(self) -> Savable:
         return self.resource
     
+
+    def __setattr__(self, __name: str, __value: Any) -> None:
+        from .elist import Eset
+        from ...named import SnakeCaseNamed
+
+        if not isinstance(__value, Eset):
+            return super().__setattr__(__name, __value)
+        
+        collection_epure_name = f'{self.__class__.__name__}___{__name}'
+        collection_epure_name = SnakeCaseNamed(collection_epure_name).full_name
+        collection_epure = __value.get_collection_epure(collection_epure_name)
+        __value.collection_epure = collection_epure        
+
+        return super().__setattr__(__name, __value)
+    
     # @property
     # def tp(self): # doesnt raise error when called
     #     raise AttributeError("property tp cannot be accessed outside of method decorated by @escript decorator")
