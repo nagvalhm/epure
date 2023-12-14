@@ -18,6 +18,8 @@
 
 ---
 
+**Documentation**: <a href="https://epurelib.github.io/docs/" target="_blank">https://epurelib.github.io/docs/</a>
+
 **Source Code**: <a href="https://github.com/nagvalhm/epure" target="_blank">https://github.com/nagvalhm/epure</a>
 
 ---
