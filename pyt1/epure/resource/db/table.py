@@ -6,7 +6,9 @@ from .constraint import Constraint
 from ..resource import Resource
 from ..node.node import Node
 from ...parser.term import Term
-from ...parser.leaf import TableProxy, QueryingProxy, DbProxy, ColumnProxy
+# from ...parser.leaf import TableProxy, QueryingProxy, DbProxy, ColumnProxy
+from ...parser.inspect_parser.table_proxy import TableProxy
+from ...parser.inspect_parser.db_proxy import DbProxy
 from ..db.table_column import TableColumn
 from collections import OrderedDict
 from ..node.proto import Proto
@@ -34,8 +36,10 @@ class Table(DbEntity):
     header:TableHeader
     if TYPE_CHECKING:
         parser: TermParser
-    querying_proxy: QueryingProxy
-    resource_proxy: DbProxy
+    # querying_proxy: QueryingProxy
+    # resource_proxy: DbProxy
+    querying_proxy:TableProxy
+    resource_proxy:DbProxy
 
     if TYPE_CHECKING:
         resource:TableStorage
@@ -438,7 +442,7 @@ class Table(DbEntity):
             res.append(serialized)
         return res
 
-    def _add_node_id_fields(self, header:List[QueryingProxy]):
+    def _add_node_id_fields(self, header:List):
         res = []
         for item in header:
             # if isinstance(item, ColumnProxy):

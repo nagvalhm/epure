@@ -12,6 +12,13 @@ class Term:
             return True
 
         return False
+    
+    def convert_tuple_for_in(self, other):
+        other_types_set = {type(it) for it in other}
+        if other_types_set.issubset({UUID, str}):
+            other = [str(it) for it in other]
+        other = tuple(other)
+        return other
 
     #bool_ops
     def _and(self, left, right): #and
@@ -25,8 +32,8 @@ class Term:
         return self.__db__.serialize_op('not', str(other))
 
     def not_in(self, other): #not in
-        if type(other) in (set, list):
-            other = tuple(other)
+        if type(other) in (set, list, tuple):
+            other = self.convert_tuple_for_in(other)
         
         if isinstance(other, str) and not "(SELECT" in other\
             or not isinstance(other, tuple):
@@ -35,8 +42,8 @@ class Term:
         return self.__db__.serialize_op('not in', str(self), str(other))
     
     def _in(self, other): #in
-        if type(other) in (set, list):
-            other = tuple(other)
+        if type(other) in (set, list, tuple):
+            other = self.convert_tuple_for_in(other)
         
         if isinstance(other, str) and not "(SELECT" in other\
             or type(other) not in (tuple, str):

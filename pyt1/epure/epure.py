@@ -5,8 +5,8 @@ from .resource.resource import Resource
 from .helpers.type_helper import check_type
 from .errors import EpureError, DefaultConstraintError
 from .resource.db.constraint import Foreign, Default, Constraint
-# from .resource.node.elist_metacls import ElistMetacls
-# from .resource.node.elist import ECollectionMetacls
+from .resource.node.ecollection_metacls import ECollectionMetacls
+
 from uuid import UUID
 from .parser.inspect_parser.db_proxy import DbProxy
 import textwrap
@@ -68,29 +68,29 @@ class Epure(type, Savable):
         # return getattr(self, attr_name)
 
     #decorator
-    @classmethod
-    def read(cls, method):
-        querying_proxy = None
-        resource_proxy = None
-        if getattr(cls, 'resource', None):
-            querying_proxy = getattr(cls.resource, 'querying_proxy', None)
-            resource_proxy = getattr(cls.resource, 'resource_proxy', None)
+    # @classmethod
+    # def read(cls, method):
+    #     querying_proxy = None
+    #     resource_proxy = None
+    #     if getattr(cls, 'resource', None):
+    #         querying_proxy = getattr(cls.resource, 'querying_proxy', None)
+    #         resource_proxy = getattr(cls.resource, 'resource_proxy', None)
 
-        @functools.wraps(method)
-        def wrap(self, *args, **kwargs):
-            res = None
-            if querying_proxy and resource_proxy:
-                res = method(self, querying_proxy, resource_proxy, *args, **kwargs)
-            if querying_proxy:
-                res = method(self, querying_proxy, *args, **kwargs)
-            if resource_proxy:
-                res = method(self, resource_proxy, *args, **kwargs)
-            else:
-                res = method(self, *args, **kwargs)
-            if isinstance(res, Term):
-                return self.resource.read(res)
-            return res
-        return wrap
+    #     @functools.wraps(method)
+    #     def wrap(self, *args, **kwargs):
+    #         res = None
+    #         if querying_proxy and resource_proxy:
+    #             res = method(self, querying_proxy, resource_proxy, *args, **kwargs)
+    #         if querying_proxy:
+    #             res = method(self, querying_proxy, *args, **kwargs)
+    #         if resource_proxy:
+    #             res = method(self, resource_proxy, *args, **kwargs)
+    #         else:
+    #             res = method(self, *args, **kwargs)
+    #         if isinstance(res, Term):
+    #             return self.resource.read(res)
+    #         return res
+    #     return wrap
         # def reader(self:Table, *args, **kwargs):
         #     pseudo_self = PresudoTable(self)
         #     pseudo_db = PseudoDb(self.db)
@@ -206,7 +206,7 @@ class Epure(type, Savable):
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
         # from .resource.node.elist import ElistMetacls
-        from .resource.node.elist import ECollectionMetacls
+        # from .resource.node.elist import ECollectionMetacls
 
 
         if py_type in self.epures:
@@ -358,10 +358,15 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
         #temporary holders for tp, db proberties
         # tp_err_prop = getattr(self, "tp")
         # dbp_err_prop = getattr(self, "tp")
+        # from .resource.node.elist import ECollectionMetacls
+        from .resource.node.elist import Elist, Eset
 
         if isinstance(type(self), Epure):
             db = self.resource.db
             full_name = self.table.full_name
+        elif isinstance(type(self), ECollectionMetacls):
+            db = self.collection_epure.resource.db
+            full_name = self.collection_epure.resource.full_name
         else:
             db = self.db
             full_name = self.full_name

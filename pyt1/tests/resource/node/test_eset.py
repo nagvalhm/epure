@@ -3,6 +3,7 @@ import pytest
 from ....epure.epure import epure, Epure
 from typing import List
 from ...epure_classes import EpureClass1
+from ....epure.resource.node.node import Node
 
 def test_eset_epures():
 

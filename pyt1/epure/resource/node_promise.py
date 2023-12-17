@@ -21,7 +21,7 @@ class ElistPromise(NodePromise):
     def get(self):
         list_values = self.resource.read(eset_id=self.node_id)
         node = self.py_type(list_values)
-        # setattr(res, field_name, node)
+        # node = self.py_type[self.py_type.collection_epure](list_values)
         return node
 
 class FieldPromise(NodePromise):

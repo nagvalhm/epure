@@ -47,7 +47,7 @@ class InspectParser(ast.NodeTransformer):
         attr_dbp.type = DbProxy
 
         self.astTypesDict[f'{self.first_arg_name}.tp'] = attr_tp
-        self.astTypesDict[f'{self.first_arg_name}.querying_proxy'] = attr_tp
+        # self.astTypesDict[f'{self.first_arg_name}.querying_proxy'] = attr_tp
         self.astTypesDict[f'{self.first_arg_name}.dbp'] = attr_dbp
 
         changed_tree = self.visit(func_tree)
@@ -88,8 +88,9 @@ class InspectParser(ast.NodeTransformer):
 
         self.generic_visit(node)
 
-        if type(node.op) == Not:
-            node_str = ast.unparse(node.operand)
+        node_str = ast.unparse(node.operand)
+
+        if type(node.op) == Not and node_str in self.astTypesDict:
             new_node_str = f"{self.first_arg_name}.tp._not({node_str})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
@@ -154,12 +155,12 @@ class InspectParser(ast.NodeTransformer):
             left_val = ast.unparse(node.args[0])
             node = self.handle_getattr(node, left_val)
 
-        elif caller in self.astTypesDict and\
+        elif caller and caller in self.astTypesDict and\
             hasattr(node.func,"attr") and node.func.attr == "select":
             node.type = Term
             self.astTypesDict[f'{ast.unparse(node)}'] = node
 
-        elif caller in self.astTypesDict and\
+        elif caller and caller in self.astTypesDict and\
             hasattr(node.func,"attr") and node.func.attr == "like":
             node.type = Term
             self.astTypesDict[f'{ast.unparse(node)}'] = node

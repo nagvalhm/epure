@@ -5,8 +5,7 @@ from typing import List, Any, Type, Generic, Set, Dict
 from uuid import UUID, uuid4
 from ...epure import Epure, epure, escript
 from types import NoneType
-# from .elist_metacls import ElistMetacls
-from .elist_metacls import ECollectionMetacls
+from .ecollection_metacls import ECollectionMetacls
 from ..db.table import Table
 
 class Elist(TableNode, List, metaclass=ECollectionMetacls):
@@ -27,9 +26,10 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
         else:
             for val in _list:
                 self.append(val)
-
-    def get_collection_epure(self, table=None, parent_obj=None, field_name=None):  
-        return self.collection_epure
+    
+    @classmethod
+    def get_collection_epure(cls, table=None, parent_obj=None, field_name=None):  
+        return cls.collection_epure
 
     def save(self, asynch:bool=False) -> UUID:
             
@@ -153,7 +153,10 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
             return
 
         # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
-        res = self.py_type.resource.read(self.tp.node_id in list(node_id_dict.keys()))
+        # res = self.py_type.resource.read(self.tp.node_id in list(node_id_dict.keys()))
+        py_type_tp = getattr(self.dbp, self.py_type.resource.full_name)
+        res = self.py_type.resource.read(py_type_tp.node_id in list(node_id_dict.keys()))
+
 
         for val in res:
             node_id_dict[val.node_id].value = val
@@ -210,7 +213,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
                 raise ValueError(f"value {item} is already present in Eset")
         super(self.__class__, self).add(res)
 
-    def save(self, asynch:bool=False) -> UUID:
+    def save(self, asynch:bool=False):
             
         if not hasattr(self, "node_id") or not self.node_id:
             self.node_id = uuid4()
@@ -234,7 +237,8 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
         for i in range(self.deleted_entries.__len__()):
             item = self.deleted_entries[i]
-            self.collection_epure.resource.delete(item.node_id)
+            if hasattr(item, "node_id") and item.node_id:
+                self.collection_epure.resource.delete(item.node_id)
         
         self.deleted_entries = []
 
@@ -263,6 +267,9 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
     
     @property
     def ids(self):
+        # if not self.is_saved:
+        #     raise Exception("Your Eset is not saved, try .save()")
+        
         res = []
         for item in list(self):
             # if hasattr(item, "__promises_dict__") and\
@@ -284,8 +291,8 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
         # return super().__contains__(__o)
 
 
-
-    def get_collection_epure(self, table=None, parent_obj=None, field_name=None):        
+    @classmethod
+    def get_collection_epure(cls, table=None, parent_obj=None, field_name=None):        
         from .node import EsetTableNode
 
         if table != None:
@@ -301,7 +308,23 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
             return res
     
         obj = type(name, (object,), {})
-        obj.__annotations__ = {"eset_id":UUID, "value":self.py_type}
+        obj.__annotations__ = {"eset_id":UUID, "value":cls.py_type}
         res = epure(resource=f'ecollections.{name}',saver=EsetTableNode)(obj)
 
         return res
+    
+
+    def _redefine_collection_epure(self, collection_epure:Epure) -> None:
+        vals_list = []
+        for item in self:
+            vals_list.append(item.value)
+            
+        self.clear()
+        self.collection_epure = collection_epure
+
+        for item in vals_list:
+            self.add(item)
+
+    
+    def load(self) -> None:
+        pass

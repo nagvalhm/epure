@@ -6,8 +6,7 @@ from typing import Any, Dict, Callable
 import jsonpickle
 from ..db.constraint import Constraint
 from ...errors import EpureError
-# from .elist_metacls import ElistMetacls
-from .elist_metacls import ECollectionMetacls
+from .ecollection_metacls import ECollectionMetacls
 from ..node_promise import NodePromise, ElistPromise
 
 class Node(Savable):
@@ -76,16 +75,17 @@ class TableNode(Node):
         return self.resource
     
 
-    def __setattr__(self, __name: str, __value: Any) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:
         from .elist import Eset
 
-        if not isinstance(__value, Eset):
-            return super().__setattr__(__name, __value)
+        if not (hasattr(value, "__origin__") and value.__origin__ == Eset):
+            return super().__setattr__(name, value)
 
-        collection_epure = __value.get_collection_epure(parent_obj=self, field_name=__name)
-        __value.collection_epure = collection_epure        
+        collection_epure = value.get_collection_epure(parent_obj=self, field_name=name)
+        # value.collection_epure = collection_epure
+        value._redefine_collection_epure(collection_epure)
 
-        return super().__setattr__(__name, __value)
+        return super().__setattr__(name, value)
     
     # @property
     # def tp(self): # doesnt raise error when called

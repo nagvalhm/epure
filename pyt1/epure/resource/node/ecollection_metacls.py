@@ -52,12 +52,11 @@ class ECollectionMetacls(type):
         cls_dict = dict(self.__dict__)
         cls_dict.pop('__dict__', None)
         res = self.__class__(self.__name__, self.__bases__, cls_dict)
-        # res.__origin__ = self
+        res.__origin__ = self
+
         res.py_type = param
-        # res.collection_epure = Epure.EDb.get_epure_by_table_name(name)
-        # if res.collection_epure is None:
+
         obj = type(name, (object,), {})
-        # res.collection_epure = epure(saver=EsetTableNode)(obj)
         
         if issubclass(self, Elist):
             obj.__annotations__ = {"eset_id":UUID, "value_order":int, "value":param}
