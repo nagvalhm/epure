@@ -1,5 +1,5 @@
 from .term import Term
-from .table_proxy import TableProxy
+from .model import Model
 from ...errors import DbError
 
 class DbProxy(Term):
@@ -11,10 +11,10 @@ class DbProxy(Term):
     # def __getitem__(self, key:str):
     #     if key not in self.__db__:
     #         raise DbError(f'table {key} not in db {self.__db__.full_name}')
-    #     res = TableProxy(self.__db__, self.__db__[key])
+    #     res = Model(self.__db__, self.__db__[key])
     #     return res
     
-    def __getattr__(self, key:str) -> TableProxy:
+    def __getattr__(self, key:str) -> Model:
         if self.default_namespace:
             key = f"{self.default_namespace}.{key}"
 
@@ -22,7 +22,7 @@ class DbProxy(Term):
             raise DbError(f'table {key} not in db {self.__db__.full_name}')
         elif key in self.__db__.namespaces:
             return DbProxy(self.__db__, default_namespace=key)
-        res = TableProxy(self.__db__, self.__db__[key])
+        res = Model(self.__db__, self.__db__[key])
         return res
 
     def __iter__(self):

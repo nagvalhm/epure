@@ -5,13 +5,13 @@ from ..errors import UserInputError
 
 class BinOperation(Binary, BinOp):
     def __init__(self, left, right, operator='') -> None:        
-        from .leaf import TableProxy
+        from .leaf import Model
         super().__init__(left, right, operator)
 
         left = self.left
         right = self.right
 
-        if self.is_join() and isinstance(right, TableProxy):
+        if self.is_join() and isinstance(right, Model):
             raise UserInputError('right operand of join must be logical expression, not table')
         
 
@@ -25,10 +25,10 @@ class BinOperation(Binary, BinOp):
             self.set_parentheses()
         
     def is_join(self):
-        from .leaf import TableProxy
+        from .leaf import Model
         if self.operator not in ('<<', '>>'):
             return False
-        res = isinstance(self.left, TableProxy)
+        res = isinstance(self.left, Model)
         return res
 
 
@@ -45,15 +45,15 @@ class BinOperation(Binary, BinOp):
         return right_open
 
     def left_closed(self):
-        from .leaf import TableProxy
+        from .leaf import Model
         left_leaf = self.get_last_left_term()
-        left_closed = isinstance(left_leaf, TableProxy) or isinstance(left_leaf.right_parent, Comparison)
+        left_closed = isinstance(left_leaf, Model) or isinstance(left_leaf.right_parent, Comparison)
         return left_closed
 
     def right_closed(self):
-        from .leaf import TableProxy
+        from .leaf import Model
         right_leaf = self.get_last_right_term()
-        right_closed = isinstance(right_leaf, TableProxy) or isinstance(right_leaf.left_parent, Comparison)
+        right_closed = isinstance(right_leaf, Model) or isinstance(right_leaf.left_parent, Comparison)
         return right_closed
 
 
@@ -111,13 +111,13 @@ class Comparison(Binary, Compare):
         return res
 
     def set_join_parentheses(self):
-        from .leaf import TableProxy
+        from .leaf import Model
         right = self.right
         right_left_leaf = right
         left_right_leaf = self.left.get_last_right_term()
         if isinstance(right, Binary):
             right_left_leaf = right.get_last_left_term()
-        if isinstance(right_left_leaf, TableProxy):
+        if isinstance(right_left_leaf, Model):
             raise UserInputError('right operand of join must be logical expression, not table')
         left_right_leaf.left_parentheses_count += 1        
         right_left_leaf.right_parentheses_count += 1

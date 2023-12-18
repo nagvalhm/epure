@@ -2,10 +2,10 @@ from __future__ import annotations
 from .term import Term
 from typing import Any
 from .column_proxy import ColumnProxy
-from ..proxy_base_cls import TableProxyBase
+from ..proxy_base_cls import ModelBase
 from ...resource.join_resource.join_resource import JoinResource
 
-class TableProxy(Term, TableProxyBase):
+class Model(Term, ModelBase):
 
     def __init__(self, db, table):
         self.__db__ = db
@@ -44,9 +44,9 @@ class TableProxy(Term, TableProxyBase):
 
         return res
     
-    def join(self, table_proxy:TableProxy, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
+    def join(self, model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
         join_resource =  JoinResource(self)
-        join_resource.join(table_proxy, on_clause, join_type, alias)
+        join_resource.join(model, on_clause, join_type, alias)
         return join_resource
     
     def select(self, *args, joins=[], include_node_id=False, **kwargs):

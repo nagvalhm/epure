@@ -2,31 +2,31 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ...parser.inspect_parser.table_proxy import TableProxy
+    from ...parser.inspect_parser.model import Model
     # from ...resource.db.table import Table
 
 class Join:
-    table_proxy:TableProxy
+    model:Model
     on_clause:str
     join_type:str
     alias:str
 
-    def __init__(self, table_proxy:TableProxy, on_clause:str, join_type:str="LEFT", alias:str="") -> None:
-        self.table_proxy = table_proxy
+    def __init__(self, model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> None:
+        self.model = model
         self.on_clause = on_clause
         self.join_type = join_type
         self.alias = alias
         
 class JoinResource:
-    table_proxy:TableProxy
+    model:Model
     joins:list[Join]
 
-    def __init__(self, table_proxy:TableProxy) -> None:
+    def __init__(self, model:Model) -> None:
         self.joins = []
-        self.table_proxy = table_proxy
+        self.model = model
 
-    def join(self, joined_table_proxy:TableProxy, on_clause:str, join_type:str="LEFT", alias:str="") -> None:
-        join = Join(joined_table_proxy, on_clause, join_type, alias)
+    def join(self, joined_model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> None:
+        join = Join(joined_model, on_clause, join_type, alias)
         self.joins.append(join)
 
     def read(self, *args, **kwargs):
@@ -42,7 +42,7 @@ class JoinResource:
             where_clause = args[0]
 
         if len(args) <= 1:
-            header = [self.table_proxy]
-            header = header + [join.table_proxy for join in self.joins]
+            header = [self.model]
+            header = header + [join.model for join in self.joins]
 
-        return self.table_proxy.__table__.read(header, self.joins, where_clause, **kwargs)
+        return self.model.__table__.read(header, self.joins, where_clause, **kwargs)

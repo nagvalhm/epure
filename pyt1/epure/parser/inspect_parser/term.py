@@ -47,7 +47,7 @@ class Term:
         
         if isinstance(other, str) and not "(SELECT" in other\
             or type(other) not in (tuple, str):
-            raise TypeError(f"'{other}' is of type '{type(other)}' and not of type List, Tuple, Set or select TableProxy method, so it cannot be right operand for SQL 'IN' operator")
+            raise TypeError(f"'{other}' is of type '{type(other)}' and not of type List, Tuple, Set or Model.select() method, so it cannot be right operand for SQL 'IN' operator")
             
         return self.__db__.serialize_op('in', str(self), str(other))
 

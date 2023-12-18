@@ -10,7 +10,7 @@ from ast import Name, Constant
 from ..errors import EpureParseError
 from ..helpers.type_helper import check_type
 from uuid import UUID
-from .proxy_base_cls import ColumnProxyBase, TableProxyBase
+from .proxy_base_cls import ColumnProxyBase, ModelBase
 
 class Leaf(Term):
     left_parentheses_count = 0
@@ -89,17 +89,17 @@ class ColumnProxy(QueryingProxy, Name, ColumnProxyBase):
     if TYPE_CHECKING:
         __table__:Table
         __column__:TableColumn
-        __table_proxy__ = None
+        __model__ = None
 
-    def __init__(self, db, table, column, table_proxy=None):
+    def __init__(self, db, table, column, model=None):
         self.__db__ = db
         self.__table__ = table
         self.__column__ = column
         self.__qp_name__ = self.serialize(parentheses=False, full_names=True)
 
-        if table_proxy is None:
-            table_proxy = TableProxy(db, table)
-        self.__table_proxy__ = table_proxy
+        if model is None:
+            model = Model(db, table)
+        self.__model__ = model
         super().__init__()
 
 
@@ -124,7 +124,7 @@ class ColumnProxy(QueryingProxy, Name, ColumnProxyBase):
 
 
     def _copy(self):
-        res = ColumnProxy(self.__db__, self.__table__, self.__column__, self.__table_proxy__)
+        res = ColumnProxy(self.__db__, self.__table__, self.__column__, self.__model__)
         res.__header__ = self.__header__
         res.__is_copy__ = True
         return res
@@ -132,17 +132,17 @@ class ColumnProxy(QueryingProxy, Name, ColumnProxyBase):
     def in_header(self, header:Union[list,tuple]) -> bool:
         table_name = self.__table__.full_name
         for qp in header:
-            check_type('qp', qp, [TableProxy, ColumnProxy])
+            check_type('qp', qp, [Model, ColumnProxy])
             if isinstance(qp, ColumnProxy):
                 if self.__qp_name__ == qp.__qp_name__:
                     return True
-            if isinstance(qp, TableProxy):
+            if isinstance(qp, Model):
                 if qp.__qp_name__ == table_name:
                     return True
         return False
 
 
-class TableProxy(QueryingProxy, Name, TableProxyBase):
+class Model(QueryingProxy, Name, ModelBase):
     if TYPE_CHECKING:
         __table__:Table
 
@@ -188,15 +188,15 @@ class TableProxy(QueryingProxy, Name, TableProxyBase):
         return res
 
     def _copy(self):
-        res = TableProxy(self.__db__, self.__table__)
+        res = Model(self.__db__, self.__table__)
         res.__header__ = self.__header__
         res.__is_copy__ = True
         return res
 
     def in_header(self, header:Union[list,tuple]) -> bool:
         for qp in header:
-            check_type('qp', qp, [TableProxy, ColumnProxy])
-            if isinstance(qp, TableProxy) and self.__qp_name__ == qp.__qp_name__:
+            check_type('qp', qp, [Model, ColumnProxy])
+            if isinstance(qp, Model) and self.__qp_name__ == qp.__qp_name__:
                 return True
         return False
 
@@ -209,7 +209,7 @@ class DbProxy(QueryingProxy):
     def __getitem__(self, key:str):
         if key not in self.__db__:
             raise DbError(f'table {key} not in db {self.__db__.full_name}')
-        res = TableProxy(self.__db__, self.__db__[key])
+        res = Model(self.__db__, self.__db__[key])
         return res
 
     def __iter__(self):

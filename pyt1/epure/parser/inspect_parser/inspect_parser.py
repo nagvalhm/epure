@@ -6,7 +6,7 @@ from typing import Any, Dict
 # import textwrap
 from .term import Term
 from .db_proxy import DbProxy
-from .table_proxy import TableProxy
+from .model import Model
 from .column_proxy import ColumnProxy
 
 # class AstParser(ast.NodeTransformer):
@@ -14,7 +14,7 @@ class InspectParser(ast.NodeTransformer):
 
     astTypesDict:Dict[str, Any]
     column_proxy_cls=ColumnProxy
-    table_proxy_cls=TableProxy
+    model_cls=Model
     ast_type_method_name_dict:Dict[ast.cmpop, str] = {
         ast.Eq: "__eq__",
         ast.NotEq: "__ne__",
@@ -43,7 +43,7 @@ class InspectParser(ast.NodeTransformer):
 
         attr_tp = ast.Attribute()
         attr_dbp = ast.Attribute()
-        attr_tp.type = TableProxy
+        attr_tp.type = Model
         attr_dbp.type = DbProxy
 
         self.astTypesDict[f'{self.first_arg_name}.tp'] = attr_tp
@@ -178,11 +178,11 @@ class InspectParser(ast.NodeTransformer):
 
         if left_val in self.astTypesDict.keys() and\
         self.astTypesDict[left_val].type == DbProxy:
-            node.type = TableProxy
+            node.type = Model
             self.astTypesDict[f'{node_str}'] = node
 
         if left_val in self.astTypesDict.keys() and\
-        self.astTypesDict[left_val].type == TableProxy:
+        self.astTypesDict[left_val].type == Model:
             node.type = ColumnProxy
             self.astTypesDict[f'{node_str}'] = node
 
@@ -206,7 +206,7 @@ class InspectParser(ast.NodeTransformer):
         if comp_targ_in_keys:
             comp_targ_type = self.astTypesDict[compare_targ].type
 
-        if left_val_in_keys and left_val_type in (TableProxy, DbProxy):
+        if left_val_in_keys and left_val_type in (Model, DbProxy):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be present in '{compare_targ}'")
         
         # if not (comp_targ_in_keys and isinstance(self.astTypesDict[compare_targ], ast.Call) and node.comparators[0].func.attr == "select") and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
@@ -245,10 +245,10 @@ class InspectParser(ast.NodeTransformer):
             (comp_targ_in_keys and issubclass(comp_targ_type, ColumnProxy))):
             return node
 
-        if left_val_in_keys and left_val_type in (TableProxy, DbProxy):
+        if left_val_in_keys and left_val_type in (Model, DbProxy):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be compared to '{compare_targ}'")
 
-        elif comp_targ_in_keys and comp_targ_type in (TableProxy, DbProxy):
+        elif comp_targ_in_keys and comp_targ_type in (Model, DbProxy):
             raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type '{ColumnProxy}', so it cannot be compared to '{left_val}'")
 
         # if left_val_in_keys and ((compare_targ.count('%') > compare_targ.count('\%'))\

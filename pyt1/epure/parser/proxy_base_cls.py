@@ -1,5 +1,5 @@
 class ColumnProxyBase:
     pass
 
-class TableProxyBase:
+class ModelBase:
     pass

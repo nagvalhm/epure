@@ -6,8 +6,8 @@ from ..savable import Savable
 from ...errors import  DbError, EpureParseError
 # from ..db.select_query import SelectQuery
 # from ..db.term import JoinBinary, Pseudo, _PseudoColumn, _PseudoTable
-from ...parser.leaf import QueryingProxy, ColumnProxy, TableProxy
-from ...parser.proxy_base_cls import ColumnProxyBase, TableProxyBase
+from ...parser.leaf import QueryingProxy, ColumnProxy, Model
+from ...parser.proxy_base_cls import ColumnProxyBase, ModelBase
 from ...parser.term_parser import JoinOperation
 from uuid import uuid4
 
@@ -77,8 +77,8 @@ class GresTable(Table, GresEntity):
             if isinstance(item, ColumnProxyBase):
             # if isinstance(item, self.db.parser.column_proxy_cls):
                 res += f' {item.serialize(False, full_names, True)},'
-            elif isinstance(item, TableProxyBase):
-            # elif isinstance(item, self.db.parser.table_proxy_cls):
+            elif isinstance(item, ModelBase):
+            # elif isinstance(item, self.db.parser.model_cls):
                 res += f' {item.serialize(False, full_names, True)},'
             elif isinstance(item, str):
                 sp = item.split('.')
@@ -88,7 +88,7 @@ class GresTable(Table, GresEntity):
                 else:
                     res += f' {self.header.serialize_read_column(item, full_names)},'
             else:
-                raise EpureParseError('select header item must be ColumnProxy or TableProxy')
+                raise EpureParseError('select header item must be ColumnProxy or Model')
         res = res[:-1]
 
         # first_item = header[0]
@@ -96,8 +96,8 @@ class GresTable(Table, GresEntity):
         # # if isinstance(first_item, ColumnProxy):
         # if isinstance(first_item, ColumnProxyBase):
         #     table_name = first_item.__table__.full_name
-        # # elif isinstance(first_item, TableProxy):
-        # elif isinstance(first_item, TableProxyBase):
+        # # elif isinstance(first_item, Model):
+        # elif isinstance(first_item, ModelBase):
         #     table_name = str(first_item)
         # elif isinstance(first_item, str):
         #     first_item = first_item.split('.')
@@ -125,7 +125,7 @@ class GresTable(Table, GresEntity):
         return res
 
     def serialize_join(self, join:JoinOperation):
-        return f'{join.join_type} JOIN {join.table_proxy.__table__.full_name} on {join.on_clause} \n'
+        return f'{join.join_type} JOIN {join.model.__table__.full_name} on {join.on_clause} \n'
 
         
 

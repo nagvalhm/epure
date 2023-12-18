@@ -6,8 +6,8 @@ from .constraint import Constraint
 from ..resource import Resource
 from ..node.node import Node
 from ...parser.term import Term
-# from ...parser.leaf import TableProxy, QueryingProxy, DbProxy, ColumnProxy
-from ...parser.inspect_parser.table_proxy import TableProxy
+# from ...parser.leaf import Model, QueryingProxy, DbProxy, ColumnProxy
+from ...parser.inspect_parser.model import Model
 from ...parser.inspect_parser.db_proxy import DbProxy
 from ..db.table_column import TableColumn
 from collections import OrderedDict
@@ -38,7 +38,7 @@ class Table(DbEntity):
         parser: TermParser
     # querying_proxy: QueryingProxy
     # resource_proxy: DbProxy
-    querying_proxy:TableProxy
+    querying_proxy:Model
     resource_proxy:DbProxy
 
     if TYPE_CHECKING:
@@ -61,7 +61,7 @@ class Table(DbEntity):
             parser = TermParser(self)
         
         self.parser = parser
-        self.querying_proxy = TableProxy(self.db, self)
+        self.querying_proxy = Model(self.db, self)
         self.resource_proxy = DbProxy(self.db)
         
 
@@ -447,7 +447,7 @@ class Table(DbEntity):
         for item in header:
             # if isinstance(item, ColumnProxy):
             if isinstance(item, ColumnProxyBase):
-                tp = item.__table_proxy__
+                tp = item.__model__
                 node_id = getattr(tp, 'node_id', None)
                 if node_id is not None and not node_id.in_header(header + res):
                     res.append(node_id)
@@ -478,7 +478,7 @@ class Table(DbEntity):
         # tables = []
         # columns = []
         # for item in header:
-        #     if isinstance(item, TableProxy):
+        #     if isinstance(item, Model):
         #         table_name = item.str(False, True)
         #         tables.append(table_name)
         #     if isinstance(item, ColumnProxy):
@@ -488,7 +488,7 @@ class Table(DbEntity):
         # res = []
         # for item in header:
         #     if isinstance(item, ColumnProxy):
-        #         tp = item.__table_proxy__
+        #         tp = item.__model__
         #         table_name = tp.str(False, True)
         #         if (not table_name in tables) and\
         #                 hasattr(tp, 'node_id') and\

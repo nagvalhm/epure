@@ -3,16 +3,16 @@ from ..proxy_base_cls import ColumnProxyBase
 from typing import Union
 
 class ColumnProxy(Term, ColumnProxyBase):
-    def __init__(self, db, table, column, table_proxy=None):
+    def __init__(self, db, table, column, model=None):
         self.__db__ = db
         self.__table__ = table
         self.__column__ = column
         self.__qp_name__ = self.serialize(parentheses=False, full_names=True)
 
-        if table_proxy is None:
-            from .table_proxy import TableProxy
-            table_proxy = TableProxy(db, table)
-        self.__table_proxy__ = table_proxy
+        if model is None:
+            from .model import Model
+            model = Model(db, table)
+        self.__model__ = model
         super().__init__()
 
     def serialize(self, parentheses=True, full_names=True, for_header=False) -> str:
@@ -31,13 +31,13 @@ class ColumnProxy(Term, ColumnProxyBase):
     
     def in_header(self, header:Union[list,tuple]) -> bool:
         table_name = self.__table__.full_name
-        from .table_proxy import TableProxy
+        from .model import Model
         for qp in header:
-            # check_type('qp', qp, [TableProxy, ColumnProxy])
+            # check_type('qp', qp, [Model, ColumnProxy])
             if isinstance(qp, ColumnProxy):
                 if self.__qp_name__ == qp.__qp_name__:
                     return True
-            if isinstance(qp, TableProxy):
+            if isinstance(qp, Model):
                 if qp.__qp_name__ == table_name:
                     return True
         return False
