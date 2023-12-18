@@ -359,7 +359,7 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
         # tp_err_prop = getattr(self, "tp")
         # dbp_err_prop = getattr(self, "tp")
         # from .resource.node.elist import ECollectionMetacls
-        from .resource.node.elist import Elist, Eset
+        # from .resource.node.elist import Elist, Eset
 
         if isinstance(type(self), Epure):
             db = self.resource.db
@@ -372,12 +372,12 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
             full_name = self.full_name
         
         self.dbp = DbModel(db)
-        self.tp = getattr(self.dbp, full_name)
+        self.md = getattr(self.dbp, full_name)
 
         res = func(self, *args, **kwargs)
 
         delattr(self, "dbp")
-        delattr(self, "tp")
+        delattr(self, "md")
         
         return res
 

@@ -71,22 +71,22 @@ def foo2():
 # @foo
 
 def test_two_joins(self):
-    tp = self.tp
+    md = self.md
     dbp = self.dbp
     test_order_tp = dbp.test_order
     test_office_tp = dbp.test_shippment_office
     lst = ["bde"]
     
-    join_res = tp.join(test_order_tp, tp.node_id == test_order_tp.test_customer_id)
+    join_res = md.join(test_order_tp, md.node_id == test_order_tp.test_customer_id)
 
     join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.node_id)
 
     lst = ["bde"]
 
-    query = tp.name in ("abc","def") and tp.name in lst
+    query = md.name in ("abc","def") and md.name in lst
     
 
-    res_header = join_res.read([test_office_tp.adress, tp.name, tp, test_order_tp, tp.country], test_office_tp.adress == "Washington str.")
+    res_header = join_res.read([test_office_tp.adress, md.name, md, test_order_tp, md.country], test_office_tp.adress == "Washington str.")
 
     res_no_header = join_res.read(test_office_tp.adress == "Washington str.")
 

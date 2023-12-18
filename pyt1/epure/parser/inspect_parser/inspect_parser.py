@@ -46,7 +46,7 @@ class InspectParser(ast.NodeTransformer):
         attr_tp.type = Model
         attr_dbp.type = DbModel
 
-        self.astTypesDict[f'{self.first_arg_name}.tp'] = attr_tp
+        self.astTypesDict[f'{self.first_arg_name}.md'] = attr_tp
         # self.astTypesDict[f'{self.first_arg_name}.querying_proxy'] = attr_tp
         self.astTypesDict[f'{self.first_arg_name}.dbp'] = attr_dbp
 
@@ -77,7 +77,7 @@ class InspectParser(ast.NodeTransformer):
         if left_val_in_keys and comp_targ_in_keys:
             # op_str = "_or" if type(node.op) is ast.Or else "_and"
             op_str = self.ast_type_method_name_dict[type(node.op)]
-            new_node_str = f"{self.first_arg_name}.tp.{op_str}({left_val}, {compare_targ})"
+            new_node_str = f"{self.first_arg_name}.md.{op_str}({left_val}, {compare_targ})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
             self.astTypesDict[new_node_str] = node
@@ -91,7 +91,7 @@ class InspectParser(ast.NodeTransformer):
         node_str = ast.unparse(node.operand)
 
         if type(node.op) == Not and node_str in self.astTypesDict:
-            new_node_str = f"{self.first_arg_name}.tp._not({node_str})"
+            new_node_str = f"{self.first_arg_name}.md._not({node_str})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
             self.astTypesDict[new_node_str] = node

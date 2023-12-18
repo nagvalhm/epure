@@ -447,8 +447,8 @@ class Table(DbEntity):
         for item in header:
             # if isinstance(item, ColumnProxy):
             if isinstance(item, ColumnProxyBase):
-                tp = item.__model__
-                node_id = getattr(tp, 'node_id', None)
+                md = item.__model__
+                node_id = getattr(md, 'node_id', None)
                 if node_id is not None and not node_id.in_header(header + res):
                     res.append(node_id)
         
@@ -534,17 +534,17 @@ class Table(DbEntity):
 
     @escript
     def get_condition_by_kwargs(self, operator="", **kwargs):
-        tp = self.tp
+        md = self.md
             
         kwargs_items = list(kwargs.items())
         first_item = kwargs_items[0]
-        term = getattr(tp, first_item[0]) == first_item[1]
+        term = getattr(md, first_item[0]) == first_item[1]
 
         for (key, val) in kwargs_items[1:]:
             if operator == 'or':
-                term = term or getattr(tp, key) == val
+                term = term or getattr(md, key) == val
             else:
-                term = term and getattr(tp, key) == val
+                term = term and getattr(md, key) == val
         
         return term
 
