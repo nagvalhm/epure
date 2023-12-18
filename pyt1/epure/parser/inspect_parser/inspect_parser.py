@@ -5,7 +5,7 @@ from typing import Any, Dict
 # import inspect
 # import textwrap
 from .term import Term
-from .db_proxy import DbProxy
+from .db_model import DbModel
 from .model import Model
 from .column_proxy import ColumnProxy
 
@@ -44,7 +44,7 @@ class InspectParser(ast.NodeTransformer):
         attr_tp = ast.Attribute()
         attr_dbp = ast.Attribute()
         attr_tp.type = Model
-        attr_dbp.type = DbProxy
+        attr_dbp.type = DbModel
 
         self.astTypesDict[f'{self.first_arg_name}.tp'] = attr_tp
         # self.astTypesDict[f'{self.first_arg_name}.querying_proxy'] = attr_tp
@@ -177,7 +177,7 @@ class InspectParser(ast.NodeTransformer):
             return node
 
         if left_val in self.astTypesDict.keys() and\
-        self.astTypesDict[left_val].type == DbProxy:
+        self.astTypesDict[left_val].type == DbModel:
             node.type = Model
             self.astTypesDict[f'{node_str}'] = node
 
@@ -206,7 +206,7 @@ class InspectParser(ast.NodeTransformer):
         if comp_targ_in_keys:
             comp_targ_type = self.astTypesDict[compare_targ].type
 
-        if left_val_in_keys and left_val_type in (Model, DbProxy):
+        if left_val_in_keys and left_val_type in (Model, DbModel):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be present in '{compare_targ}'")
         
         # if not (comp_targ_in_keys and isinstance(self.astTypesDict[compare_targ], ast.Call) and node.comparators[0].func.attr == "select") and (type(node.comparators[0]) not in (ast.Name, ast.List, ast.Tuple, ast.Set)):
@@ -245,10 +245,10 @@ class InspectParser(ast.NodeTransformer):
             (comp_targ_in_keys and issubclass(comp_targ_type, ColumnProxy))):
             return node
 
-        if left_val_in_keys and left_val_type in (Model, DbProxy):
+        if left_val_in_keys and left_val_type in (Model, DbModel):
             raise TypeError(f"'{left_val}' is of type '{left_val_type}' and not of type '{ColumnProxy}', so it cannot be compared to '{compare_targ}'")
 
-        elif comp_targ_in_keys and comp_targ_type in (Model, DbProxy):
+        elif comp_targ_in_keys and comp_targ_type in (Model, DbModel):
             raise TypeError(f"'{compare_targ}' is of type '{comp_targ_type}' and not of type '{ColumnProxy}', so it cannot be compared to '{left_val}'")
 
         # if left_val_in_keys and ((compare_targ.count('%') > compare_targ.count('\%'))\

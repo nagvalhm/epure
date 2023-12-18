@@ -6,9 +6,9 @@ from .constraint import Constraint
 from ..resource import Resource
 from ..node.node import Node
 from ...parser.term import Term
-# from ...parser.leaf import Model, QueryingProxy, DbProxy, ColumnProxy
+# from ...parser.leaf import Model, QueryingProxy, DbModel, ColumnProxy
 from ...parser.inspect_parser.model import Model
-from ...parser.inspect_parser.db_proxy import DbProxy
+from ...parser.inspect_parser.db_model import DbModel
 from ..db.table_column import TableColumn
 from collections import OrderedDict
 from ..node.proto import Proto
@@ -37,9 +37,9 @@ class Table(DbEntity):
     if TYPE_CHECKING:
         parser: TermParser
     # querying_proxy: QueryingProxy
-    # resource_proxy: DbProxy
+    # resource_proxy: DbModel
     querying_proxy:Model
-    resource_proxy:DbProxy
+    resource_proxy:DbModel
 
     if TYPE_CHECKING:
         resource:TableStorage
@@ -62,7 +62,7 @@ class Table(DbEntity):
         
         self.parser = parser
         self.querying_proxy = Model(self.db, self)
-        self.resource_proxy = DbProxy(self.db)
+        self.resource_proxy = DbModel(self.db)
         
 
 

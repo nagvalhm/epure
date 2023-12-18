@@ -1,7 +1,7 @@
 from _ast import BoolOp
 from typing import Any
-# from ..epure.parser.leaf import DbProxy
-from ..epure.parser.inspect_parser.db_proxy import DbProxy
+# from ..epure.parser.leaf import DbModel
+from ..epure.parser.inspect_parser.db_model import DbModel
 from ..epure import epure
 from ..epure.epure import escript
 
@@ -14,7 +14,7 @@ def foo2():
     return 2
 
 def test_simple_queries_inspect_parser_read_decorator():
-    # dbp = DbProxy(real_db)
+    # dbp = DbModel(real_db)
     # tp = dbp['oraculs_domain.competitions']
     # y = dbp['oraculs_domain.oraculs']
 
@@ -22,7 +22,7 @@ def test_simple_queries_inspect_parser_read_decorator():
     # class ReadHolderCls:
     #     def read(func):
     #         def inner(self, *args, **kwargs):
-    #             dbp = DbProxy(self.resource.db)
+    #             dbp = DbModel(self.resource.db)
     #             self.tp = dbp["public.inspect_parser_test_cls"]
     #             func_source = inspect.getsource(func)
     #             dedent_src = textwrap.dedent(func_source)

@@ -3,7 +3,7 @@ import pytest
 # skip the test
 pytest.skip(allow_module_level=True)
 
-from ...epure.parser.leaf import DbProxy
+from ...epure.parser.leaf import DbModel
 from ...epure.parser.term_parser import TermParser
 from ..epure_classes import db as real_db
 import networkx as nx
@@ -22,7 +22,7 @@ from ...epure.parser.term_debugger import MatplotTermDebugger
 #     plt.show()
 
 def test_simple_queries():
-    db = DbProxy(real_db)
+    db = DbModel(real_db)
     x = db['oraculs_domain.competitions']
     y = db['oraculs_domain.oraculs']
 
@@ -172,7 +172,7 @@ def test_simple_queries():
     
 
 def test_join_queries():
-    db = DbProxy(real_db)
+    db = DbModel(real_db)
     x = db['default_epure']
     y = db['oraculs_domain.test_clssasdas']
 
@@ -191,7 +191,7 @@ def test_join_queries():
 
 
 def test_term_parser():
-    db = DbProxy(real_db)
+    db = DbModel(real_db)
     x = db['default_epure']
     real_x = real_db['default_epure']
     y = db['oraculs_domain.test_clssasdas']
@@ -434,7 +434,7 @@ def test_term_parser():
     # assert query == "(f1 == f2 or f3 % '%test_like%' and 5 == f5 or (f6 == f7))"
 
 def test_columns_select():
-    db = DbProxy(real_db)    
+    db = DbModel(real_db)    
     real_x = real_db['default_epure']
     parser = TermParser(real_x)
 
@@ -529,7 +529,7 @@ def test_columns_select():
     # assert query == ""
 
 def test_join_with_delimeter():
-    db = DbProxy(real_db)
+    db = DbModel(real_db)
     real_x = real_db['default_epure']
     parser = TermParser(real_x)
     x = db['default_epure']

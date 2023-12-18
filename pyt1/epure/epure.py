@@ -8,7 +8,7 @@ from .resource.db.constraint import Foreign, Default, Constraint
 from .resource.node.ecollection_metacls import ECollectionMetacls
 
 from uuid import UUID
-from .parser.inspect_parser.db_proxy import DbProxy
+from .parser.inspect_parser.db_model import DbModel
 import textwrap
 import inspect
 from .parser.inspect_parser.inspect_parser import InspectParser
@@ -371,7 +371,7 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
             db = self.db
             full_name = self.full_name
         
-        self.dbp = DbProxy(db)
+        self.dbp = DbModel(db)
         self.tp = getattr(self.dbp, full_name)
 
         res = func(self, *args, **kwargs)
