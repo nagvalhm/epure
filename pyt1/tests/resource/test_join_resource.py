@@ -77,9 +77,9 @@ def test_two_joins(self):
     test_office_tp = dbm.test_shippment_office
     lst = ["bde"]
     
-    join_res = md.join(test_order_tp, md.node_id == test_order_tp.test_customer_id)
+    join_res = md.join(test_order_tp, md.data_id == test_order_tp.test_customer_id)
 
-    join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.node_id)
+    join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.data_id)
 
     lst = ["bde"]
 

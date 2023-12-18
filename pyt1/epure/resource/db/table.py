@@ -4,16 +4,16 @@ from typing import TYPE_CHECKING, Dict, Union, List, ItemsView, Any, Type, Calla
 from ..savable import Savable
 from .constraint import Constraint
 from ..resource import Resource
-from ..node.node import Node
+from ..edata.edata import EData
 from ...parser.term import Term
 # from ...parser.leaf import Model, QueryingProxy, DbModel, ColumnProxy
 from ...parser.inspect_parser.model import Model
 from ...parser.inspect_parser.db_model import DbModel
 from ..db.table_column import TableColumn
 from collections import OrderedDict
-from ..node.proto import Proto
+from ..edata.proto import Proto
 from uuid import UUID
-# from ..node.elist import ElistMetacls
+# from ..edata.elist import ElistMetacls
 from ...parser.inspect_parser.inspect_parser import InspectParser
 from ...parser.proxy_base_cls import ColumnProxyBase
 from copy import deepcopy
@@ -28,7 +28,7 @@ from .db_entity import DbEntity
 from ...helpers.type_helper import check_type
 from ...errors import EpureError, DbError
 from .table_header import TableHeader
-from ..node_promise import FieldPromise, NodePromise, ElistPromise
+from ..data_promise import FieldPromise, DataPromise, ElistPromise
 from ...epure import Epure
 
 
@@ -79,7 +79,7 @@ class Table(DbEntity):
     #         if not hasattr(node, field_name):
     #             continue
 
-    #         field_val = getattr(node, field_name, None)
+    #         field_val = getattr(edata, field_name, None)
             
     #         field_val = self._serialize_field_val(field_val, field_type)
 
@@ -88,17 +88,17 @@ class Table(DbEntity):
     #     return res
 
     @classmethod
-    def is_excluded(self, node, atr_name:str, type_hint:Any='') -> bool:
+    def is_excluded(self, edata, atr_name:str, type_hint:Any='') -> bool:
         if type_hint in (NoneType, None):
             return True
-        return super().is_excluded(node, atr_name, atr_name)
+        return super().is_excluded(edata, atr_name, atr_name)
 
 
     def _serialize_field_val_to_sql(self, field_val, field_type=None, field_name=None, rec_depth=None, *args):
         #working for db:
             if isinstance(field_val, Savable):
-                field_type = field_val.annotations['node_id']
-                field_val = field_val.save(True).node_id
+                field_type = field_val.annotations['data_id']
+                field_val = field_val.save(True).data_id
             
             if (isinstance(field_type, type) and issubclass(field_type, Savable)\
                 and not isinstance(field_val, Savable)):
@@ -109,14 +109,14 @@ class Table(DbEntity):
             return field_val
 
 
-    def create(self, node: Node, asynch:bool=False) -> object:
-        node.node_id = self.generate_id()
-        script = self.serialize_for_create(node)
+    def create(self, edata: EData, asynch:bool=False) -> object:
+        edata.data_id = self.generate_id()
+        script = self.serialize_for_create(edata)
         if asynch:
             self.cache(script)
         else:
             self.execute(script)
-        return node
+        return edata
 
     
     # def read(self, *args, **kwargs) -> Any:        
@@ -172,7 +172,7 @@ class Table(DbEntity):
             where_clause = args[0]
 
         # res = self.serialize_read(header=header, joins=[], where_clause=where_clause, full_names=True)
-        res = self.select(header, where_clause, joins=joins,include_node_id=True, **kwargs)
+        res = self.select(header, where_clause, joins=joins,include_data_id=True, **kwargs)
         res = res.replace(r"\\","\\")
         return self.read_by_sql(res)
 
@@ -182,8 +182,8 @@ class Table(DbEntity):
     def delete(self, *args, **kwargs):
         return self.delete_by_id(args[0])
     
-    def delete_by_id(self, node_id: str|UUID):
-        delete_sql = self.serialize_for_delete(node_id)
+    def delete_by_id(self, data_id: str|UUID):
+        delete_sql = self.serialize_for_delete(data_id)
         res = self.execute(delete_sql)
         return res
 
@@ -253,15 +253,15 @@ class Table(DbEntity):
         if not rows:
             return res
         full_name_epure_dict = self._column_full_name_epure_dict(rows[0])
-        for node_dict in rows:
-            res_row = self._init_epures_row(node_dict, full_name_epure_dict, lazy_read)
+        for data_dict in rows:
+            res_row = self._init_epures_row(data_dict, full_name_epure_dict, lazy_read)
             res.append(res_row)
         return res
 
 
-    def _init_epures_row(self, node_dict, full_name_epure_dict, lazy_read) -> Dict[type, dict]:
+    def _init_epures_row(self, data_dict, full_name_epure_dict, lazy_read) -> Dict[type, dict]:
         epure_attrs_dict = OrderedDict()
-        for full_name, db_val in node_dict.items():
+        for full_name, db_val in data_dict.items():
             column_tuple = full_name_epure_dict[full_name]
             epure_cls = column_tuple[0]
             column = column_tuple[1]
@@ -313,20 +313,20 @@ class Table(DbEntity):
         for field_name, field_val in attrs.items():
             setattr(res, field_name, field_val)
 
-        if not (hasattr(res, 'annotations') and 'node_id' in attrs):
+        if not (hasattr(res, 'annotations') and 'data_id' in attrs):
             return res
 
         res.__promises_dict__ = {}
 
         for field_name, field_type in res.annotations.items():
-            from ..node.elist import ECollectionMetacls
+            from ..edata.elist import ECollectionMetacls
 
             if self.is_excluded(epure_cls, field_name, field_type):
                 continue
 
             if field_name not in attrs:
-                node_id = attrs['node_id']
-                promise = FieldPromise(epure_cls.resource, node_id, field_name)
+                data_id = attrs['data_id']
+                promise = FieldPromise(epure_cls.resource, data_id, field_name)
                 # setattr(res, field_name, promise)
                 # delattr(res, field_name)
                 res.__promises_dict__[field_name] = promise
@@ -335,18 +335,18 @@ class Table(DbEntity):
                 setattr(res, field_name, None)
 
             elif isinstance(field_type, Epure):
-                node_id = attrs[field_name]
+                data_id = attrs[field_name]
                 if issubclass(field_type, Proto) and field_name == '__proto__':
-                    proto = field_type.resource.read(node_id=node_id)
+                    proto = field_type.resource.read(data_id=data_id)
                     res.set_proto_fields(proto)
                 elif lazy_read:
-                    promise = NodePromise(field_type.resource, node_id)
+                    promise = DataPromise(field_type.resource, data_id)
                     # setattr(res, field_name, promise)
                     delattr(res, field_name)
                     res.__promises_dict__[field_name] = promise
                 elif not lazy_read:
-                    node = field_type.resource.read(node_id=node_id)
-                    setattr(res, field_name, node)
+                    edata = field_type.resource.read(data_id=data_id)
+                    setattr(res, field_name, edata)
 
             elif isinstance(field_type, ECollectionMetacls):
                 eset_id = attrs[field_name]
@@ -360,15 +360,15 @@ class Table(DbEntity):
                     res.__promises_dict__[field_name] = promise
                 elif not lazy_read:
                     list_values_rows = collection_epure.resource.read(eset_id=eset_id)
-                    node = field_type(list_values_rows)
-                    setattr(res, field_name, node)
+                    edata = field_type(list_values_rows)
+                    setattr(res, field_name, edata)
         return res
 
 
 
-    def _column_full_name_epure_dict(self, node_dict) -> Dict[str, tuple]:
+    def _column_full_name_epure_dict(self, data_dict) -> Dict[str, tuple]:
         res = OrderedDict()
-        for full_name, val in node_dict.items():
+        for full_name, val in data_dict.items():
             dot_name = full_name.replace('___', '.')
             split = dot_name.rsplit('.', 1)
             table_name = split[0]
@@ -386,13 +386,13 @@ class Table(DbEntity):
         return res
 
 
-    def update(self, node: Savable, asynch:bool=False) -> object:
-        script = self.serialize_for_update(node)
+    def update(self, edata: Savable, asynch:bool=False) -> object:
+        script = self.serialize_for_update(edata)
         if asynch:
             self.cache(script)
         else:
             self.execute(script)
-        return node
+        return edata
 
 
     def cache(self, script: str):        
@@ -409,13 +409,13 @@ class Table(DbEntity):
         self.header = header
         self.header.resource = self
        
-    def serialize_for_create(self, node: Savable, **kwargs) -> object:
+    def serialize_for_create(self, edata: Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def serialize_for_read(self, node: Savable, **kwargs) -> object:
+    def serialize_for_read(self, edata: Savable, **kwargs) -> object:
         raise NotImplementedError
 
-    def serialize_for_update(self, node: Savable, **kwargs) -> object:
+    def serialize_for_update(self, edata: Savable, **kwargs) -> object:
         raise NotImplementedError
 
     def serialize_for_delete(self, *args, **kwargs) -> object:
@@ -442,15 +442,15 @@ class Table(DbEntity):
             res.append(serialized)
         return res
 
-    def _add_node_id_fields(self, header:List):
+    def _add_data_id_fields(self, header:List):
         res = []
         for item in header:
             # if isinstance(item, ColumnProxy):
             if isinstance(item, ColumnProxyBase):
                 md = item.__model__
-                node_id = getattr(md, 'node_id', None)
-                if node_id is not None and not node_id.in_header(header + res):
-                    res.append(node_id)
+                data_id = getattr(md, 'data_id', None)
+                if data_id is not None and not data_id.in_header(header + res):
+                    res.append(data_id)
         
         # res = tuple(res)
         header = tuple(header)
@@ -461,9 +461,9 @@ class Table(DbEntity):
                 sp = item.split('.')
 
                 if len(sp) == 3:
-                    node_id_column = f'{sp[0]}.{sp[1]}.node_id'
-                    if node_id_column not in header:
-                        res.add(node_id_column)
+                    data_id_column = f'{sp[0]}.{sp[1]}.data_id'
+                    if data_id_column not in header:
+                        res.add(data_id_column)
                     
         res = tuple(res)
 
@@ -497,7 +497,7 @@ class Table(DbEntity):
         #             columns.append(tp.node_id.str(False, True))
         # return res
 
-    def select(self, *args, joins=[], include_node_id=False, **kwargs):
+    def select(self, *args, joins=[], include_data_id=False, **kwargs):
 
         # header = get_select_header(args[0])
         body = args[1]
@@ -507,7 +507,7 @@ class Table(DbEntity):
             body = self.get_condition_by_kwargs(**kwargs)
 
     # if args:
-        return self.serialize_read(header=args[0], joins=joins, where_clause=body, full_names=True, include_node_id=include_node_id)
+        return self.serialize_read(header=args[0], joins=joins, where_clause=body, full_names=True, include_data_id=include_data_id)
         
     # @escript
     # def get_condition_by_kwargs(self, operator:str="", **kwargs):

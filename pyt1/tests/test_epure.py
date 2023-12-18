@@ -18,8 +18,8 @@ import base64
 
 def get_epure(cls):
     epure = cls()
-    id = epure.save().node_id
-    res = epure.table.read(node_id=id)
+    id = epure.save().data_id
+    res = epure.table.read(data_id=id)
 
     # initial_epure_json = epure.table._serialize(epure)
     # res_json = epure.table._serialize(res[0])
@@ -113,8 +113,8 @@ def default_epure(regular_class3, epure_class3, epure_class1):
 
     epure.with_out_hint = True
 
-    id = epure.save().node_id
-    res = epure.table.read(node_id=id)
+    id = epure.save().data_id
+    res = epure.table.read(data_id=id)
 
     # orig_json = epure.to_json()
     # res_json = res[0].to_json()
@@ -127,7 +127,7 @@ def default_epure(regular_class3, epure_class3, epure_class1):
     # res = epure.table.read(int3=6, str3="str3_value")
 
     assert not hasattr(res[0], "with_out_hint")
-    assert res[0].node_id == epure.node_id
+    assert res[0].data_id == epure.data_id
     return res
 
 def test_default_epure_table(default_epure):
@@ -163,9 +163,9 @@ def test_aliased_epure_fields_in_correct_tables():
 
 def test_default_epure_delete_row_by_id():
     res = EpureClass1()
-    node_id = res.save().node_id
-    res.table.delete_by_id(node_id)
-    read_res = res.table.read(node_id=node_id)
+    data_id = res.save().data_id
+    res.table.delete_by_id(data_id)
+    read_res = res.table.read(data_id=data_id)
     assert read_res == []
     
 # @pytest.fixture
@@ -213,7 +213,7 @@ def test_epure_cls_save_img():
 
     epure_inst.save()
 
-    res = epure_inst.table.read(node_id=epure_inst.node_id)[0]
+    res = epure_inst.table.read(data_id=epure_inst.data_id)[0]
 
     # ep = EpureClass2.from_dict(epure_inst.__dict__)
 

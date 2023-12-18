@@ -38,7 +38,7 @@ class ECollectionMetacls(type):
 
     def __getitem__(self:Type, param:Any):
         from ...epure import epure
-        from .node import EsetTableNode
+        from .edata import EsetTableData
         from .elist import Elist
 
         if issubclass(self, Elist):
@@ -63,7 +63,7 @@ class ECollectionMetacls(type):
             res.collection_epure = epure(resource=f'ecollections.{name}')(obj)
         else:
             obj.__annotations__ = {"eset_id":UUID, "value":param}
-            res.collection_epure = epure(resource=f'ecollections.{name}', saver=EsetTableNode)(obj)
+            res.collection_epure = epure(resource=f'ecollections.{name}', saver=EsetTableData)(obj)
         
         self.ecollections[name] = res
 

@@ -33,7 +33,7 @@ class JsonbTable(GresTable):
         super().__init__(name=name, header=header, namespace=namespace, resource=resource)
     
     def serialize_header(self, db: TableStorage=None, **kwargs) -> List[Dict[str, str]]:
-        res: List[Dict[str, str]] = [{'column_name': 'node_id', 'column_type': 'uuid'}, {'column_name': 'jsonb___data', 'column_type': 'jsonb'}]
+        res: List[Dict[str, str]] = [{'column_name': 'data_id', 'column_type': 'uuid'}, {'column_name': 'jsonb___data', 'column_type': 'jsonb'}]
         
         return res
 

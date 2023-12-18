@@ -49,7 +49,7 @@ class Model(Term, ModelBase):
         join_resource.join(model, on_clause, join_type, alias)
         return join_resource
     
-    def select(self, *args, joins=[], include_node_id=False, **kwargs):
+    def select(self, *args, joins=[], include_data_id=False, **kwargs):
         if type(args[0]) not in (tuple,list,set):
             raise ValueError(f"first arg must be tuple, list or set, not {args[0]}")
-        return "(" + self.__table__.select(*args, joins=joins, include_node_id=include_node_id, **kwargs) + ")"
+        return "(" + self.__table__.select(*args, joins=joins, include_data_id=include_data_id, **kwargs) + ")"

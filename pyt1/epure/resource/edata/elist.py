@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Iterable
-from .node import TableNode
+from .edata import TableData
 from typing import List, Any, Type, Generic, Set, Dict
 from uuid import UUID, uuid4
 from ...epure import Epure, epure, escript
@@ -8,19 +8,19 @@ from types import NoneType
 from .ecollection_metacls import ECollectionMetacls
 from ..db.table import Table
 
-class Elist(TableNode, List, metaclass=ECollectionMetacls):
+class Elist(TableData, List, metaclass=ECollectionMetacls):
 # class Elist(TableNode, List):
     entries:List
     deleted_entries:List
     py_type:type = NoneType
     collection_epure:Epure = None
-    node_id:UUID
+    data_id:UUID
 
     def __init__(self, _list:List) -> None:
         self.entries = []
         self.deleted_entries = []
         if isinstance(_list[0], self.collection_epure):
-            self.node_id = _list[0].eset_id
+            self.data_id = _list[0].eset_id
             _list.sort(key= lambda x: x.value_order)
             self.entries = _list
         else:
@@ -33,8 +33,8 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
 
     def save(self, asynch:bool=False) -> UUID:
             
-        if not hasattr(self,"node_id") or not self.node_id:
-            self.node_id = uuid4()
+        if not hasattr(self,"data_id") or not self.data_id:
+            self.data_id = uuid4()
 
         val_len = self.entries.__len__()
         for i in range(val_len):
@@ -43,7 +43,7 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
                 raise TypeError(f"value '{item.value}' of type '{type(item.value)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
             
-            item.eset_id = self.node_id
+            item.eset_id = self.data_id
             item.value_order = i
 
             # if hasattr(val, "__deleted__") and val.__deleted__:
@@ -55,7 +55,7 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
 
         for i in range(self.deleted_entries.__len__()):
             item = self.deleted_entries[i]
-            self.collection_epure.resource.delete(item.node_id)
+            self.collection_epure.resource.delete(item.data_id)
         
         self.deleted_entries = []
 
@@ -143,23 +143,23 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
         if not isinstance(self.py_type, Epure):
             return
 
-        node_id_dict:dict = {}
+        data_id_dict:dict = {}
         
         for val in self.entries:
             if hasattr(val, '__promises_dict__') and 'value' in val.__promises_dict__:
-                node_id_dict[val.__promises_dict__['value'].node_id] = val
+                data_id_dict[val.__promises_dict__['value'].data_id] = val
 
-        if len(node_id_dict) == 0:
+        if len(data_id_dict) == 0:
             return
 
         # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
         # res = self.py_type.resource.read(self.tp.node_id in list(node_id_dict.keys()))
         py_type_tp = getattr(self.dbm, self.py_type.resource.full_name)
-        res = self.py_type.resource.read(py_type_tp.node_id in list(node_id_dict.keys()))
+        res = self.py_type.resource.read(py_type_tp.data_id in list(data_id_dict.keys()))
 
 
         for val in res:
-            node_id_dict[val.node_id].value = val
+            data_id_dict[val.data_id].value = val
 
     def __len__(self) -> int:
         return self.entries.__len__()
@@ -172,18 +172,18 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
             # "value" in item.__promises_dict__:
             #     id = item.__promises_dict__['value'].node_id
             # else:
-            id = item.node_id
+            id = item.data_id
 
             res.append(str(id))
 
         return res
 
-class Eset(set, TableNode, metaclass=ECollectionMetacls):
+class Eset(set, TableData, metaclass=ECollectionMetacls):
     # entries:Set
     deleted_entries:Set
     py_type:type = NoneType
     collection_epure:Epure = None
-    node_id:UUID
+    data_id:UUID
 
     def __init__(self, _set:Set, collection_resourse=None) -> None:
         super(set, self).__init__()
@@ -192,7 +192,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
         self.deleted_entries = []
         if isinstance(_set[0], self.collection_epure):
-                self.node_id = _set[0].eset_id
+                self.data_id = _set[0].eset_id
                 super(self.__class__, self).update(_set)
         else:
             for item in _set:
@@ -215,8 +215,8 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
     def save(self, asynch:bool=False):
             
-        if not hasattr(self, "node_id") or not self.node_id:
-            self.node_id = uuid4()
+        if not hasattr(self, "data_id") or not self.data_id:
+            self.data_id = uuid4()
 
         val_len = self.__len__()
         self_list = list(self)
@@ -226,7 +226,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
                 raise TypeError(f"value '{item.value}' of type '{type(item.value)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
             
-            item.eset_id = self.node_id
+            item.eset_id = self.data_id
 
             # if hasattr(val, "__deleted__") and val.__deleted__:
             #     self.resource.delete(val)
@@ -237,8 +237,8 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
         for i in range(self.deleted_entries.__len__()):
             item = self.deleted_entries[i]
-            if hasattr(item, "node_id") and item.node_id:
-                self.collection_epure.resource.delete(item.node_id)
+            if hasattr(item, "data_id") and item.data_id:
+                self.collection_epure.resource.delete(item.data_id)
         
         self.deleted_entries = []
 
@@ -276,7 +276,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
             # "value" in item.__promises_dict__:
             #     id = item.__promises_dict__['value'].node_id
             # else:
-            id = item.node_id
+            id = item.data_id
 
             res.append(str(id))
 
@@ -293,7 +293,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
 
     @classmethod
     def get_collection_epure(cls, table=None, parent_obj=None, field_name=None):        
-        from .node import EsetTableNode
+        from .edata import EsetTableData
 
         if table != None:
             name = name.full_name
@@ -309,7 +309,7 @@ class Eset(set, TableNode, metaclass=ECollectionMetacls):
     
         obj = type(name, (object,), {})
         obj.__annotations__ = {"eset_id":UUID, "value":cls.py_type}
-        res = epure(resource=f'ecollections.{name}',saver=EsetTableNode)(obj)
+        res = epure(resource=f'ecollections.{name}',saver=EsetTableData)(obj)
 
         return res
     

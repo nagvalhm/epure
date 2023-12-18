@@ -37,10 +37,10 @@ class Savable(Resource):
         raise NotImplementedError
 
     @classmethod
-    def is_excluded(self, node, atr_name:str, type_hint:Any='') -> bool:
-        cls = type(node)
-        if isinstance(node, type):
-            cls = node
+    def is_excluded(self, edata, atr_name:str, type_hint:Any='') -> bool:
+        cls = type(edata)
+        if isinstance(edata, type):
+            cls = edata
 
         if hasattr(cls, '__exclude__') and atr_name in cls.__exclude__:
             return True
@@ -55,22 +55,22 @@ class Savable(Resource):
     def execute(self, script: str = '') -> object:
         return self.resource.execute(script)
     
-    def _serialize(self, node: Savable, serializer:Callable, rec_depth:int=None, *args) -> Dict[str, str]:
+    def _serialize(self, edata: Savable, serializer:Callable, rec_depth:int=None, *args) -> Dict[str, str]:
         res = {}
-        for field_name, field_type in node.annotations.items():
+        for field_name, field_type in edata.annotations.items():
             if isinstance(field_type, Constraint):
                 field_type = field_type.py_type
                 
-            # if node.is_excluded(field_name, field_type):
+            # if edata.is_excluded(field_name, field_type):
             #     continue
-            if self.is_excluded(node, field_name, field_type):
+            if self.is_excluded(edata, field_name, field_type):
                 continue
             # if field_name not in self.header:
             #     continue
-            if not hasattr(node, field_name):
+            if not hasattr(edata, field_name):
                 continue
 
-            field_val = getattr(node, field_name, None)
+            field_val = getattr(edata, field_name, None)
 
             field_val = serializer(field_val, field_type, field_name, rec_depth, args)
             

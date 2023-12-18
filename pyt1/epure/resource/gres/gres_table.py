@@ -24,20 +24,20 @@ class GresTable(Table, GresEntity):
 
 
 
-    def serialize_for_create(self, node: Savable, **kwargs) -> object:
+    def serialize_for_create(self, edata: Savable, **kwargs) -> object:
 
-        node_dict = self._serialize(node, self._serialize_field_val_to_sql)
+        data_dict = self._serialize(edata, self._serialize_field_val_to_sql)
 
         columns = ""
         values = ""
 
-        for name, val in node_dict.items():
+        for name, val in data_dict.items():
             columns = columns + name + ', '
             values = values + val + ', '
         columns = columns[:-2]
         values = values[:-2]
 
-        res = f'INSERT INTO {self.full_name}({columns}) VALUES ({values}) returning node_id;'
+        res = f'INSERT INTO {self.full_name}({columns}) VALUES ({values}) returning data_id;'
         return res
 
     # def serialize_read(self, header, joins, where_clause, full_names) -> str:
@@ -52,9 +52,9 @@ class GresTable(Table, GresEntity):
     #     res = self.replace_operators(res)
     #     return res
 
-    def serialize_read(self, header, joins, where_clause, full_names, include_node_id:bool=True) -> str:
-        if include_node_id:
-            header = self._add_node_id_fields(header)
+    def serialize_read(self, header, joins, where_clause, full_names, include_data_id:bool=True) -> str:
+        if include_data_id:
+            header = self._add_data_id_fields(header)
         res_header = self.serialize_read_header(header, full_names)
         res_joins = self.serialize_joins(joins)        
 
@@ -65,9 +65,9 @@ class GresTable(Table, GresEntity):
         # res = self.replace_operators(res)
         return res
     
-    def serialize_for_delete(self, node_id) -> str:
+    def serialize_for_delete(self, data_id) -> str:
         #here
-        return f"DELETE FROM {self.full_name} WHERE node_id = '{str(node_id)}'"
+        return f"DELETE FROM {self.full_name} WHERE data_id = '{str(data_id)}'"
 
 
 
@@ -129,22 +129,22 @@ class GresTable(Table, GresEntity):
 
         
 
-    def serialize_for_update(self, node: Savable, **kwargs) -> object:
+    def serialize_for_update(self, edata: Savable, **kwargs) -> object:
 
-        node_dict = self._serialize(node, self._serialize_field_val_to_sql)
-        if not ('node_id' in node_dict and node_dict['node_id']):
-            raise DbError('unable update node without node_id')
+        data_dict = self._serialize(edata, self._serialize_field_val_to_sql)
+        if not ('data_id' in data_dict and data_dict['data_id']):
+            raise DbError('unable update edata without data_id')
 
-        node_id = node_dict['node_id']
+        data_id = data_dict['data_id']
         pairs = ''
 
-        for name, val in node_dict.items():
+        for name, val in data_dict.items():
             pairs = pairs + name + ' = ' + val + ', '
 
         pairs = pairs[:-2]
         res = f'''UPDATE {self.full_name}
                 SET {pairs}
-                WHERE node_id = {node_id};'''
+                WHERE data_id = {data_id};'''
         return res
 
 

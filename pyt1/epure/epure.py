@@ -5,7 +5,7 @@ from .resource.resource import Resource
 from .helpers.type_helper import check_type
 from .errors import EpureError, DefaultConstraintError
 from .resource.db.constraint import Foreign, Default, Constraint
-from .resource.node.ecollection_metacls import ECollectionMetacls
+from .resource.edata.ecollection_metacls import ECollectionMetacls
 
 from uuid import UUID
 from .parser.inspect_parser.db_model import DbModel
@@ -21,7 +21,7 @@ from typing import Any, Callable, TypeVar
 DecoratedCallable = TypeVar("DecoratedCallable", bound=Callable[..., Any])
 
 # from types import FunctionType
-from .resource.node.node import TableNode
+from .resource.edata.edata import TableData
 from .resource.savable import Savable
 if TYPE_CHECKING:
     from .resource.db.table_storage import TableStorage
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 from .resource.db.db_entity import DbEntity
 import functools
 from .parser.term import Term
-from .resource.node.proto import Proto
+from .resource.edata.proto import Proto
 from inspect import signature
 
 
@@ -197,7 +197,7 @@ class Epure(type, Savable):
             
             columns[field_name] = py_type
 
-        if len(columns) == 1 and list(columns.keys())[0] == 'node_id':
+        if len(columns) == 1 and list(columns.keys())[0] == 'data_id':
             TableCls = self.EDb.nosql_table_type
         else:
             TableCls = self.EDb.default_table_type
@@ -205,13 +205,13 @@ class Epure(type, Savable):
         return table
 
     def get_py_type(self, field_name:str, py_type:type) -> type:
-        # from .resource.node.elist import ElistMetacls
-        # from .resource.node.elist import ECollectionMetacls
+        # from .resource.edata.elist import ElistMetacls
+        # from .resource.edata.elist import ECollectionMetacls
 
 
         if py_type in self.epures:
             # py_type = cast(Epure, py_type)
-            return self.get_py_type(field_name, py_type.annotations['node_id'])
+            return self.get_py_type(field_name, py_type.annotations['data_id'])
         
         # if isinstance(py_type, ElistMetacls):
         if isinstance(py_type, ECollectionMetacls):
@@ -238,18 +238,18 @@ class Epure(type, Savable):
 
 
     def get_foreign_type(self, foreign:Epure) -> Any:
-        foreign_id_type = foreign.annotations['node_id']
+        foreign_id_type = foreign.annotations['data_id']
 
         foreign_table = self._get_table_name(foreign, foreign.prepared_resource)
 
-        foreign_column = 'node_id'
+        foreign_column = 'data_id'
         column_type = Foreign[foreign_id_type, foreign_table, foreign_column]
         return column_type
 
 
         
 
-def epure(resource:object='', saver:type=TableNode, epure_metaclass:type=Epure) -> Callable:
+def epure(resource:object='', saver:type=TableData, epure_metaclass:type=Epure) -> Callable:
     check_type('resource', resource, [str, Savable, NoneType])
 
     def epure_creator(cls:type) -> Epure:
@@ -358,8 +358,8 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
         #temporary holders for tp, db proberties
         # tp_err_prop = getattr(self, "tp")
         # dbp_err_prop = getattr(self, "tp")
-        # from .resource.node.elist import ECollectionMetacls
-        # from .resource.node.elist import Elist, Eset
+        # from .resource.edata.elist import ECollectionMetacls
+        # from .resource.edata.elist import Elist, Eset
 
         if isinstance(type(self), Epure):
             db = self.resource.db

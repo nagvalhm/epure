@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .node import Node, TableNode
+from .edata import EData, TableData
 from typing import Any, Dict, get_type_hints, Tuple
 from ..savable import Savable
 from ...errors import MultipleInheritanceError
@@ -23,7 +23,7 @@ class ProtoMeta(type):
             res.__proto_cls__ = savable_classes[0]
         return res
 
-class Proto(ProtoMeta, TableNode):
+class Proto(ProtoMeta, TableData):
     @property
     def annotations(self) -> Dict[str,Any]:
         if not hasattr(self, '_annotations'):
@@ -54,7 +54,7 @@ class Proto(ProtoMeta, TableNode):
 
 
     @property
-    def __proto__(self) -> Node:
+    def __proto__(self) -> EData:
         proto_obj = self.__proto_cls__.__new__(proto_obj)
         for key in proto_obj.annotations:
             if key in vars(self):

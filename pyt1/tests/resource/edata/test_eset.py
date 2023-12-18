@@ -3,7 +3,7 @@ import pytest
 from ....epure.epure import epure, Epure
 from typing import List
 from ...epure_classes import EpureClass1
-from ....epure.resource.node.node import Node
+from ....epure.resource.edata.edata import EData
 
 def test_eset_epures():
 
@@ -34,9 +34,9 @@ def test_eset_epures():
         epurecls1.eset1.add(inst1)
     except(ValueError):
         pass
-    id_1 = epurecls1.save().node_id
+    id_1 = epurecls1.save().data_id
     ids1 = epurecls1.eset1.ids
-    res1 = epurecls1.table.read(node_id=id_1)[0]
+    res1 = epurecls1.table.read(data_id=id_1)[0]
     # res_str4 = res1.eset1[0].value.str4
     ids2 = res1.eset1.ids
     # res_str4 = res1.eset1[0].str4
@@ -53,8 +53,8 @@ def test_eset_epures():
 
     epurecls2 = EpureClsWEset2()
     epurecls2.eset2 = Eset[EpureCls4]((inst1,inst3,inst2,inst4))
-    id_2 = epurecls2.save().node_id
-    res2 = epurecls2.table.read(node_id=id_2)[0]
+    id_2 = epurecls2.save().data_id
+    res2 = epurecls2.table.read(data_id=id_2)[0]
 
     # res2.eset2.sort(key=lambda item: item.str4)
 
@@ -84,8 +84,8 @@ def test_eset_str():
     inst.str0 = "The quick brown fox jumps over the lazy dog"
     inst.int2 = 42
     inst.epure_field = EpureClass1()
-    id = inst.save().node_id
-    res = inst.table.read(node_id=id)
+    id = inst.save().data_id
+    res = inst.table.read(data_id=id)
     epure = res[0].epure_field
     eset = res[0].eset
     # assert eset == inst.eset
@@ -95,11 +95,11 @@ def test_eset_str_append():
     inst.eset = Eset[str](["the","long","way"])
     inst.str0 = "The quick brown fox jumps over the lazy dog"
     inst.epure_field = EpureClass1()
-    id1 = inst.save().node_id
-    res_before_update = inst.table.read(node_id=id1)[0]
+    id1 = inst.save().data_id
+    res_before_update = inst.table.read(data_id=id1)[0]
     res_before_update.eset.add('home')
-    id2 = res_before_update.save().node_id
-    res_after_update = inst.table.read(node_id=id2)[0]
+    id2 = res_before_update.save().data_id
+    res_after_update = inst.table.read(data_id=id2)[0]
     # res_after_update.eset.read()
     # assert id1 == id2
     assert "home" in res_after_update.eset
@@ -110,39 +110,39 @@ def test_eset_str_remove_by_index():
     inst.eset = Eset[str](["object","class","item"])
     inst.str0 = "The quick brown fox jumps over the lazy dog"
     inst.epure_field = EpureClass1()
-    id1 = inst.save().node_id
-    res_before_update = inst.table.read(node_id=id1)[0]
+    id1 = inst.save().data_id
+    res_before_update = inst.table.read(data_id=id1)[0]
     inst.eset.discard("object")
-    id2 = inst.save().node_id
-    res_after_update1 = inst.table.read(node_id=id2)[0]
+    id2 = inst.save().data_id
+    res_after_update1 = inst.table.read(data_id=id2)[0]
     # res_after_update1.eset.read()
     assert id1 == id2
     assert inst.eset == res_after_update1.eset
     res_after_update1.eset.discard(0)
-    id3 = res_after_update1.save().node_id
-    res_after_update2 = inst.table.read(node_id=id3)[0]
+    id3 = res_after_update1.save().data_id
+    res_after_update2 = inst.table.read(data_id=id3)[0]
     assert inst.eset == res_after_update2.eset
     # assert eset == inst.eset
 
 def test_eset_str_set_item_by_index():
     inst = eset_epure_cls1()
     inst.eset = Eset[str](["loan","price","driver"])
-    id1 = inst.save().node_id
-    res_after_update1 = inst.table.read(node_id=id1)[0]
+    id1 = inst.save().data_id
+    res_after_update1 = inst.table.read(data_id=id1)[0]
     res_after_update1.eset[1] = "value"
-    id2 = res_after_update1.save().node_id
-    res_after_update2 = inst.table.read(node_id=id2)[0]
+    id2 = res_after_update1.save().data_id
+    res_after_update2 = inst.table.read(data_id=id2)[0]
     res_after_update2.eset.read()
     assert "value" in res_after_update2.eset
 
 def test_eset_str_insert_into_eset():
     inst = eset_epure_cls1()
     inst.eset = Eset[str](["dove","love","peace"])
-    id1 = inst.save().node_id
-    res_after_update1 = inst.table.read(node_id=id1)[0]
+    id1 = inst.save().data_id
+    res_after_update1 = inst.table.read(data_id=id1)[0]
     res_after_update1.eset.add("derkuli")
-    id2 = res_after_update1.save().node_id
-    res_after_update2 = inst.table.read(node_id=id2)[0]
+    id2 = res_after_update1.save().data_id
+    res_after_update2 = inst.table.read(data_id=id2)[0]
     # res_after_update2.eset.read()
     assert "derkuli" in res_after_update2.eset 
     assert "dove" in res_after_update2.eset 
@@ -160,8 +160,8 @@ def test_eset_str_from_dict_and_to_dict_save():
     inst.eset = Eset[str](["long","live","the","king"])
     inst.str0 = "Snug as a bug in a rug"
     inst.epure_field = EpureClass1()
-    id = inst.save().node_id
-    res = inst.table.read(node_id=id)[0]
+    id = inst.save().data_id
+    res = inst.table.read(data_id=id)[0]
     inst_to_dict = inst.to_dict()
     inst_to_dict_read = res.to_dict()
     inst_from_dict = EpureClsEset.from_dict(inst_to_dict)
@@ -203,8 +203,8 @@ def test_eset_bytes_from_dict_save_read():
     inst.eset = Eset[bytes]([b"utf9",b"asci",b"butes"])
     inst.str0 = "Icepick"
     inst.epure_field = EpureClass1()
-    id = inst.save().node_id
-    res = inst.table.read(node_id=id)[0]
+    id = inst.save().data_id
+    res = inst.table.read(data_id=id)[0]
     inst_to_dict = res.to_dict()
     inst_from_dict = EpureClsEsetBytes.from_dict(inst_to_dict)
     inst_from_dict.epure_field
@@ -257,10 +257,10 @@ def test_eset_epure_remove_item_by_val():
         epurecls1.eset1.add(inst1)
     except(ValueError):
         pass
-    id_1 = epurecls1.save().node_id
+    id_1 = epurecls1.save().data_id
     epurecls1.eset1.discard(inst2)
     assert inst2 not in epurecls1.eset1
     
     ids1 = epurecls1.eset1.ids
-    res1 = epurecls1.table.read(node_id=id_1)[0]
+    res1 = epurecls1.table.read(data_id=id_1)[0]
     

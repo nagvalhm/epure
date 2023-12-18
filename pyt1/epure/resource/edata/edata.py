@@ -7,22 +7,22 @@ import jsonpickle
 from ..db.constraint import Constraint
 from ...errors import EpureError
 from .ecollection_metacls import ECollectionMetacls
-from ..node_promise import NodePromise, ElistPromise
+from ..data_promise import DataPromise, ElistPromise
 
-class Node(Savable):
+class EData(Savable):
 
-    node_id:object
+    data_id:object
     __exclude__:list
     __promises_dict__:Dict[str, Any]
 
-    def __init__(self, node_id:object=None, resource:Resource=None) -> None:
-        if node_id != None:
-            self.node_id = node_id
+    def __init__(self, data_id:object=None, resource:Resource=None) -> None:
+        if data_id != None:
+            self.data_id = data_id
         super().__init__(resource)
 
     # def __getattribute__(self, name: str) -> Any:
     #     from ..node_promise import NodePromise
-    #     val = super(Node, self).__getattribute__(name)
+    #     val = super(EData, self).__getattribute__(name)
     #     if isinstance(val, NodePromise):
     #         setattr(self, name, val.get())
     #     return super().__getattribute__(name)
@@ -52,7 +52,7 @@ class Node(Savable):
         resource = self.resource
         
         
-        if hasattr(self, 'node_id') and self.node_id:
+        if hasattr(self, 'data_id') and self.data_id:
             res = resource.update(self, asynch)
             return res
         else:
@@ -60,15 +60,15 @@ class Node(Savable):
             return res
 
 
-class TableNode(Node):
+class TableData(EData):
     db:Resource
-    node_id: UUID
+    data_id: UUID
     resource:Savable
 
-    def __init__(self, node_id:object=None, resource:Resource=None) -> None:
-        if node_id != None and isinstance(node_id, str):
-            node_id = UUID(node_id)
-        super().__init__(node_id, resource)
+    def __init__(self, data_id:object=None, resource:Resource=None) -> None:
+        if data_id != None and isinstance(data_id, str):
+            data_id = UUID(data_id)
+        super().__init__(data_id, resource)
 
     @property
     def table(self) -> Savable:
@@ -128,7 +128,7 @@ class TableNode(Node):
             
             val_type_match_cls_attr_type = isinstance(val, cls_attr_type)
 
-            if field_name == "node_id" and not isinstance(val, UUID):
+            if field_name == "data_id" and not isinstance(val, UUID):
                 val = UUID(val)
                 val_type_match_cls_attr_type = True
 
@@ -149,8 +149,8 @@ class TableNode(Node):
 
             elif issubclass(cls_attr_type, Savable) and not val_type_match_cls_attr_type: # check if attr is epure 
                 try: 
-                    node_id = UUID(val)
-                    promise = NodePromise(cls_attr_type.resource, node_id)
+                    data_id = UUID(val)
+                    promise = DataPromise(cls_attr_type.resource, data_id)
                     instance.__promises_dict__[field_name] = promise
                     continue
                 except(Exception):
@@ -230,7 +230,7 @@ class TableNode(Node):
             field_val = [field_val[i] for i in range(len(field_val))]
 
         elif isinstance(field_val, Savable):
-            field_val = field_val.node_id
+            field_val = field_val.data_id
 
         if isinstance(field_val, UUID):
             field_val = str(field_val)
@@ -284,9 +284,9 @@ class TableNode(Node):
         
         return encoder(_dict)
 
-    __exclude__:list = Node.__exclude__ + ['table', 'db']
+    __exclude__:list = EData.__exclude__ + ['table', 'db']
 
-class EsetTableNode(TableNode):
+class EsetTableData(TableData):
 
     def __hash__(self) -> int:
         val = self.value
