@@ -151,9 +151,9 @@ class DefaultEpure(ParentClass3):
     #     pass
 
     # @read
-    # def read_method(self, tp, dbp, int3_param, float3_param, int2_param):
-    #     ec_3 = dbp['epure_class3']
-    #     ec_1 = dbp['epure_class1']
+    # def read_method(self, tp, dbm, int3_param, float3_param, int2_param):
+    #     ec_3 = dbm['epure_class3']
+    #     ec_1 = dbm['epure_class1']
 
     #     query1 = (ec_3 << (tp.epure_class == ec_3.node_id
     #         | tp.generic_list0 == ec_3.generic_list2) ^

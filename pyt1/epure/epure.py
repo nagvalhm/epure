@@ -371,12 +371,12 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
             db = self.db
             full_name = self.full_name
         
-        self.dbp = DbModel(db)
-        self.md = getattr(self.dbp, full_name)
+        self.dbm = DbModel(db)
+        self.md = getattr(self.dbm, full_name)
 
         res = func(self, *args, **kwargs)
 
-        delattr(self, "dbp")
+        delattr(self, "dbm")
         delattr(self, "md")
         
         return res

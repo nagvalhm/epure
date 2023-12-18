@@ -48,7 +48,7 @@ class InspectParser(ast.NodeTransformer):
 
         self.astTypesDict[f'{self.first_arg_name}.md'] = attr_tp
         # self.astTypesDict[f'{self.first_arg_name}.querying_proxy'] = attr_tp
-        self.astTypesDict[f'{self.first_arg_name}.dbp'] = attr_dbp
+        self.astTypesDict[f'{self.first_arg_name}.dbm'] = attr_dbp
 
         changed_tree = self.visit(func_tree)
         fixed_tree = ast.fix_missing_locations(changed_tree)

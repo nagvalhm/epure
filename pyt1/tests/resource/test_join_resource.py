@@ -72,9 +72,9 @@ def foo2():
 
 def test_two_joins(self):
     md = self.md
-    dbp = self.dbp
-    test_order_tp = dbp.test_order
-    test_office_tp = dbp.test_shippment_office
+    dbm = self.dbm
+    test_order_tp = dbm.test_order
+    test_office_tp = dbm.test_shippment_office
     lst = ["bde"]
     
     join_res = md.join(test_order_tp, md.node_id == test_order_tp.test_customer_id)

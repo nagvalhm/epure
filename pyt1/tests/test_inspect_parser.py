@@ -14,16 +14,16 @@ def foo2():
     return 2
 
 def test_simple_queries_inspect_parser_read_decorator():
-    # dbp = DbModel(real_db)
-    # tp = dbp['oraculs_domain.competitions']
-    # y = dbp['oraculs_domain.oraculs']
+    # dbm = DbModel(real_db)
+    # tp = dbm['oraculs_domain.competitions']
+    # y = dbm['oraculs_domain.oraculs']
 
     # class AstParser(ast.NodeTransformer):
     # class ReadHolderCls:
     #     def read(func):
     #         def inner(self, *args, **kwargs):
-    #             dbp = DbModel(self.resource.db)
-    #             self.tp = dbp["public.inspect_parser_test_cls"]
+    #             dbm = DbModel(self.resource.db)
+    #             self.tp = dbm["public.inspect_parser_test_cls"]
     #             func_source = inspect.getsource(func)
     #             dedent_src = textwrap.dedent(func_source)
 
@@ -311,11 +311,11 @@ def test_inspect_parser_like_comp_etc():
         @escript
         def sql_subquery_select_real_ex(self):
             md = self.md
-            tp_oraculs_dom_tasks = self.dbp.oraculs_domain.tasks
+            tp_oraculs_dom_tasks = self.dbm.oraculs_domain.tasks
             query = md.name in md.select([md.name], md.age == 50)
             assert query == 'public.inspect_parser_test_cls2.name IN (SELECT public.inspect_parser_test_cls2.name as public___inspect_parser_test_cls2___name FROM public.inspect_parser_test_cls2 \n  WHERE \n public.inspect_parser_test_cls2.age = 50)'
             res = self.resource.read(query)
-            # self.resource.read([md.first_name, md.last_name], md.node_id in select([self.dbp['tp2'].node_id]))
+            # self.resource.read([md.first_name, md.last_name], md.node_id in select([self.dbm['tp2'].node_id]))
             return res
         
         @escript

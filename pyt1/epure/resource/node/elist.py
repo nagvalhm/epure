@@ -154,7 +154,7 @@ class Elist(TableNode, List, metaclass=ECollectionMetacls):
 
         # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
         # res = self.py_type.resource.read(self.tp.node_id in list(node_id_dict.keys()))
-        py_type_tp = getattr(self.dbp, self.py_type.resource.full_name)
+        py_type_tp = getattr(self.dbm, self.py_type.resource.full_name)
         res = self.py_type.resource.read(py_type_tp.node_id in list(node_id_dict.keys()))
 
 
