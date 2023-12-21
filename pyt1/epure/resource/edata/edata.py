@@ -8,6 +8,7 @@ from ..db.constraint import Constraint
 from ...errors import EpureError
 from .ecollection_metacls import ECollectionMetacls
 from ..data_promise import DataPromise, ElistPromise
+from ...helpers.type_helper import is_uuid
 
 class EData(Savable):
 
@@ -133,17 +134,18 @@ class TableData(EData):
                 val_type_match_cls_attr_type = True
 
             if isinstance(cls_attr_type, ECollectionMetacls) and not val_type_match_cls_attr_type: # check if attr is elist
-                try: 
+                # try:
+                if is_uuid(val):
                     eset_id = UUID(val)
                     promise = ElistPromise(cls_attr_type.list_epure.resource, eset_id, cls_attr_type)
                     instance.__promises_dict__[field_name] = promise
                     continue
-                except(Exception):
-                    if cls_attr_type.py_type in (bytes, bytearray)\
+                # except(Exception):
+                elif cls_attr_type.py_type in (bytes, bytearray)\
                     and not type(val[0]) in (bytes, bytearray):
                         for i, item in enumerate(val):
                             val[i] = item.encode()
-                    val = cls_attr_type(val)
+                        val = cls_attr_type(val)
 
                 val_type_match_cls_attr_type = True
 
@@ -221,13 +223,13 @@ class TableData(EData):
         and lambda_func(field_name, field_val, self, rec_depth, args):
             field_val = field_val.to_dict(rec_depth+1, lambda_func)
 
-        elif (isinstance(type(field_val), ECollectionMetacls) or type(field_val) in (list,)) and len(field_val)\
-        and isinstance(field_val[0], Savable) and lambda_func(field_name, field_val, self, rec_depth, args):
-            field_val = [field_val[i].to_dict(rec_depth+1, lambda_func) for i in range(len(field_val))]
+        elif isinstance(type(field_val), ECollectionMetacls) and len(field_val)\
+        and isinstance(next(iter(field_val), False), Savable) and lambda_func(field_name, field_val, self, rec_depth, args):
+            field_val = [item.to_dict(rec_depth+1, lambda_func) for item in field_val]
 
-        elif isinstance(type(field_val), ECollectionMetacls) and len(field_val) and not isinstance(field_val[0], Savable)\
+        elif isinstance(type(field_val), ECollectionMetacls) and len(field_val) and not isinstance(next(iter(field_val), False), Savable)\
         and lambda_func(field_name, field_val, self, rec_depth, args):
-            field_val = [field_val[i] for i in range(len(field_val))]
+            field_val = [item for item in field_val]
 
         elif isinstance(field_val, Savable):
             field_val = field_val.data_id

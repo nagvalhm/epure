@@ -1,5 +1,5 @@
 from __future__ import annotations
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from .edata import TableData
 from typing import List, Any, Type, Generic, Set, Dict
 from uuid import UUID, uuid4
@@ -7,6 +7,7 @@ from ...epure import Epure, epure, escript
 from types import NoneType
 from .ecollection_metacls import ECollectionMetacls
 from ..db.table import Table
+from ...resource.savable import Savable
 
 class Elist(TableData, List, metaclass=ECollectionMetacls):
 # class Elist(TableNode, List):
@@ -139,7 +140,7 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
     #     return self.entries.__eq__(__value)
 
     @escript
-    def read(self, *args, **kwargs):
+    def load(self, *args, **kwargs):
         if not isinstance(self.py_type, Epure):
             return
 
@@ -177,6 +178,9 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
             res.append(str(id))
 
         return res
+    
+    def __iter__(self) -> Iterator:
+        return iter([i.value for i in self.entries])
 
 class Eset(set, TableData, metaclass=ECollectionMetacls):
     # entries:Set
@@ -185,32 +189,50 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
     collection_epure:Epure = None
     data_id:UUID
 
-    def __init__(self, _set:Set, collection_resourse=None) -> None:
+    def __init__(self, _set:Set, collection_resourse=None, **kwargs:dict[UUID:UUID]) -> None:
         super(set, self).__init__()
         if collection_resourse != None:
             self.collection_epure = self.get_collection_epure(collection_resourse)
 
         self.deleted_entries = []
         if isinstance(_set[0], self.collection_epure):
-                self.data_id = _set[0].eset_id
-                super(self.__class__, self).update(_set)
+                # self.data_id = _set[0].eset_id
+                self.update(_set, ids_dict=kwargs)
         else:
-            for item in _set:
-                self.add(item)
+            for index, item in enumerate(_set):
+                if kwargs and kwargs["ids_dict"]:
+                    self.add(item, ids_dict=list(kwargs["ids_dict"].items())[index])
+                else:
+                    self.add(item)
 
-    def add(self, item: Any) -> None:
 
-        if not isinstance(item, self.py_type):
+    def add(self, item: Any, **kwargs) -> None:
+
+        if not isinstance(item, (self.py_type, Savable)):
                 raise TypeError(f"value '{item}' of type '{type(item)}' is not same " 
+                                f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
+        
+        elif isinstance(self.py_type, Savable) and isinstance(item, Savable)\
+        and not self.py_type.resource.full_name == item.resource.full_name:
+            raise TypeError(f"value '{item}' of type '{type(item)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
         
         # super(Eset, self).add(item)
         # self.add(item)
         res = self.collection_epure()
         res.value = item
-        for val in self:
-            if item is val.value:
-                raise ValueError(f"value {item} is already present in Eset")
+
+        if isinstance(self.py_type, Savable):
+            self_iter_obj = super(self.__class__, self).__iter__()
+            # for val in self:
+            for val in self_iter_obj:
+                if item is val:
+                    raise ValueError(f"value {item} is already present in Eset")
+                
+        if kwargs and kwargs['ids_dict']:
+            res.data_id = kwargs['ids_dict'][0]
+            res.eset_id = kwargs['ids_dict'][1]
+            
         super(self.__class__, self).add(res)
 
     def save(self, asynch:bool=False):
@@ -219,7 +241,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
             self.data_id = uuid4()
 
         val_len = self.__len__()
-        self_list = list(self)
+        self_iter_obj = super(self.__class__, self).__iter__()
+        # self_list = list(self)
+        self_list = list(self_iter_obj)
         for i in range(val_len):
             item = self_list[i]
             if not isinstance(item.value, self.py_type):
@@ -245,7 +269,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         return self
     
     def remove(self, ___element: Any) -> None:
-        for x in self:
+        self_iter_obj = super(self.__class__, self).__iter__()
+        # for x in self:
+        for x in self_iter_obj:
             if x.value == ___element:
                 ___element = x
                 break
@@ -253,7 +279,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         return super(self.__class__, self).remove(___element)
     
     def discard(self, el: Any) -> None:
-        for x in self:
+        self_iter_obj = super(self.__class__, self).__iter__()
+        for x in self_iter_obj:
+        # for x in self:
             if x.value == el:
                 el = x
                 break
@@ -269,9 +297,10 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
     def ids(self):
         # if not self.is_saved:
         #     raise Exception("Your Eset is not saved, try .save()")
-        
+        self_iter_obj = super(self.__class__, self).__iter__()
         res = []
-        for item in list(self):
+        # for item in list(self):
+        for item in self_iter_obj:
             # if hasattr(item, "__promises_dict__") and\
             # "value" in item.__promises_dict__:
             #     id = item.__promises_dict__['value'].node_id
@@ -283,8 +312,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         return res
     
     def __contains__(self, __o: object) -> bool:
-        
-        for x in self:
+        self_iter_obj = super(self.__class__, self).__iter__()
+        # for x in self:
+        for x in self_iter_obj:
             if x.value == __o:
                 return True
 
@@ -299,32 +329,67 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
             name = name.full_name
         else:
             from ...named import SnakeCaseNamed
-            name = f'{parent_obj.__class__.__name__}___{field_name}'
+            name = f'{parent_obj.__class__.__name__}__{field_name}'
             name = SnakeCaseNamed(name).full_name
 
 
         if name in Epure.EDb:
             res = Epure.EDb.get_epure_by_table_name(name)
             return res
+        
+        if name in ECollectionMetacls.ecollections:
+            res = ECollectionMetacls.ecollections[name]
+            cls.collection_epure = res
+            return res
     
         obj = type(name, (object,), {})
         obj.__annotations__ = {"eset_id":UUID, "value":cls.py_type}
         res = epure(resource=f'ecollections.{name}',saver=EsetTableData)(obj)
+        cls.collection_epure = res
+        ECollectionMetacls.ecollections[name] = res
 
         return res
     
 
     def _redefine_collection_epure(self, collection_epure:Epure) -> None:
         vals_list = []
-        for item in self:
+        ids_dict = {}
+        self_iter_obj = super(self.__class__, self).__iter__()
+        # for item in self:
+        for item in self_iter_obj:
             vals_list.append(item.value)
+            if hasattr(item, "eset_id") and hasattr(item, "data_id"):
+                ids_dict[item.data_id] = item.eset_id
             
         self.clear()
         self.collection_epure = collection_epure
 
-        for item in vals_list:
-            self.add(item)
+        # for item in vals_list:
+        #     self.add(item)
+
+        self.__init__(vals_list, ids_dict=ids_dict)
 
     
     def load(self) -> None:
         pass
+
+    def __iter__(self) -> Iterator:
+        it_obj = super(self.__class__, self).__iter__()
+        return iter([item.value for item in it_obj])
+    
+    def update(self, *s: Iterable, **kwargs:[UUID, UUID]) -> None:
+
+        fin_res = []
+        if kwargs["ids_dict"]:
+            for ind, _iterable in enumerate(s):
+                # if not isinstance(list(item)[0], self.collection_epure):
+                    # raise TypeError("Eset cannot be updated with Eset of different type")
+                res = []
+                for item, ids in zip(list(_iterable)[ind], ids_dict.items()):
+                    item.data_id = ids[0]
+                    item.eset_id = ids[1]
+                    res.append(item)
+                
+                fin_res.append(res)
+
+        super(self.__class__, self).update(*s)

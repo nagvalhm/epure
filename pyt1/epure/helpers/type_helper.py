@@ -1,4 +1,5 @@
 from typing import Any, List, Callable, Union
+from uuid import UUID
 
 
 def check_type(var_name:str, value:Any, must_be:Union[type,List[type]]):
@@ -34,3 +35,10 @@ def check_all(err_text:str, value:type, must_satisfy:Union[type,List[type]], che
             err_text += f'{must_satisfy} or'
     
     raise TypeError(err_text[:-3])
+
+def is_uuid(obj:Any) -> bool:
+    try:
+        UUID(obj)
+    except Exception:
+        return False
+    return True

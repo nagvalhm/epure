@@ -55,7 +55,7 @@ def test_elist_epures():
 
     # res1.elist1.sort(key=lambda item: item.str4)
 
-    res2.elist2.read()
+    res2.elist2.load()
     pass
 
     # assert res2.elist2 == res2.elist1
@@ -95,7 +95,7 @@ def test_elist_str_append():
     res_before_update.elist.append('home')
     id2 = res_before_update.save().data_id
     res_after_update = inst.table.read(data_id=id2)[0]
-    res_after_update.elist.read()
+    res_after_update.elist.load()
     assert id1 == id2
     assert res_after_update.elist[-1] == "home"
     # assert elist == inst.elist
@@ -110,7 +110,7 @@ def test_elist_str_remove_by_index():
     inst.elist.pop(-1)
     id2 = inst.save().data_id
     res_after_update1 = inst.table.read(data_id=id2)[0]
-    res_after_update1.elist.read()
+    res_after_update1.elist.load()
     assert id1 == id2
     assert inst.elist[1] == res_after_update1.elist[-1]
     res_after_update1.elist.pop(0)
@@ -127,7 +127,7 @@ def test_elist_str_set_item_by_index():
     res_after_update1.elist[1] = "value"
     id2 = res_after_update1.save().data_id
     res_after_update2 = inst.table.read(data_id=id2)[0]
-    res_after_update2.elist.read()
+    res_after_update2.elist.load()
     assert res_after_update2.elist[1] == "value"
 
 def test_elist_str_insert_into_elist():
@@ -138,7 +138,7 @@ def test_elist_str_insert_into_elist():
     res_after_update1.elist.insert(0,"derkuli")
     id2 = res_after_update1.save().data_id
     res_after_update2 = inst.table.read(data_id=id2)[0]
-    res_after_update2.elist.read()
+    res_after_update2.elist.load()
     assert res_after_update2.elist[0] == "derkuli"
     assert res_after_update2.elist[1] == "dove"
 

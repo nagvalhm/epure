@@ -129,10 +129,15 @@ def test_eset_str_set_item_by_index():
     inst.eset = Eset[str](["loan","price","driver"])
     id1 = inst.save().data_id
     res_after_update1 = inst.table.read(data_id=id1)[0]
-    res_after_update1.eset[1] = "value"
+    res_after_update1.eset.load()
+    try:
+        res_after_update1.eset[1] = "value"
+        assert False 
+    except TypeError: # eset doesnt support items assigment
+        assert True
     id2 = res_after_update1.save().data_id
     res_after_update2 = inst.table.read(data_id=id2)[0]
-    res_after_update2.eset.read()
+    res_after_update2.eset.load()
     assert "value" in res_after_update2.eset
 
 def test_eset_str_insert_into_eset():
