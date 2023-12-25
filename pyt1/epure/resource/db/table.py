@@ -24,13 +24,13 @@ from ...epure import escript
 if TYPE_CHECKING:
     from .table_storage import TableStorage
     from ...parser.term_parser import TermParser
+
 from .db_entity import DbEntity
 from ...helpers.type_helper import check_type
 from ...errors import EpureError, DbError
 from .table_header import TableHeader
-from ..data_promise import FieldPromise, DataPromise, ElistPromise
+from ..data_promise import FieldPromise, DataPromise, ElistPromise, EsetPromise
 from ...epure import Epure
-
 
 class Table(DbEntity):
     header:TableHeader
@@ -320,6 +320,8 @@ class Table(DbEntity):
 
         for field_name, field_type in res.annotations.items():
             from ..edata.elist import ECollectionMetacls
+            from ...resource.edata.elist import Elist, Eset
+
 
             if self.is_excluded(epure_cls, field_name, field_type):
                 continue
@@ -348,7 +350,7 @@ class Table(DbEntity):
                     edata = field_type.resource.read(data_id=data_id)
                     setattr(res, field_name, edata)
 
-            elif isinstance(field_type, ECollectionMetacls):
+            elif isinstance(field_type, ECollectionMetacls) and field_type.__origin__ == Elist:
                 eset_id = attrs[field_name]
 
                 collection_epure = field_type.get_collection_epure(parent_obj=res, field_name=field_name)
@@ -362,6 +364,22 @@ class Table(DbEntity):
                     list_values_rows = collection_epure.resource.read(eset_id=eset_id)
                     edata = field_type(list_values_rows)
                     setattr(res, field_name, edata)
+
+            elif isinstance(field_type, ECollectionMetacls) and field_type.__origin__ == Eset:
+                eset_id = attrs[field_name]
+
+                collection_epure = field_type.get_collection_epure(parent_obj=res, field_name=field_name)
+                
+                if lazy_read:
+                    promise = EsetPromise(collection_epure.resource, eset_id, field_type)
+                    # setattr(res, field_name, promise)
+                    delattr(res, field_name)
+                    res.__promises_dict__[field_name] = promise
+                elif not lazy_read:
+                    list_values_rows = collection_epure.resource.read(eset_id=eset_id)
+                    edata = field_type(list_values_rows)
+                    setattr(res, field_name, edata)
+
         return res
 
 

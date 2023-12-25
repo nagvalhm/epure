@@ -38,9 +38,9 @@ def test_eset_epures():
     ids1 = epurecls1.eset1.ids
     res1 = epurecls1.table.read(data_id=id_1)[0]
     # res_str4 = res1.eset1[0].value.str4
+    res1.eset1.load()
     ids2 = res1.eset1.ids
-    # res_str4 = res1.eset1[0].str4
-    # assert res_str4 == inst2.str4
+
     assert set(ids1) == set(ids2)
     # res1.eset1.ids
 
@@ -138,7 +138,7 @@ def test_eset_str_set_item_by_index():
     id2 = res_after_update1.save().data_id
     res_after_update2 = inst.table.read(data_id=id2)[0]
     res_after_update2.eset.load()
-    assert "value" in res_after_update2.eset
+    assert "loan" in res_after_update2.eset
 
 def test_eset_str_insert_into_eset():
     inst = eset_epure_cls1()
@@ -149,6 +149,7 @@ def test_eset_str_insert_into_eset():
     id2 = res_after_update1.save().data_id
     res_after_update2 = inst.table.read(data_id=id2)[0]
     # res_after_update2.eset.read()
+    res_after_update2.eset.load()
     assert "derkuli" in res_after_update2.eset 
     assert "dove" in res_after_update2.eset 
 

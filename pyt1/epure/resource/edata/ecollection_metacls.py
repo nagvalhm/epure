@@ -39,12 +39,14 @@ class ECollectionMetacls(type):
     def __getitem__(self:Type, param:Any):
         from ...epure import epure
         from .edata import EsetTableData
-        from .elist import Elist
+        from .elist import Elist, Eset
 
         if issubclass(self, Elist):
             name = f"elist__{param.__name__}"
+            origin = Elist
         else:
             name = f"eset__{param.__name__}"
+            origin = Eset
 
         if name in self.ecollections:
             return self.ecollections[name]
@@ -52,7 +54,7 @@ class ECollectionMetacls(type):
         cls_dict = dict(self.__dict__)
         cls_dict.pop('__dict__', None)
         res = self.__class__(self.__name__, self.__bases__, cls_dict)
-        res.__origin__ = self
+        res.__origin__ = origin
 
         res.py_type = param
 

@@ -7,7 +7,7 @@ import jsonpickle
 from ..db.constraint import Constraint
 from ...errors import EpureError
 from .ecollection_metacls import ECollectionMetacls
-from ..data_promise import DataPromise, ElistPromise
+from ..data_promise import DataPromise, ElistPromise, EsetPromise
 from ...helpers.type_helper import is_uuid
 
 class EData(Savable):
@@ -115,6 +115,8 @@ class TableData(EData):
     @classmethod
     def from_dict(_cls, _dict:Dict[str, Any])->object:
         from .elist import ECollectionMetacls
+        from .elist import Elist, Eset
+
 
         # instance = _cls.__call__()
         instance = _cls()
@@ -135,11 +137,18 @@ class TableData(EData):
 
             if isinstance(cls_attr_type, ECollectionMetacls) and not val_type_match_cls_attr_type: # check if attr is elist
                 # try:
-                if is_uuid(val):
+                if is_uuid(val) and cls_attr_type.__origin__ == Elist:
                     eset_id = UUID(val)
-                    promise = ElistPromise(cls_attr_type.list_epure.resource, eset_id, cls_attr_type)
+                    promise = ElistPromise(cls_attr_type.collection_epure.resource, eset_id, cls_attr_type)
                     instance.__promises_dict__[field_name] = promise
                     continue
+
+                elif is_uuid(val) and cls_attr_type.__origin__ == Eset:
+                    eset_id = UUID(val)
+                    promise = EsetPromise(cls_attr_type.collection_epure.resource, eset_id, cls_attr_type)
+                    instance.__promises_dict__[field_name] = promise
+                    continue
+
                 # except(Exception):
                 elif cls_attr_type.py_type in (bytes, bytearray)\
                     and not type(val[0]) in (bytes, bytearray):

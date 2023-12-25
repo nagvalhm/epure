@@ -3,7 +3,9 @@ from typing import Any
 # from ..epure.parser.leaf import DbModel
 from ..epure.parser.inspect_parser.db_model import DbModel
 from ..epure import epure
-from ..epure.epure import escript
+from ..epure import escript
+# import inspect
+# import typing
 
 import pytest
 
@@ -386,6 +388,8 @@ def test_inspect_parser_like_comp_etc():
             query2 = not md.name != "Mike" or not md.last_name is not val
             assert query2 == "NOT public.inspect_parser_test_cls2.name <> 'Mike' OR NOT public.inspect_parser_test_cls2.last_name IS NOT NULL"
 
+    # sig = inspect.signature(InspectParserTestCls2.__init__)
+    # type_hints = typing.get_type_hints(InspectParserTestCls2)
 
     erman = InspectParserTestCls2("Mike", "Ermantraut", 60)
     erman.save()
