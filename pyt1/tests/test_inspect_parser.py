@@ -391,7 +391,9 @@ def test_inspect_parser_like_comp_etc():
         @classmethod
         @escript
         def cls_method_escript(cls):
-            pass
+            query1 = cls.md.name != "Mike" and cls.md.last_name is not None
+            assert query1 == "public.inspect_parser_test_cls2.name <> 'Mike' AND public.inspect_parser_test_cls2.last_name IS NOT NULL"
+            return query1
 
     # sig = inspect.signature(InspectParserTestCls2.__init__)
     # type_hints = typing.get_type_hints(InspectParserTestCls2)
@@ -448,5 +450,7 @@ def test_inspect_parser_like_comp_etc():
 
     res10 = erman.test_is_and_is_not(None)
     # assert res10
+
+    res11 = InspectParserTestCls2.cls_method_escript()
 
 # def lambda db, tp: tp.
