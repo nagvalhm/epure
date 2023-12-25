@@ -363,7 +363,7 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
 
         if isinstance(type(self), Epure) or isinstance(self, Epure):
             db = self.resource.db
-            full_name = self.table.full_name
+            full_name = self.resource.full_name
         elif isinstance(type(self), ECollectionMetacls):
             db = self.collection_epure.resource.db
             full_name = self.collection_epure.resource.full_name

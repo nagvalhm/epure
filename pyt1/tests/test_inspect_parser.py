@@ -388,6 +388,11 @@ def test_inspect_parser_like_comp_etc():
             query2 = not md.name != "Mike" or not md.last_name is not val
             assert query2 == "NOT public.inspect_parser_test_cls2.name <> 'Mike' OR NOT public.inspect_parser_test_cls2.last_name IS NOT NULL"
 
+        @classmethod
+        @escript
+        def cls_method_escript(cls):
+            pass
+
     # sig = inspect.signature(InspectParserTestCls2.__init__)
     # type_hints = typing.get_type_hints(InspectParserTestCls2)
 
