@@ -102,6 +102,7 @@ def test_eset_str_append():
     res_after_update = inst.table.read(data_id=id2)[0]
     # res_after_update.eset.read()
     # assert id1 == id2
+    res_after_update.eset.load()
     assert "home" in res_after_update.eset
     # assert eset == inst.eset
 

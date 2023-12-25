@@ -361,7 +361,7 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
         # from .resource.edata.elist import ECollectionMetacls
         # from .resource.edata.elist import Elist, Eset
 
-        if isinstance(type(self), Epure):
+        if isinstance(type(self), Epure) or isinstance(self, Epure):
             db = self.resource.db
             full_name = self.table.full_name
         elif isinstance(type(self), ECollectionMetacls):

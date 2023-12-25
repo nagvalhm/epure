@@ -165,6 +165,11 @@ class InspectParser(ast.NodeTransformer):
             node.type = Term
             self.astTypesDict[f'{ast.unparse(node)}'] = node
 
+        elif caller and caller in self.astTypesDict and\
+            hasattr(node.func,"attr") and node.func.attr == "model":
+            node.type = Model
+            self.astTypesDict[f'{ast.unparse(node)}'] = node
+
         return node
     
     def handle_getattr(self, node, left_val):

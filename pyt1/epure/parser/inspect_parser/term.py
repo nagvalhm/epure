@@ -1,8 +1,13 @@
 from __future__ import annotations
 import types
+from typing import TYPE_CHECKING
 from typing import Any
 from uuid import UUID
 import collections.abc
+# from ...epure import Epure
+
+if TYPE_CHECKING:
+    from .model import Model
 
 class Term:
 
@@ -107,3 +112,7 @@ class Term:
     
     def __str__(self):
         return self.serialize(True)
+    
+    def model(self, cls) -> Model:
+        # if cls in Epure.epures:
+        return Model(cls.resource.db, cls.resource)
