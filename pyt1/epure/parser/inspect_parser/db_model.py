@@ -32,3 +32,7 @@ class DbModel(Term):
         return self.__db__.__len__()
     
     # def select(self, args)
+
+    # def model(self, cls) -> Model:
+    #     # if cls in Epure.epures:
+    #     return Model(cls.resource.db, cls.resource)

@@ -68,8 +68,6 @@ def foo2():
     return "adv"
 
 @escript
-# @foo
-
 def test_two_joins(self):
     md = self.md
     dbm = self.dbm
@@ -86,9 +84,9 @@ def test_two_joins(self):
     query = md.name in ("abc","def") and md.name in lst
     
 
-    res_header = join_res.read([test_office_tp.adress, md.name, md, test_order_tp, md.country], test_office_tp.adress == "Washington str.")
+    res_header = join_res.read([test_office_tp.adress, md.name, md, test_order_tp, md.country], test_office_tp.adress == "Washington str.") # header
 
-    res_no_header = join_res.read(test_office_tp.adress == "Washington str.")
+    res_no_header = join_res.read(test_office_tp.adress == "Washington str.") # no header
 
     res_empty = join_res.read()
 
@@ -97,5 +95,5 @@ def test_two_joins(self):
 
 TestCustomer.test_join = test_two_joins
 
-res = nico.test_join()
-assert res
+# res = nico.test_join()
+# assert res

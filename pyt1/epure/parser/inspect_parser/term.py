@@ -112,7 +112,3 @@ class Term:
     
     def __str__(self):
         return self.serialize(True)
-    
-    def model(self, cls) -> Model:
-        # if cls in Epure.epures:
-        return Model(cls.resource.db, cls.resource)

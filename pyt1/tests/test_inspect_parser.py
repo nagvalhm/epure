@@ -1,3 +1,4 @@
+from __future__ import annotations
 from _ast import BoolOp
 from typing import Any
 # from ..epure.parser.leaf import DbModel
@@ -6,7 +7,7 @@ from ..epure import epure
 from ..epure import escript
 # import inspect
 # import typing
-
+import jsonpickle
 import pytest
 
 def foo1():
@@ -260,6 +261,11 @@ def test_inspect_parser_like_comp_etc():
             self.age = age
 
         @escript
+        def test_self_cls_inst_creation(self):
+            ins = InspectParserTestCls2("Mike", "Ermantraut", 60)
+            ins
+
+        @escript
         def find_sql_in_mike_ermantraut_or_wazowsky(self):
             md = self.md
             query = md.name == "Mike" and md.last_name in ('Wazowsky', 'Ermantraut')
@@ -369,6 +375,9 @@ def test_inspect_parser_like_comp_etc():
         
         @escript
         def test_is_and_is_not(self, val):
+            jsonpickle.encode(val)
+            inst = InspectParserTestCls2("Mike", "Ermantraut", 60)
+            # inst
             md = self.md
 
             query1 = md.name != "Mike" and md.last_name is not None
@@ -391,6 +400,8 @@ def test_inspect_parser_like_comp_etc():
         @classmethod
         @escript
         def cls_method_escript(cls):
+            inst = InspectParserTestCls2("Mike", "Ermantraut", 60)
+            cls_mod = cls.model(InspectParserTestCls2)
             query1 = cls.md.name != "Mike" and cls.md.last_name is not None
             assert query1 == "public.inspect_parser_test_cls2.name <> 'Mike' AND public.inspect_parser_test_cls2.last_name IS NOT NULL"
             return query1
@@ -417,6 +428,7 @@ def test_inspect_parser_like_comp_etc():
     vic = InspectParserTestCls2("\%Victor", "Volben", 50)
     vic.save()
 
+    erman.test_self_cls_inst_creation()
 
     res1 = erman.find_sql_in_mike_ermantraut_or_wazowsky()
     assert res1

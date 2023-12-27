@@ -9,6 +9,7 @@ from .resource.edata.ecollection_metacls import ECollectionMetacls
 
 from uuid import UUID
 from .parser.inspect_parser.db_model import DbModel
+from .parser.inspect_parser.model import Model
 import textwrap
 import inspect
 from .parser.inspect_parser.inspect_parser import InspectParser
@@ -311,6 +312,10 @@ def _compile_func(func:Callable, new_func_w_br_lines:str, func_name:str) -> Code
     fn_code = code_block.co_consts[i]
     n_fn_code = func.__code__
 
+    # if 'InspectParserTestCls2' in list(fn_code.co_names): fn_code.names = tuple(list(fn_code.co_names).remove('InspectParserTestCls2', None))
+
+    # new_co_names = tuple(filter(lambda item: item not in n_fn_code.co_freevars, fn_code.co_names))
+
     new_code = CodeType(
     fn_code.co_argcount,
     fn_code.co_posonlyargcount,
@@ -321,14 +326,15 @@ def _compile_func(func:Callable, new_func_w_br_lines:str, func_name:str) -> Code
     fn_code.co_code,
     fn_code.co_consts,
     fn_code.co_names,
+    # new_co_names,
     fn_code.co_varnames,
     n_fn_code.co_filename,
     fn_code.co_name,
     n_fn_code.co_firstlineno,
     fn_code.co_linetable,
     # fn_code.co_lnotab,
-    fn_code.co_freevars,
-    fn_code.co_cellvars)
+    n_fn_code.co_freevars,
+    n_fn_code.co_cellvars)
 
     return new_code
 
@@ -352,9 +358,15 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
 
     new_func_code = _compile_func(func, new_func_w_br_lines, func_name)
 
-    func.__code__ = new_func_code
+    # func.__code__ = new_func_code
 
     def inner(self, *args, **kwargs) -> Any:
+        
+        new_dict = func.__globals__
+        if self.__class__.__name__ in new_func_code.co_freevars:
+            new_dict.update({f"{self.__class__.__name__}" : self.__class__})
+        newfunc = types.FunctionType(new_func_code, new_dict, name=func.__name__, argdefs=func.__defaults__, closure=func.__closure__)
+
         #temporary holders for tp, db proberties
         # tp_err_prop = getattr(self, "tp")
         # dbp_err_prop = getattr(self, "tp")
@@ -373,12 +385,17 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
         
         self.dbm = DbModel(db)
         self.md = getattr(self.dbm, full_name)
+        self.model = create_model_from_class
 
-        res = func(self, *args, **kwargs)
+        res = newfunc(self, *args, **kwargs)
 
         delattr(self, "dbm")
         delattr(self, "md")
+        delattr(self, "model")
         
         return res
 
     return inner
+
+def create_model_from_class(cls:Epure) -> Model:
+    return Model(cls.resource.db, cls.resource)
