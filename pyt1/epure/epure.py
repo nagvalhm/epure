@@ -398,4 +398,6 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
     return inner
 
 def create_model_from_class(cls:Epure) -> Model:
+    if not cls in Epure.epures:
+        raise EpureError(f"class {cls.__name__} is not decorated by @epure")
     return Model(cls.resource.db, cls.resource)

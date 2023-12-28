@@ -232,7 +232,7 @@ class TableData(EData):
         and lambda_func(field_name, field_val, self, rec_depth, args):
             field_val = field_val.to_dict(rec_depth+1, lambda_func)
 
-        elif isinstance(type(field_val), ECollectionMetacls) and len(field_val)\
+        elif (isinstance(type(field_val), ECollectionMetacls) or type(field_val) in (set, tuple, list)) and len(field_val)\
         and isinstance(next(iter(field_val), False), Savable) and lambda_func(field_name, field_val, self, rec_depth, args):
             field_val = [item.to_dict(rec_depth+1, lambda_func) for item in field_val]
 

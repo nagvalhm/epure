@@ -87,11 +87,21 @@ def test_data_to_dict_custom_lambda_func_nested_vals_recursive_with_save():
         text:str = "Text"
         age:int = 80
         random_none_attr:NoneType = 3
+        list_epures:list = []
+        set_epures:set = {}
+        tuple_epures:tuple = ()
 
     inst = EpureClsToDictPlain2()
     inst.epure_cls = EpureClsToDict2()
     inst.epure_cls.elist_str_no_def_val = Elist[str](["no", "definitions"])
     id1 = inst.save().data_id
+    
+    in1 = EpureClsToDict2()
+    in2 = EpureClsToDict2()
+    in2.nametag = "beaver"
+    inst.list_epures = [in1, in2]
+    inst.set_epures = {in1, in2}
+    inst.tuple_epures = (in1, in2)
 
     res = inst.to_dict(lambda_func= lambda field_name, field_value, parent_value, depth_level, args: 
                 depth_level < 2 and (field_name != "excluded_epure" and field_name != "elist_str_to_exclude") and field_name != "elist_epure_to_exclude")
@@ -99,6 +109,9 @@ def test_data_to_dict_custom_lambda_func_nested_vals_recursive_with_save():
     
     assert res['epure_cls']['elist_str_no_def_val'] == ['no', 'definitions'] 
     assert res['epure_cls']['elist_epure'][0]['num0'] == 2
+    assert res['list_epures'][1]['nametag'] == "beaver"
+    assert res['set_epures'][1]['nametag'] == "beaver"
+    assert res['tuple_epures'][1]['nametag'] == "beaver"
 
     res_json = inst.to_json()
 
