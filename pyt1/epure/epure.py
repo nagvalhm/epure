@@ -358,14 +358,20 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
 
     new_func_code = _compile_func(func, new_func_w_br_lines, func_name)
 
-    # func.__code__ = new_func_code
+    # global new_dict, newfunc
+
+    func.__code__ = new_func_code
+
+    new_dict = func.__globals__
+    # newfunc = types.FunctionType(new_func_code, new_dict, name=func.__name__, argdefs=func.__defaults__, closure=func.__closure__)
 
     def inner(self, *args, **kwargs) -> Any:
         
-        new_dict = func.__globals__
-        if self.__class__.__name__ in new_func_code.co_freevars:
+        # new_dict = func.__globals__
+        if self.__class__.__name__ in new_func_code.co_freevars and self.__class__.__name__ not in new_dict:
             new_dict.update({f"{self.__class__.__name__}" : self.__class__})
-        newfunc = types.FunctionType(new_func_code, new_dict, name=func.__name__, argdefs=func.__defaults__, closure=func.__closure__)
+            nonlocal func
+            func = types.FunctionType(new_func_code, new_dict, name=func.__name__, argdefs=func.__defaults__, closure=func.__closure__)
 
         #temporary holders for tp, db proberties
         # tp_err_prop = getattr(self, "tp")
@@ -387,7 +393,7 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
         self.md = getattr(self.dbm, full_name)
         self.model = create_model_from_class
 
-        res = newfunc(self, *args, **kwargs)
+        res = func(self, *args, **kwargs)
 
         delattr(self, "dbm")
         delattr(self, "md")
@@ -398,6 +404,6 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
     return inner
 
 def create_model_from_class(cls:Epure) -> Model:
-    if not cls in Epure.epures:
-        raise EpureError(f"class {cls.__name__} is not decorated by @epure")
+    if cls not in Epure.epures:
+        raise EpureError(f"Model cannot be created from class {cls.__name__} that is not decorated by @epure")
     return Model(cls.resource.db, cls.resource)

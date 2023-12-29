@@ -234,6 +234,8 @@ class GresDb(Db):
             return res
         if py_type == complex:            
             return f"point({val.real}, {val.imag})"
+        # if py_type == tuple:
+        #     return repr(val)
 
         json = self.json_serializer.serialize_for_update(val)
         return f"'{json}'"
