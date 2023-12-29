@@ -200,7 +200,7 @@ class Model(QueryingProxy, Name, ModelBase):
                 return True
         return False
 
-class DbModel(QueryingProxy):
+class Domain(QueryingProxy):
 
     def __init__(self, db):
         self.__db__ = db

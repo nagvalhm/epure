@@ -8,7 +8,7 @@ from .resource.db.constraint import Foreign, Default, Constraint
 from .resource.edata.ecollection_metacls import ECollectionMetacls
 
 from uuid import UUID
-from .parser.inspect_parser.db_model import DbModel
+from .parser.inspect_parser.domain import Domain
 from .parser.inspect_parser.model import Model
 import textwrap
 import inspect
@@ -389,13 +389,13 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
             db = self.db
             full_name = self.full_name
         
-        self.dbm = DbModel(db)
-        self.md = getattr(self.dbm, full_name)
+        self.dom = Domain(db)
+        self.md = getattr(self.dom, full_name)
         self.model = create_model_from_class
 
         res = func(self, *args, **kwargs)
 
-        delattr(self, "dbm")
+        delattr(self, "dom")
         delattr(self, "md")
         delattr(self, "model")
         

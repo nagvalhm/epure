@@ -70,9 +70,9 @@ def foo2():
 @escript
 def test_two_joins(self):
     md = self.md
-    dbm = self.dbm
-    test_order_tp = dbm.test_order
-    test_office_tp = dbm.test_shippment_office
+    dom = self.dom
+    test_order_tp = dom.test_order
+    test_office_tp = dom.test_shippment_office
     lst = ["bde"]
     
     join_res = md.join(test_order_tp, md.data_id == test_order_tp.test_customer_id)

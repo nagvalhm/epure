@@ -1,8 +1,8 @@
 from __future__ import annotations
 from _ast import BoolOp
 from typing import Any
-# from ..epure.parser.leaf import DbModel
-from ..epure.parser.inspect_parser.db_model import DbModel
+# from ..epure.parser.leaf import Domain
+from ..epure.parser.inspect_parser.domain import Domain
 from ..epure import epure
 from ..epure import escript
 # import inspect
@@ -17,16 +17,16 @@ def foo2():
     return 2
 
 def test_simple_queries_inspect_parser_read_decorator():
-    # dbm = DbModel(real_db)
-    # tp = dbm['oraculs_domain.competitions']
-    # y = dbm['oraculs_domain.oraculs']
+    # dom = Domain(real_db)
+    # tp = dom['oraculs_domain.competitions']
+    # y = dom['oraculs_domain.oraculs']
 
     # class AstParser(ast.NodeTransformer):
     # class ReadHolderCls:
     #     def read(func):
     #         def inner(self, *args, **kwargs):
-    #             dbm = DbModel(self.resource.db)
-    #             self.tp = dbm["public.inspect_parser_test_cls"]
+    #             dom = Domain(self.resource.db)
+    #             self.tp = dom["public.inspect_parser_test_cls"]
     #             func_source = inspect.getsource(func)
     #             dedent_src = textwrap.dedent(func_source)
 
@@ -319,11 +319,11 @@ def test_inspect_parser_like_comp_etc():
         @escript
         def sql_subquery_select_real_ex(self):
             md = self.md
-            tp_oraculs_dom_tasks = self.dbm.oraculs_domain.tasks
+            tp_oraculs_dom_tasks = self.dom.oraculs_domain.tasks
             query = md.name in md.select([md.name], md.age == 50)
             assert query == 'public.inspect_parser_test_cls2.name IN (SELECT public.inspect_parser_test_cls2.name as public___inspect_parser_test_cls2___name FROM public.inspect_parser_test_cls2 \n  WHERE \n public.inspect_parser_test_cls2.age = 50)'
             res = self.resource.read(query)
-            # self.resource.read([md.first_name, md.last_name], md.node_id in select([self.dbm['tp2'].node_id]))
+            # self.resource.read([md.first_name, md.last_name], md.node_id in select([self.dom['tp2'].node_id]))
             return res
         
         @escript

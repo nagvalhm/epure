@@ -6,7 +6,7 @@ pytest.skip(allow_module_level=True)
 # from .test_epure import default_epure
 from ..epure_classes import DefaultEpure
 from ..epure_classes import db as real_db
-from ...epure.parser.leaf import DbModel
+from ...epure.parser.leaf import Domain
 # from ..epure.epure import Epure
 # from typing import cast
 
@@ -111,7 +111,7 @@ def test_read_default_epure_readmethod():
     #     & x.govno < db['its_table'].poeben)
 
 # def test_read_default_epure_sql2():
-#     db = DbModel(real_db)
+#     db = Domain(real_db)
 #     x = db['default_epure']
 #     real_x = real_db['default_epure']
 #     y = db['oraculs_domain.test_clssasdas']
@@ -123,7 +123,7 @@ def test_read_default_epure_readmethod():
 #     DefaultEpure.resource.read(a.f1 @ a.f1 == z.f2 | a.f4 == a.f3 % 3 & 5 == a.f5 | (a.f6 == z.f7) | a.f1 >= ((a.f4,a.f2)@(x.str0 == y.test_field1)))
 
 def test_read_default_epure_sql2():
-    db = DbModel(real_db)
+    db = Domain(real_db)
     x = db['default_epure']
     real_x = real_db['default_epure']
     y = db['oraculs_domain.test_clssasdas']
@@ -137,7 +137,7 @@ def test_read_default_epure_sql2():
     # DefaultEpure.resource.read(x)
 
 def test_read_default_epure_empty():
-    db = DbModel(real_db)
+    db = Domain(real_db)
     x = db['default_epure']
 
     res_read = DefaultEpure.resource.read()
@@ -148,14 +148,14 @@ def test_read_default_epure_empty():
     assert isinstance(res_read, list) and bool(res_read[0])
 
 # def test_read_join_with_delimeter():
-#     db = DbModel(real_db)
+#     db = Domain(real_db)
 #     x = db['default_epure']
 #     y = db['epure_class1']
 
 #     DefaultEpure.resource.read([x,y] @ y << (x.epure_class1 == y.node_id))
 
 # def test_read_default_epure_header_as_array():
-#     db = DbModel(real_db)
+#     db = Domain(real_db)
 #     x = db['default_epure']
 
 #     res_read = DefaultEpure.resource.read([x.str3, x.int3], x.str3 == "abc")

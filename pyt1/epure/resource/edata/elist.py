@@ -159,7 +159,7 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
 
         # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
         # res = self.py_type.resource.read(self.tp.node_id in list(node_id_dict.keys()))
-        py_type_tp = getattr(self.dbm, self.py_type.resource.full_name)
+        py_type_tp = getattr(self.dom, self.py_type.resource.full_name)
         res = self.py_type.resource.read(py_type_tp.data_id in list(data_id_dict.keys()))
 
 
@@ -394,7 +394,7 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
 
         # res = self.py_type.resource.read(lambda tp, dp: tp.node_id >= list(node_id_dict.keys()))
         # res = self.py_type.resource.read(self.tp.node_id in list(node_id_dict.keys()))
-        py_type_tp = getattr(self.dbm, self.py_type.resource.full_name)
+        py_type_tp = getattr(self.dom, self.py_type.resource.full_name)
         res = self.py_type.resource.read(py_type_tp.data_id in list(data_id_dict.keys()))
 
 
