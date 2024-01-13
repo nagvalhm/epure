@@ -10,6 +10,8 @@ from .ecollection_metacls import ECollectionMetacls
 from ..data_promise import DataPromise, ElistPromise, EsetPromise
 from ...helpers.type_helper import is_uuid
 
+from typing import get_origin
+
 class EData(Savable):
 
     data_id:object
@@ -128,6 +130,9 @@ class TableData(EData):
                 continue
 
             cls_attr_type = instance.annotations[field_name]
+
+            if get_origin(cls_attr_type) != None: # check if class is Generic
+                cls_attr_type = get_origin(cls_attr_type)
             
             val_type_match_cls_attr_type = isinstance(val, cls_attr_type)
 
@@ -240,8 +245,11 @@ class TableData(EData):
         and lambda_func(field_name, field_val, self, rec_depth, args):
             field_val = [item for item in field_val]
 
-        elif isinstance(field_val, Savable):
+        elif isinstance(field_val, Savable) and hasattr(field_val, "data_id"):
             field_val = field_val.data_id
+
+        elif isinstance(field_val, Savable) and not hasattr(field_val, "data_id"):
+            field_val = None
 
         if isinstance(field_val, UUID):
             field_val = str(field_val)
@@ -289,9 +297,10 @@ class TableData(EData):
  
         return _dict
 
-    def to_json(self, encoder:Callable=jsonpickle.encode) -> Dict[str, Any]:
+    def to_json(self, rec_depth=0, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
+                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), encoder:Callable=jsonpickle.encode) -> Dict[str, Any]:
 
-        _dict = self.to_dict()
+        _dict = self.to_dict(rec_depth=rec_depth, lambda_func=lambda_func)
         
         return encoder(_dict)
 

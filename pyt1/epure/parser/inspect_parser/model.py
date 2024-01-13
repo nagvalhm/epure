@@ -4,6 +4,7 @@ from typing import Any
 from .column_proxy import ColumnProxy
 from ..proxy_base_cls import ModelBase
 from ...resource.join_resource.join_resource import JoinResource
+from inflection import underscore
 
 class Model(Term, ModelBase):
 
@@ -16,9 +17,13 @@ class Model(Term, ModelBase):
     def __getattr__(self, attr_name: str) -> ColumnProxy:
         # if self.__is_copy__:
             # raise AttributeError
-        if attr_name not in self.__table__.header:
+        
+        # case_name = underscore(attr_name)
+        case_name = attr_name.lower()
+        
+        if case_name not in self.__table__.header:
             raise AttributeError(f'column {attr_name} not in header of table {self.__table__.full_name}')
-        column = self.__table__.header[attr_name]
+        column = self.__table__.header[case_name]
         res = ColumnProxy(self.__db__, self.__table__, column, self)
         return res
 

@@ -5,10 +5,12 @@ from ..savable import Savable
 from .constraint import Constraint
 from .db_entity_resource import DbEntityResource
 import re
-from ...named import Named
+from ...named import SnakeCaseNamed
+from inflection import underscore
 
 
-class TableColumn(Savable, Named):
+# class TableColumn(Savable, SnakeCaseNamed):
+class TableColumn(Savable):
     py_type:type
     
     @property

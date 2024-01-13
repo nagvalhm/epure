@@ -4,8 +4,10 @@ from uuid import UUID
 import pytest
 from ...epure_classes import EpureClass1
 # from epure import Elist
-from ....epure import Elist
+from ....epure import Elist, Eset
 from types import LambdaType, NoneType
+from typing import List
+from ....epure import escript
 
 def compare_dict_to_obj(dict, obj):
     for item in dict:
@@ -176,3 +178,51 @@ def test_data_recursive_to_dict_with_collections_of_epure():
     res = epure_from_db.to_dict()
 
     assert res["epure_list"] == [{'str3': 'Str'}, {'str3': 'Str'}, {'str3': 'Str'}]
+
+def test_epure_docs_to_dict_to_json():
+    @epure()
+    class SomeEpure:
+        str_val:str = "keen"
+        int_val:int = 80
+
+    @epure()
+    class ExampleCls:
+        someEpureVal:SomeEpure = SomeEpure()
+        some_val:str = "To the moon!"
+
+        @escript
+        def test_camelcase_name_work(self):
+            tp = self.md.someEpureVal
+            assert True
+
+    ex1 = ExampleCls()
+    ex1.test_camelcase_name_work()
+    ex2 = ExampleCls()
+
+    @epure()
+    class ToDictEx:
+        elist_val:Elist[ExampleCls] = Elist[ExampleCls]([ex1, ex2])
+        eset_val:Eset[ExampleCls]= Eset[ExampleCls]([ex1, ex2])
+        epure_val:SomeEpure = SomeEpure()
+        str_val:str = "In Tech we trust"
+        int_val:int = 424
+        complex_val:complex = 3 + 4j
+        generic_list:List[str] = ["cat", "dog", "yak"]
+        UPCASE_VAL:str = "Some UPcase val"
+
+        
+
+
+
+    to_dict_ex_inst = ToDictEx()
+
+    res_no_save = to_dict_ex_inst.to_dict()
+
+    from_dict_no_save = ToDictEx.from_dict(res_no_save)
+
+    to_dict_ex_inst.save()
+
+    res_saved = to_dict_ex_inst.to_dict()
+
+    from_dict_saved= ToDictEx.from_dict(res_saved)
+    

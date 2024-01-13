@@ -16,7 +16,7 @@ from .table_column import TableColumn
 from ..db.db_entity_resource import DbEntityResource
 from .constraint import Constraint, NotNull, Default, Prim, Foreign, Uniq, Check
 import uuid
-
+from inflection import underscore
 
 class TableHeader(Savable):
     columns:Dict[str,TableColumn]
@@ -38,10 +38,12 @@ class TableHeader(Savable):
         if not columns:
             return
 
-        for name, py_type in columns.items():            
-            column = TableColumn(name, py_type)
+        for name, py_type in columns.items():
+            # case_name = underscore(name)
+            case_name = name.lower()
+            column = TableColumn(case_name, py_type)
             column = cast(TableColumn, column)
-            self.columns[name] = column
+            self.columns[case_name] = column
 
     @property
     def db(self):
@@ -76,6 +78,8 @@ class TableHeader(Savable):
 
         if column.is_deleted:
             return False
+        
+        # snake_case_name = underscore(column.name)
 
         if column.name not in self:
             return False

@@ -90,10 +90,10 @@ def test_two_joins(self):
 
     res_empty = join_res.read()
 
-    return query
+    return res_header
 
 
 TestCustomer.test_join = test_two_joins
 
-# res = nico.test_join()
+res = nico.test_join()    
 # assert res

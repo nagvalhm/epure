@@ -271,3 +271,38 @@ def test_eset_epure_remove_item_by_val():
     ids1 = epurecls1.eset1.ids
     res1 = epurecls1.table.read(data_id=id_1)[0]
     
+
+def test_eset_docs_example():
+
+    @epure()
+    class Example:
+        int_attr:complex = 5 + 7j
+        str_attr:str = "Hello Sky!"
+
+    @epure()
+    class EsetExample:
+        eset_str:Eset[str]
+        eset_epure:Eset[Example]
+
+    ex1 = Example()
+    ex1.complex = 10 + 8j
+
+    ex2 = Example()
+
+    eset_ex = EsetExample()
+
+    eset_ex.eset_epure = Eset[Example]((ex1, ex2))
+
+    eset_ex.eset_str = Eset[str](("Grin", "like", "a", "Cheshire", "cat"))
+
+    eset_ex.save() # (1)!
+
+    eset_ex_read = EsetExample.resource.read(data_id = eset_ex.data_id)[0]
+
+    eset_ex_read.eset_epure # -> {}
+    eset_ex_read.eset_epure.load() # (2)!
+    eset_ex_read.eset_epure # -> {<pyt1.tests.resource...0D4245C00>, <pyt1.tests.resource...0D4245CC0>}
+
+    eset_ex_read.eset_str # -> {}
+    eset_ex_read.eset_str.load()
+    "".join(eset_ex_read.eset_str) # -> "Grin cat like a Cheshire"
