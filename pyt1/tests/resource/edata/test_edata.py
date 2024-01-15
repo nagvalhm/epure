@@ -217,21 +217,27 @@ def test_epure_docs_to_dict_to_json():
         generic_list:List[str] = ["cat", "dog", "yak"]
         UPCASE_VAL:str = "Some UPcase val"
 
-    inst = ToDictEx()
+    to_dict_ex_inst = ToDictEx()
 
-    dict_res_no_save = inst.to_dict()
+    dict_res_no_save = to_dict_ex_inst.to_dict()
 
     assert str(dict_res_no_save) == "{'elist_val': [{'someEpureVal': None, 'some_val': 'To the moon!'}, {'someEpureVal': None, 'some_val': 'To the moon!'}], 'eset_val': [{'someEpureVal': None, 'some_val': 'To the moon!'}, {'someEpureVal': None, 'some_val': 'To the moon!'}], 'epure_val': {'str_val': 'keen', 'int_val': 80, 'someRandEpureVal': None}, 'str_val': 'In Tech we trust', 'int_val': 424, 'complex_val': (3+4j), 'generic_list': ['cat', 'dog', 'yak'], 'UPCASE_VAL': 'Some UPcase val'}"
 
-    dict_res_no_save_full = dict_res_no_save = inst.to_dict(full=True)
+    dict_res_no_save_full = to_dict_ex_inst.to_dict(full=True)
 
-    assert dict_res_no_save == dict_res_no_save_full
+    assert str(dict_res_no_save_full) == "{'elist_val': [{'someEpureVal': {'str_val': 'keen', 'int_val': 80, 'someRandEpureVal': {'someint': 777, 'somecomplexval': (3+4j)}}, 'some_val': 'To the moon!'}, {'someEpureVal': {'str_val': 'keen', 'int_val': 80, 'someRandEpureVal': {'someint': 777, 'somecomplexval': (3+4j)}}, 'some_val': 'To the moon!'}], 'eset_val': [{'someEpureVal': {'str_val': 'keen', 'int_val': 80, 'someRandEpureVal': {'someint': 777, 'somecomplexval': (3+4j)}}, 'some_val': 'To the moon!'}, {'someEpureVal': {'str_val': 'keen', 'int_val': 80, 'someRandEpureVal': {'someint': 777, 'somecomplexval': (3+4j)}}, 'some_val': 'To the moon!'}], 'epure_val': {'str_val': 'keen', 'int_val': 80, 'someRandEpureVal': {'someint': 777, 'somecomplexval': (3+4j)}}, 'str_val': 'In Tech we trust', 'int_val': 424, 'complex_val': (3+4j), 'generic_list': ['cat', 'dog', 'yak'], 'UPCASE_VAL': 'Some UPcase val'}"
 
     from_dict_no_save = ToDictEx.from_dict(dict_res_no_save)
 
-    inst.save()
+    assert from_dict_no_save.elist_val[0].some_val == 'To the moon!'
 
-    dict_res_saved = inst.to_dict()
+    from_dict_no_save_full = ToDictEx.from_dict(dict_res_no_save_full)
+
+    assert from_dict_no_save_full.elist_val[0].some_val == 'To the moon!'
+
+    to_dict_ex_inst.save()
+
+    dict_res_saved = to_dict_ex_inst.to_dict()
 
     from_dict_saved = ToDictEx.from_dict(dict_res_saved)
 
@@ -243,3 +249,55 @@ def test_epure_docs_to_dict_to_json():
 
     assert dict_full_serialized_item["epure_val"]["someRandEpureVal"]["someint"] == 777
     
+
+def test_from_dict_no_default_vals():
+
+    @epure()
+    class EpClas:
+        someint:int
+        somecomplexval:complex
+
+    @epure()
+    class NEWToDictEx:
+        elist_val:Elist[EpClas]
+        eset_val:Eset[EpClas]
+        epure_val:EpClas 
+        str_val:str 
+        int_val:int
+        complex_val:complex
+        generic_list:List[str]
+        UPCASE_VAL:str
+
+    ex1 = EpClas()
+    ex1.someint = 44
+    ex1.somecomplexval = 4 + 9j
+
+    ex2 = EpClas()
+    ex2.someint = 778
+    ex2.somecomplexval = 83 + 114j
+
+    new_to_dict_ex = NEWToDictEx()
+    new_to_dict_ex.elist_val = Elist[EpClas]([ex1, ex2])
+    new_to_dict_ex.eset_val = Eset[EpClas]([ex1, ex2])
+    new_to_dict_ex.epure_val = EpClas()
+    new_to_dict_ex.str_val = "In Tech we trust"
+    new_to_dict_ex.int_val = 424
+    new_to_dict_ex.complex_val = 3 + 4j
+    new_to_dict_ex.generic_list = ["cat", "dog", "yak"]
+    new_to_dict_ex.UPCASE_VAL = "Some UPcase val"
+
+    dict_no_save = new_to_dict_ex.to_dict()
+
+    assert str(dict_no_save) == "{'elist_val': [{'someint': 44, 'somecomplexval': (4+9j)}, {'someint': 778, 'somecomplexval': (83+114j)}], 'eset_val': [{'someint': 44, 'somecomplexval': (4+9j)}, {'someint': 778, 'somecomplexval': (83+114j)}], 'epure_val': {}, 'str_val': 'In Tech we trust', 'int_val': 424, 'complex_val': (3+4j), 'generic_list': ['cat', 'dog', 'yak'], 'UPCASE_VAL': 'Some UPcase val'}"
+
+    inst_from_dict_no_save = NEWToDictEx.from_dict(dict_no_save)
+
+    assert inst_from_dict_no_save.elist_val[0].someint == 44
+
+    dict_no_save_full = new_to_dict_ex.to_dict(full=True)
+
+    assert str(dict_no_save_full) == "{'elist_val': [{'someint': 44, 'somecomplexval': (4+9j)}, {'someint': 778, 'somecomplexval': (83+114j)}], 'eset_val': [{'someint': 44, 'somecomplexval': (4+9j)}, {'someint': 778, 'somecomplexval': (83+114j)}], 'epure_val': {}, 'str_val': 'In Tech we trust', 'int_val': 424, 'complex_val': (3+4j), 'generic_list': ['cat', 'dog', 'yak'], 'UPCASE_VAL': 'Some UPcase val'}"
+
+    inst_from_dict_no_save_full = NEWToDictEx.from_dict(dict_no_save_full)
+
+    assert inst_from_dict_no_save_full.elist_val[0].someint == 44

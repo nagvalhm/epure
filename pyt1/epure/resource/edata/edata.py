@@ -119,7 +119,7 @@ class TableData(EData):
         return instance
     
     @classmethod
-    def from_dict(_cls, _dict:Dict[str, Any])->object:
+    def from_dict(_cls, _dict:Dict[str, Any]) -> object:
         from .elist import ECollectionMetacls
         from .elist import Elist, Eset
 
@@ -144,7 +144,7 @@ class TableData(EData):
                 val = UUID(val)
                 val_type_match_cls_attr_type = True
 
-            if isinstance(cls_attr_type, ECollectionMetacls) and not val_type_match_cls_attr_type: # check if attr is elist
+            if isinstance(cls_attr_type, ECollectionMetacls) and not val_type_match_cls_attr_type: # check if attr is elist or eset
                 # try:
                 if is_uuid(val) and cls_attr_type.__origin__ == Elist:
                     eset_id = UUID(val)
@@ -158,12 +158,23 @@ class TableData(EData):
                     instance.__promises_dict__[field_name] = promise
                     continue
 
+                elif type(val[0]) == dict and isinstance(cls_attr_type.py_type, Savable)\
+                and cls_attr_type.__origin__ in (Elist, Eset):
+                    val = val.copy()
+                    for i, item in enumerate(val):
+                        new_item = cls_attr_type.py_type()
+                        for name, it in val[i].items():
+                            setattr(new_item, name, it)
+                        val[i] = new_item
+
                 # except(Exception):
                 elif cls_attr_type.py_type in (bytes, bytearray)\
                     and not type(val[0]) in (bytes, bytearray):
+                        val = val.copy()
                         for i, item in enumerate(val):
                             val[i] = item.encode()
-                        val = cls_attr_type(val)
+
+                val = cls_attr_type(val)
 
                 val_type_match_cls_attr_type = True
 
