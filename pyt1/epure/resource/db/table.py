@@ -94,7 +94,7 @@ class Table(DbEntity):
         return super().is_excluded(edata, atr_name, atr_name)
 
 
-    def _serialize_field_val_to_sql(self, field_val, field_type=None, field_name=None, rec_depth=None, *args):
+    def _serialize_field_val_to_sql(self, field_val, field_type=None, field_name=None, _rec_depth=None, *args):
         #working for db:
             if isinstance(field_val, Savable):
                 field_type = field_val.annotations['data_id']

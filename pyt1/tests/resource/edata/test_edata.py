@@ -180,10 +180,17 @@ def test_data_recursive_to_dict_with_collections_of_epure():
     assert res["epure_list"] == [{'str3': 'Str'}, {'str3': 'Str'}, {'str3': 'Str'}]
 
 def test_epure_docs_to_dict_to_json():
+
+    @epure()
+    class SomeRandEpure:
+        someint:int = 777
+        somecomplexval:complex = 3 + 4j
+
     @epure()
     class SomeEpure:
         str_val:str = "keen"
         int_val:int = 80
+        someRandEpureVal:SomeRandEpure = SomeRandEpure()
 
     @epure()
     class ExampleCls:
@@ -210,19 +217,29 @@ def test_epure_docs_to_dict_to_json():
         generic_list:List[str] = ["cat", "dog", "yak"]
         UPCASE_VAL:str = "Some UPcase val"
 
-        
+    inst = ToDictEx()
 
+    dict_res_no_save = inst.to_dict()
 
+    assert str(dict_res_no_save) == "{'elist_val': [{'someEpureVal': None, 'some_val': 'To the moon!'}, {'someEpureVal': None, 'some_val': 'To the moon!'}], 'eset_val': [{'someEpureVal': None, 'some_val': 'To the moon!'}, {'someEpureVal': None, 'some_val': 'To the moon!'}], 'epure_val': {'str_val': 'keen', 'int_val': 80, 'someRandEpureVal': None}, 'str_val': 'In Tech we trust', 'int_val': 424, 'complex_val': (3+4j), 'generic_list': ['cat', 'dog', 'yak'], 'UPCASE_VAL': 'Some UPcase val'}"
 
-    to_dict_ex_inst = ToDictEx()
+    dict_res_no_save_full = dict_res_no_save = inst.to_dict(full=True)
 
-    res_no_save = to_dict_ex_inst.to_dict()
+    assert dict_res_no_save == dict_res_no_save_full
 
-    from_dict_no_save = ToDictEx.from_dict(res_no_save)
+    from_dict_no_save = ToDictEx.from_dict(dict_res_no_save)
 
-    to_dict_ex_inst.save()
+    inst.save()
 
-    res_saved = to_dict_ex_inst.to_dict()
+    dict_res_saved = inst.to_dict()
 
-    from_dict_saved= ToDictEx.from_dict(res_saved)
+    from_dict_saved = ToDictEx.from_dict(dict_res_saved)
+
+    dict_from_dict_saved = from_dict_saved.to_dict()
+
+    assert dict_from_dict_saved == dict_res_saved
+
+    dict_full_serialized_item = from_dict_saved.to_dict(full=True)
+
+    assert dict_full_serialized_item["epure_val"]["someRandEpureVal"]["someint"] == 777
     

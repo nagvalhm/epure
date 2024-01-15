@@ -68,9 +68,13 @@ class TableData(EData):
     data_id: UUID
     resource:Savable
 
-    def __init__(self, data_id:object=None, resource:Resource=None) -> None:
+    def __init__(self, data_id:object=None, resource:Resource=None, **kwargs) -> None:
         if data_id != None and isinstance(data_id, str):
             data_id = UUID(data_id)
+
+        if not isinstance(data_id, UUID):
+            data_id = None
+
         super().__init__(data_id, resource)
 
     @property
@@ -163,16 +167,23 @@ class TableData(EData):
 
                 val_type_match_cls_attr_type = True
 
-            elif issubclass(cls_attr_type, Savable) and not val_type_match_cls_attr_type: # check if attr is epure 
-                try: 
-                    data_id = UUID(val)
-                    promise = DataPromise(cls_attr_type.resource, data_id)
-                    instance.__promises_dict__[field_name] = promise
-                    continue
-                except(Exception):
-                    val = cls_attr_type(val)
+            elif issubclass(cls_attr_type, Savable) and not val_type_match_cls_attr_type and is_uuid(val): # check if attr is epure 
+                # try: 
+                #     data_id = UUID(val)
+                #     promise = DataPromise(cls_attr_type.resource, data_id)
+                #     instance.__promises_dict__[field_name] = promise
+                #     continue
+                # except(Exception):
+                #     val = cls_attr_type(val)
+                promise = DataPromise(cls_attr_type.resource, val)
+                instance.__promises_dict__[field_name] = promise
+                continue
 
-                val_type_match_cls_attr_type = True
+            elif issubclass(cls_attr_type, Savable) and not val_type_match_cls_attr_type and type(val) == dict:
+                # data_id = val.get("data_id", None)
+                val = cls_attr_type(**val)
+
+            val_type_match_cls_attr_type = True
             
             if val is None:
                 val_type_match_cls_attr_type = True
@@ -229,20 +240,20 @@ class TableData(EData):
 
     #     return res
 
-    def _serialize_field_val_to_dict(self, field_val, field_type=None, field_name:str=None, rec_depth:int = None, *args):
+    def _serialize_field_val_to_dict(self, field_val, field_type=None, field_name:str=None, full:bool=None,_rec_depth:int = None, *args):
         # return super()._serialize_field_val(field_type)
         lambda_func = args[0][0]
 
         if isinstance(field_val, Savable) and not isinstance(type(field_val), ECollectionMetacls)\
-        and lambda_func(field_name, field_val, self, rec_depth, args):
-            field_val = field_val.to_dict(rec_depth+1, lambda_func)
+        and (lambda_func(field_name, field_val, self, _rec_depth, args) or full == True):
+            field_val = field_val.to_dict(full, lambda_func, _rec_depth+1)
 
         elif (isinstance(type(field_val), ECollectionMetacls) or type(field_val) in (set, tuple, list)) and len(field_val)\
-        and isinstance(next(iter(field_val), False), Savable) and lambda_func(field_name, field_val, self, rec_depth, args):
-            field_val = [item.to_dict(rec_depth+1, lambda_func) for item in field_val]
+        and isinstance(next(iter(field_val), False), Savable) and (lambda_func(field_name, field_val, self, _rec_depth, args) or full == True):
+            field_val = [item.to_dict(full, lambda_func, _rec_depth+1) for item in field_val]
 
         elif isinstance(type(field_val), ECollectionMetacls) and len(field_val) and not isinstance(next(iter(field_val), False), Savable)\
-        and lambda_func(field_name, field_val, self, rec_depth, args):
+        and lambda_func(field_name, field_val, self, _rec_depth, args):
             field_val = [item for item in field_val]
 
         elif isinstance(field_val, Savable) and hasattr(field_val, "data_id"):
@@ -257,50 +268,20 @@ class TableData(EData):
         return field_val
 
 
-    def to_dict(self, rec_depth=0, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
-                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls)) -> Dict[str, Any]:
+    def to_dict(self, full=False, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
+                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), _rec_depth=0) -> Dict[str, Any]:
         from .elist import ECollectionMetacls
 
         self.load()
 
-        # _dict = self.__dict__.copy()
-        _dict = self._serialize(self, self._serialize_field_val_to_dict, rec_depth, lambda_func)
-
-        # if "__promises_dict__" in _dict and _dict['__promises_dict__']:
-        #     for name, value in _dict['__promises_dict__'].items():
-        #         if isinstance(value, ElistPromise):
-        #             # value = value.get().read()
-        #             value = value.get()
-        #         else:
-        #             value = getattr(value, 'node_id', None)
-        #         _dict[name] = value
-
-        # _dict.pop("__promises_dict__", None)
-
-        # for field_name, field_val in _dict.items():
-        #     if isinstance(field_val, Constraint):
-        #         field_val = field_val.py_type
-
-        #     # if isinstance(type(field_val), ElistMetacls) and not issubclass(field_val.py_type, Savable):
-        #     if isinstance(type(field_val), ECollectionMetacls):
-        #         field_val = [field_val[i] for i in range(len(field_val))]
-
-        #     elif isinstance(field_val, Savable) and lambda_func(field_name, field_val, self, rec_depth):
-        #         # field_val = getattr(self, field_name, None)
-        #         # field_val = field_val.save(True).node_id
-        #         field_val = field_val.to_dict(rec_depth+1, lambda_func)
-
-        #     if isinstance(field_val, UUID):
-        #         field_val = str(field_val)
-
-        #     _dict[field_name] = field_val
+        _dict = self._serialize(self, self._serialize_field_val_to_dict, full, _rec_depth, lambda_func)
  
         return _dict
 
-    def to_json(self, rec_depth=0, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
-                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), encoder:Callable=jsonpickle.encode) -> Dict[str, Any]:
+    def to_json(self, full=False, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
+                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), _rec_depth=0, encoder:Callable=jsonpickle.encode) -> Dict[str, Any]:
 
-        _dict = self.to_dict(rec_depth=rec_depth, lambda_func=lambda_func)
+        _dict = self.to_dict(full=full, lambda_func=lambda_func,_rec_depth=_rec_depth)
         
         return encoder(_dict)
 

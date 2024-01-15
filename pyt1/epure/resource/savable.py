@@ -55,7 +55,7 @@ class Savable(Resource):
     def execute(self, script: str = '') -> object:
         return self.resource.execute(script)
     
-    def _serialize(self, edata: Savable, serializer:Callable, rec_depth:int=None, *args) -> Dict[str, str]:
+    def _serialize(self, edata: Savable, serializer:Callable, full:bool=False, _rec_depth:int=None, *args) -> Dict[str, str]:
         res = {}
         for field_name, field_type in edata.annotations.items():
             if isinstance(field_type, Constraint):
@@ -72,7 +72,7 @@ class Savable(Resource):
 
             field_val = getattr(edata, field_name, None)
 
-            field_val = serializer(field_val, field_type, field_name, rec_depth, args)
+            field_val = serializer(field_val, field_type, field_name, full, _rec_depth, args)
             
             # field_val = self._serialize_field_val(field_val, field_type)
 
