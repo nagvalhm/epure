@@ -3,6 +3,7 @@ from types import NoneType
 from .resource import Resource
 from typing import Any, Dict, get_type_hints, Callable
 from .db.constraint import Constraint
+from .edata.ecollection_metacls import ECollectionMetacls
 
 class Savable(Resource):    
     
@@ -60,6 +61,9 @@ class Savable(Resource):
         for field_name, field_type in edata.annotations.items():
             if isinstance(field_type, Constraint):
                 field_type = field_type.py_type
+
+            if isinstance(field_type, ECollectionMetacls):
+                field_type = field_type.__origin__
                 
             # if edata.is_excluded(field_name, field_type):
             #     continue

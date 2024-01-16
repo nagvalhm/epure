@@ -2,12 +2,13 @@ from ....epure.epure import Epure, epure
 # from ...test_epure import epure_class1, epure_class2
 from uuid import UUID
 import pytest
-from ...epure_classes import EpureClass1
+from ...epure_classes import EpureClass1, EpureClass3, EpureClass2, ToDictEx
 # from epure import Elist
 from ....epure import Elist, Eset
 from types import LambdaType, NoneType
 from typing import List
 from ....epure import escript
+from ....epure.helpers.type_helper import is_uuid
 
 def compare_dict_to_obj(dict, obj):
     for item in dict:
@@ -181,43 +182,11 @@ def test_data_recursive_to_dict_with_collections_of_epure():
 
 def test_epure_docs_to_dict_to_json():
 
-    @epure()
-    class SomeRandEpure:
-        someint:int = 777
-        somecomplexval:complex = 3 + 4j
-
-    @epure()
-    class SomeEpure:
-        str_val:str = "keen"
-        int_val:int = 80
-        someRandEpureVal:SomeRandEpure = SomeRandEpure()
-
-    @epure()
-    class ExampleCls:
-        someEpureVal:SomeEpure = SomeEpure()
-        some_val:str = "To the moon!"
-
-        @escript
-        def test_camelcase_name_work(self):
-            tp = self.md.someEpureVal
-            assert True
-
-    ex1 = ExampleCls()
-    ex1.test_camelcase_name_work()
-    ex2 = ExampleCls()
-
-    @epure()
-    class ToDictEx:
-        elist_val:Elist[ExampleCls] = Elist[ExampleCls]([ex1, ex2])
-        eset_val:Eset[ExampleCls]= Eset[ExampleCls]([ex1, ex2])
-        epure_val:SomeEpure = SomeEpure()
-        str_val:str = "In Tech we trust"
-        int_val:int = 424
-        complex_val:complex = 3 + 4j
-        generic_list:List[str] = ["cat", "dog", "yak"]
-        UPCASE_VAL:str = "Some UPcase val"
+    global to_dict_ex_inst
 
     to_dict_ex_inst = ToDictEx()
+
+    to_dict_ex_inst.elist_val[0].test_camelcase_name_escript_work()
 
     dict_res_no_save = to_dict_ex_inst.to_dict()
 
@@ -248,7 +217,28 @@ def test_epure_docs_to_dict_to_json():
     dict_full_serialized_item = from_dict_saved.to_dict(full=True)
 
     assert dict_full_serialized_item["epure_val"]["someRandEpureVal"]["someint"] == 777
+
+def test_to_dict_custom_lambda():
+
+    res1 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth, args: 
+                            field_name != "elist_val")
     
+    assert is_uuid(res1["elist_val"]) == True
+    assert type(res1["eser_val"]) == dict
+    
+    res2 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth, args: 
+                            field_type == Elist)
+    
+    assert type(res2["elist_val"]) == dict
+    assert is_uuid(res2["eset_val"]) == True
+
+    try:
+        to_dict_ex_inst.to_dict(lambda_func = lambda is_true: is_true == True) # should break because of 1 argument in lambda
+        assert False
+    except TypeError:
+        assert True
+    
+
 
 def test_from_dict_no_default_vals():
 
@@ -301,3 +291,8 @@ def test_from_dict_no_default_vals():
     inst_from_dict_no_save_full = NEWToDictEx.from_dict(dict_no_save_full)
 
     assert inst_from_dict_no_save_full.elist_val[0].someint == 44
+
+
+
+    
+

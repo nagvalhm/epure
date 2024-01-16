@@ -256,15 +256,16 @@ class TableData(EData):
         lambda_func = args[0][0]
 
         if isinstance(field_val, Savable) and not isinstance(type(field_val), ECollectionMetacls)\
-        and (lambda_func(field_name, field_val, self, _rec_depth, args) or full == True):
+        and (lambda_func(field_name, field_val, field_type, self, _rec_depth, args) or full == True):
             field_val = field_val.to_dict(full, lambda_func, _rec_depth+1)
 
         elif (isinstance(type(field_val), ECollectionMetacls) or type(field_val) in (set, tuple, list)) and len(field_val)\
-        and isinstance(next(iter(field_val), False), Savable) and (lambda_func(field_name, field_val, self, _rec_depth, args) or full == True):
+        and isinstance(next(iter(field_val), False), Savable) and\
+        (lambda_func(field_name, field_val, field_type, self, _rec_depth, args) or full == True):
             field_val = [item.to_dict(full, lambda_func, _rec_depth+1) for item in field_val]
 
         elif isinstance(type(field_val), ECollectionMetacls) and len(field_val) and not isinstance(next(iter(field_val), False), Savable)\
-        and lambda_func(field_name, field_val, self, _rec_depth, args):
+        and lambda_func(field_name, field_val, field_type, self, _rec_depth, args):
             field_val = [item for item in field_val]
 
         elif isinstance(field_val, Savable) and hasattr(field_val, "data_id"):
@@ -279,9 +280,8 @@ class TableData(EData):
         return field_val
 
 
-    def to_dict(self, full=False, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
+    def to_dict(self, full=False, lambda_func:Callable = lambda field_name, field_value, field_type, parent_value, rec_depth, args: 
                 rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), _rec_depth=0) -> Dict[str, Any]:
-        from .elist import ECollectionMetacls
 
         self.load()
 
@@ -289,7 +289,7 @@ class TableData(EData):
  
         return _dict
 
-    def to_json(self, full=False, lambda_func:Callable = lambda field_name, field_value, parent_value, rec_depth, args: 
+    def to_json(self, full=False, lambda_func:Callable = lambda field_name, field_value, field_type, parent_value, rec_depth, args: 
                 rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), _rec_depth=0, encoder:Callable=jsonpickle.encode) -> Dict[str, Any]:
 
         _dict = self.to_dict(full=full, lambda_func=lambda_func,_rec_depth=_rec_depth)

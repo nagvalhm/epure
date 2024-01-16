@@ -1,7 +1,7 @@
 from __future__ import annotations
 import pytest
 
-from ..epure import epure
+from ..epure import epure, escript, Elist, Eset
 from ..epure.dbs import GresDb
 # from ..epure.resource.db.constraint import NotNull, Check, Prim, Uniq, Default
 from ..epure.generics import NotNull, Check, Prim, Uniq, Default
@@ -273,3 +273,35 @@ class EpureClass4:
 
     def __init__(self):
         pass
+
+@epure()
+class SomeRandEpure:
+    someint:int = 777
+    somecomplexval:complex = 3 + 4j
+
+@epure()
+class SomeEpure:
+    str_val:str = "keen"
+    int_val:int = 80
+    someRandEpureVal:SomeRandEpure = SomeRandEpure()
+
+@epure()
+class ExampleCls:
+    someEpureVal:SomeEpure = SomeEpure()
+    some_val:str = "To the moon!"
+
+    @escript
+    def test_camelcase_name_escript_work(self):
+        tp = self.md.someEpureVal
+        assert True
+
+@epure()
+class ToDictEx:
+    elist_val:Elist[ExampleCls] = Elist[ExampleCls]([ExampleCls(), ExampleCls()])
+    eset_val:Eset[ExampleCls]= Eset[ExampleCls]([ExampleCls(), ExampleCls()])
+    epure_val:SomeEpure = SomeEpure()
+    str_val:str = "In Tech we trust"
+    int_val:int = 424
+    complex_val:complex = 3 + 4j
+    generic_list:List[str] = ["cat", "dog", "yak"]
+    UPCASE_VAL:str = "Some UPcase val"
