@@ -106,7 +106,7 @@ def test_data_to_dict_custom_lambda_func_nested_vals_recursive_with_save():
     inst.set_epures = {in1, in2}
     inst.tuple_epures = (in1, in2)
 
-    res = inst.to_dict(lambda_func= lambda field_name, field_value, parent_value, depth_level, args: 
+    res = inst.to_dict(lambda_func= lambda field_name, field_value, field_type, parent_value, depth_level: 
                 depth_level < 2 and (field_name != "excluded_epure" and field_name != "elist_str_to_exclude") and field_name != "elist_epure_to_exclude")
     
     
@@ -122,7 +122,7 @@ def test_data_to_dict_custom_lambda_func_nested_vals_recursive_with_save():
 
     epure_from_db = inst.table.read(data_id=id1)[0]
 
-    res_to_dict_from_epure_db = epure_from_db.to_dict(lambda_func= lambda field_name, field_value, parent_value, depth_level, args: 
+    res_to_dict_from_epure_db = epure_from_db.to_dict(lambda_func= lambda field_name, field_value, field_type, parent_value, depth_level: 
                 depth_level < 2 and (field_name != "excluded_epure" and field_name != "elist_str_to_exclude") and field_name != "elist_epure_to_exclude")
     
     res["list_epures"].clear() # they are not saved to db, so therefore they cannot be compared
@@ -220,24 +220,44 @@ def test_epure_docs_to_dict_to_json():
 
 def test_to_dict_custom_lambda():
 
-    res1 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth, args: 
+    res1 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth: 
                             field_name != "elist_val")
     
     assert is_uuid(res1["elist_val"]) == True
-    assert type(res1["eser_val"]) == dict
+    assert type(res1["eset_val"]) == list
     
-    res2 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth, args: 
+    res2 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth: 
                             field_type == Elist)
     
-    assert type(res2["elist_val"]) == dict
+    assert type(res2["elist_val"]) == list
     assert is_uuid(res2["eset_val"]) == True
+
+    res2 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth: 
+                            isinstance(type(parent_value), Epure) and rec_depth <= 1)
+    
+    assert type(res2["elist_val"][0]["someEpureVal"]) == dict
+    assert is_uuid(res2["elist_val"][0]["someEpureVal"]["someRandEpureVal"]) == True
+
+    res3 = to_dict_ex_inst.to_dict(lambda_func = lambda field_name, field_value, field_type, parent_value, rec_depth: 
+                            field_type != Elist and rec_depth <= 1)
+    
+    assert is_uuid(res3["elist_val"]) == True
+    assert type(res3["eset_val"]) == list
+    assert type(res3["eset_val"][0]["someEpureVal"]["someRandEpureVal"]) == dict
 
     try:
         to_dict_ex_inst.to_dict(lambda_func = lambda is_true: is_true == True) # should break because of 1 argument in lambda
         assert False
     except TypeError:
         assert True
+
+def test_new_assigned_field_not_declared_in_class():
+
+    to_dict_ex_inst.not_declared_in_cls_val = "42 42 42"
     
+    res = to_dict_ex_inst.to_dict()
+
+    assert res["not_declared_in_cls_val"]
 
 
 def test_from_dict_no_default_vals():
