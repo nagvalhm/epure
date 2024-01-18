@@ -1,3 +1,4 @@
+from __future__ import annotations
 from uuid import UUID
 from ..savable import Savable
 from ..resource import Resource
@@ -9,6 +10,10 @@ from ...errors import EpureError
 from .ecollection_metacls import ECollectionMetacls
 from ..data_promise import DataPromise, ElistPromise, EsetPromise
 from ...helpers.type_helper import is_uuid
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ...epure import Epure
 
 from typing import get_origin
 
@@ -119,13 +124,13 @@ class TableData(EData):
         return instance
     
     @classmethod
-    def from_dict(_cls, _dict:Dict[str, Any]) -> object:
+    def from_dict(cls, _dict:Dict[str, Any]) -> Epure:
         from .elist import ECollectionMetacls
         from .elist import Elist, Eset
 
 
         # instance = _cls.__call__()
-        instance = _cls()
+        instance = cls()
         instance.__promises_dict__ = {}
 
         for field_name, val in _dict.items():
@@ -207,7 +212,7 @@ class TableData(EData):
                 setattr(instance, field_name, val)
             else:
                 raise TypeError(f'Value for field "{field_name}" with value "{val}" of type "{type(val)}" does not match expected attr type of class '\
-                                 f'"{_cls}" with value name "{field_name}" and type of attr "{cls_attr_type}"')
+                                 f'"{cls}" with value name "{field_name}" and type of attr "{cls_attr_type}"')
 
 
         return instance
@@ -251,6 +256,16 @@ class TableData(EData):
 
     #     return res
 
+    @classmethod
+    def from_json(cls, json_str:str, decoder=jsonpickle.decode) -> Epure:
+
+        decoder_res = decoder(json_str)
+
+        res = cls.from_dict(decoder_res)
+
+        return res
+
+
     def _serialize_field_val_to_dict(self, field_val, field_type=None, field_name:str=None, full:bool=None,_rec_depth:int = None, lambda_func:Callable=None):
         # return super()._serialize_field_val(field_type)
         # lambda_func = args[0][0]
@@ -290,7 +305,7 @@ class TableData(EData):
         return _dict
 
     def to_json(self, full=False, lambda_func:Callable = lambda field_name, field_value, field_type, parent_value, rec_depth: 
-                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), _rec_depth=0, encoder:Callable=jsonpickle.encode) -> Dict[str, Any]:
+                rec_depth < 1 or isinstance(type(parent_value), ECollectionMetacls), _rec_depth=0, encoder:Callable=jsonpickle.encode) -> str:
 
         _dict = self.to_dict(full=full, lambda_func=lambda_func,_rec_depth=_rec_depth)
         
