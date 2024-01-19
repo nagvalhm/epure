@@ -243,7 +243,7 @@ def test_to_dict_custom_lambda():
     
     assert is_uuid(res3["elist_val"]) == True
     assert type(res3["eset_val"]) == list
-    assert type(res3["eset_val"][0]["someEpureVal"]["someRandEpureVal"]) == dict
+    assert type(res3["epure_val"]["someRandEpureVal"]) == dict
 
     try:
         to_dict_ex_inst.to_dict(lambda_func = lambda is_true: is_true == True) # should break because of 1 argument in lambda
@@ -257,7 +257,11 @@ def test_new_assigned_field_not_declared_in_class():
     
     res = to_dict_ex_inst.to_dict()
 
-    assert res["not_declared_in_cls_val"]
+    try:
+        res["not_declared_in_cls_val"]
+        assert False
+    except KeyError:
+        assert True
 
 
 def test_from_dict_no_default_vals():

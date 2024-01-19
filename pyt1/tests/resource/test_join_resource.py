@@ -86,9 +86,11 @@ def test_two_joins(self):
 
     res_header = join_res.read([test_office_tp.adress, md.name, md, test_order_tp, md.country], test_office_tp.adress == "Washington str.") # header
 
+    # res_header = join_res.read([md.country], test_office_tp.adress == "Washington str.") # header country
+
     res_no_header = join_res.read(test_office_tp.adress == "Washington str.") # no header
 
-    res_empty = join_res.read()
+    res_empty = join_res.read() # no header no on_clause
 
     return res_header
 
@@ -96,4 +98,5 @@ def test_two_joins(self):
 TestCustomer.test_join = test_two_joins
 
 res = nico.test_join()    
-# assert res
+
+assert res

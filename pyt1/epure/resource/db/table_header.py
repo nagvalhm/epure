@@ -103,7 +103,7 @@ class TableHeader(Savable):
 
         for restored_col_name, restored_column in self.deleted_columns.items():
             if restored_col_name[:-4] == f'{column.name}___del' and restored_column.py_type == column.py_type:
-                script = self.serialize_for_restore(column, column.name)
+                script = self.serialize_for_restore(column, restored_col_name)
                 column_is_for_restore = True
                 break
 

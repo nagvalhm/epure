@@ -11,6 +11,7 @@ from .table import Table
 from .db_entity_resource import DbEntityResource
 from ...helpers.type_helper import check_subclass, check_type
 from ...epure import Epure
+from ...errors import EpureError
 
 class TableStorage(DbEntityResource):
 
@@ -147,6 +148,10 @@ class TableStorage(DbEntityResource):
             return None
         
         for ep in Epure.epures:
+
+            if not hasattr(ep, "resource"):
+                raise EpureError(f"{ep.__name__} class was not correctly initialized by @epure. Check for errors in class")
+            
             if ep.resource.full_name == self[table_name].full_name:
                 return ep
         return None

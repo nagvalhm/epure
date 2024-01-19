@@ -222,3 +222,23 @@ def test_elist_bytes_from_dict():
     inst_from_dict = EpureClsElistBytes.from_dict(_dict)
     inst_from_dict.elist
     pass
+
+def test_elist_generic_nested_list():
+
+    @epure()
+    class TestElistGenericList:
+        elist_list: Elist[List]
+        elist_list_str: Elist[List[str]]
+
+    ins = TestElistGenericList()
+    ins.elist_list = Elist[List]([[123],["cat","doge"]])
+    ins.elist_list = Elist[List[str]]([["my_dawg","my_"],["cat","doge"]])
+
+    id = ins.save()
+    res = TestElistGenericList.resource.read(data_id=id)
+
+    res.load()
+
+    # @epure()
+    # class TestSomeClsWithoutResource:
+    #     someintval:int
