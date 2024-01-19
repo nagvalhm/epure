@@ -232,12 +232,12 @@ def test_elist_generic_nested_list():
 
     ins = TestElistGenericList()
     ins.elist_list = Elist[List]([[123],["cat","doge"]])
-    ins.elist_list = Elist[List[str]]([["my_dawg","my_"],["cat","doge"]])
+    ins.elist_list_str = Elist[List[str]]([["my_dawg","my_"],["cat","doge"]])
 
-    id = ins.save()
+    id = ins.save().data_id
     res = TestElistGenericList.resource.read(data_id=id)
 
-    res.load()
+    res[0].load()
 
     # @epure()
     # class TestSomeClsWithoutResource:

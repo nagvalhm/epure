@@ -1,5 +1,5 @@
 from types import NoneType
-from typing import Any, Type, Dict
+from typing import Any, Type, Dict, get_args
 from uuid import UUID
 
 # class EcollectionMetacls(type):
