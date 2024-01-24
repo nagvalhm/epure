@@ -111,6 +111,11 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
         return self.entries.index(value, *args)
 
     def extend(self, __iterable: Iterable) -> None:
+        item = next(iter(__iterable), False)
+        if not ((hasattr(__iterable, "py_type") and item.py_type == self.py_type)\
+                or type(item) == self.py_type):
+            raise TypeError(f"value '{item}' of type '{type(item)}' is not same "
+                                f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
         self.entries.extend(__iterable)
     
     def pop(self, index = -1) -> Any:
@@ -145,6 +150,9 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
 
     @escript
     def load(self, *args, **kwargs):
+        """
+        Loads all items of Elist contents like Epure, Elist, Eset values from DataPromises
+        """
         if not isinstance(self.py_type, Epure):
             return
 
@@ -171,6 +179,10 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
     
     @property
     def ids(self):
+        """
+        Returns data_id's from all items of Elist
+        """
+
         res = []
         for item in self.entries:
             # if hasattr(item, "__promises_dict__") and\
