@@ -36,10 +36,10 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
                 self.append(val)
     
     @classmethod
-    def get_collection_epure(cls, table=None, parent_obj=None, field_name=None):  
+    def get_collection_epure(cls, table=None, parent_obj=None, field_name=None) -> Epure:  
         return cls.collection_epure
 
-    def save(self, asynch:bool=False) -> UUID:
+    def save(self, asynch:bool=False) -> Elist:
             
         if not hasattr(self,"data_id") or not self.data_id:
             self.data_id = uuid4()
@@ -50,7 +50,7 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
 
             if get_origin(self.py_type) != None: # check if class is Generic
                 self.py_type = get_origin(self.py_type)
-                
+
             if not isinstance(item.value, self.py_type):
                 raise TypeError(f"value '{item.value}' of type '{type(item.value)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
@@ -157,7 +157,7 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
     #     return self.entries.__eq__(__value)
 
     @escript
-    def load(self, *args, **kwargs):
+    def load(self, *args, **kwargs) -> None:
         """
         Loads all items of Elist contents like Epure, Elist, Eset values from DataPromises
         """
@@ -186,7 +186,7 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
         return self.entries.__len__()
     
     @property
-    def ids(self):
+    def ids(self) -> List[str]:
         """
         Returns data_id's from all items of Elist
         """
@@ -323,7 +323,10 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         return super(self.__class__, self).clear()
     
     @property
-    def ids(self):
+    def ids(self) -> List[str]:
+        """
+        Returns data_id's from all items of Elist
+        """
         # if not self.is_saved:
         #     raise Exception("Your Eset is not saved, try .save()")
         self_iter_obj = super(self.__class__, self).__iter__()
@@ -399,6 +402,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         self.__init__(vals_list, ids_dict=ids_dict)
     
     def load(self) -> None:
+        """
+        Load Eset instance's items
+        """
         list_values = self.collection_epure.resource.read(eset_id=self.data_id)
         self.__init__(list_values)
 

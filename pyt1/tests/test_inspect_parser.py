@@ -1,4 +1,5 @@
 from __future__ import annotations
+import pytest
 from _ast import BoolOp
 from typing import Any
 # from ..epure.parser.leaf import Domain
@@ -8,7 +9,6 @@ from ..epure import escript
 # import inspect
 # import typing
 import jsonpickle
-import pytest
 
 def foo1():
     return 1
@@ -466,3 +466,35 @@ def test_inspect_parser_like_comp_etc():
     res11 = InspectParserTestCls2.cls_method_escript()
 
 # def lambda db, tp: tp.
+    
+def test_docs_cats_example():
+
+    @epure()
+    class Cat:
+        paws_cntr:int
+        name:str
+        tail_cntr:int
+        likes_catnip:bool
+
+        def __init__(self, paws_cntr, name, tail_cntr, likes_catnip):
+            self.paws_cntr = paws_cntr
+            self.name = name
+            self.tail_cntr = tail_cntr
+            self.likes_catnip = likes_catnip
+
+        @classmethod
+        @escript
+        def get_all_cats_with_two_tails(cat):
+            
+            my_query = cat.md.tail_cntr > 1 and cat.md.likes_catnip == False
+            
+            res = cat.resource.read(my_query)
+
+            return res
+
+    Cat(4, "boogie", "1", True).save()
+    Cat(5, "gzoragh the great", "3", False).save()
+    Cat(4, "Willie", "1", False).save()
+    Cat(7, "Krzferf-13", "5", False).save()
+
+    Cat.get_all_cats_with_two_tails()
