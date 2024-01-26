@@ -8,6 +8,7 @@ from types import NoneType
 from .ecollection_metacls import ECollectionMetacls
 from ..db.table import Table
 from ...resource.savable import Savable
+from typing import get_origin
 
 class Elist(TableData, List, metaclass=ECollectionMetacls):
 # class Elist(TableNode, List):
@@ -24,7 +25,9 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
         if _list == None:
             _list = []
 
-        if len(_list) and isinstance(_list[0], self.collection_epure):
+        # if len(_list) and isinstance(_list[0], self.collection_epure):
+        if len(_list) and hasattr(_list[0], "resource") and\
+        _list[0].resource.full_name == self.collection_epure.resource.full_name:
             self.data_id = _list[0].eset_id
             _list.sort(key= lambda x: x.value_order)
             self.entries = _list
@@ -44,6 +47,10 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
         val_len = self.entries.__len__()
         for i in range(val_len):
             item = self.entries[i]
+
+            if get_origin(self.py_type) != None: # check if class is Generic
+                self.py_type = get_origin(self.py_type)
+                
             if not isinstance(item.value, self.py_type):
                 raise TypeError(f"value '{item.value}' of type '{type(item.value)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
@@ -88,7 +95,8 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
         self.entries.insert(index, res)
 
     def append(self, item) -> None:
-        if not isinstance(item, self.py_type):
+        # if not isinstance(item, self.py_type):
+        if hasattr(item, "resource") and item.resource.full_name != self.py_type.resource.full_name:
                 raise TypeError(f"value '{item}' of type '{type(item)}' is not same " 
                                 f"type as Elist '{self.collection_epure.resource.full_name}' type of '{self.py_type}'")
         res = self.collection_epure()
@@ -214,7 +222,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
             _set = []
 
         self.deleted_entries = []
-        if len(_set) and isinstance(_set[0], self.collection_epure):
+        # if len(_set) and isinstance(_set[0], self.collection_epure):
+        if len(_set) and hasattr(_set[0], "resource") and\
+        _set[0].resource.full_name == self.collection_epure.resource.full_name:
                 # self.data_id = _set[0].eset_id
                 self.update(_set, ids_dict=kwargs)
         else:
@@ -254,7 +264,7 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
             
         super(self.__class__, self).add(res)
 
-    def save(self, asynch:bool=False):
+    def save(self, asynch:bool=False) -> Elist:
             
         if not hasattr(self, "data_id") or not self.data_id:
             self.data_id = uuid4()
@@ -356,16 +366,16 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
             res = Epure.EDb.get_epure_by_table_name(name)
             return res
         
-        if name in ECollectionMetacls.ecollections:
-            res = ECollectionMetacls.ecollections[name]
-            cls.collection_epure = res
-            return res
+        # if name in ECollectionMetacls.ecollections:
+        #     res = ECollectionMetacls.ecollections[name]
+        #     cls.collection_epure = res
+        #     return res
     
         obj = type(name, (object,), {})
         obj.__annotations__ = {"eset_id":UUID, "value":cls.py_type}
-        res = epure(resource=f'ecollections.{name}',saver=EsetTableData)(obj)
+        res = epure(resource=f'ecollections.{name}', saver=EsetTableData)(obj)
         cls.collection_epure = res
-        ECollectionMetacls.ecollections[name] = res
+        # ECollectionMetacls.ecollections[name] = res
 
         return res
     

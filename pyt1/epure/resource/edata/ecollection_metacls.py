@@ -34,7 +34,7 @@ from uuid import UUID
 class ECollectionMetacls(type):
     py_type:type = NoneType
     __origin__:type = NoneType
-    ecollections:Dict[str,type] = {}
+    # ecollections:Dict[str,type] = {}
 
     def __getitem__(self:Type, param:Any):
         from ...epure import epure
@@ -48,8 +48,8 @@ class ECollectionMetacls(type):
             name = f"eset__{param.__name__}"
             origin = Eset
 
-        if name in self.ecollections:
-            return self.ecollections[name]
+        # if name in self.ecollections:
+        #     return self.ecollections[name]
         
         cls_dict = dict(self.__dict__)
         cls_dict.pop('__dict__', None)
@@ -67,7 +67,7 @@ class ECollectionMetacls(type):
             obj.__annotations__ = {"eset_id":UUID, "value":param}
             res.collection_epure = epure(resource=f'ecollections.{name}', saver=EsetTableData)(obj)
         
-        self.ecollections[name] = res
+        # self.ecollections[name] = res
 
         # if issubclass(res.py_type, Constraint):
         #     # ( hasattr(res.py_type, '__origin__') and  issubclass(res.py_type.__origin__, Constraint)):

@@ -5,6 +5,9 @@ from typing import List
 from ...epure_classes import EpureClass1
 from ....epure.resource.edata.edata import EData
 
+#delete me
+from ....epure.resource.edata.ecollection_metacls import ECollectionMetacls
+
 def test_eset_epures():
 
     @epure()
@@ -306,3 +309,15 @@ def test_eset_docs_example():
     eset_ex_read.eset_str # -> {}
     eset_ex_read.eset_str.load()
     "".join(eset_ex_read.eset_str) # -> "Grin cat like a Cheshire"
+
+def test_non_epure_cls_w_eset():
+
+    some_eset = Eset[str](["meow", "woof"])
+    some_eset.save()
+
+    class NotEpure:
+        eset_str:Eset[str] = Eset[str](["chop", "sueye"])
+
+    ins = NotEpure()
+
+    ins.eset_str.save()
