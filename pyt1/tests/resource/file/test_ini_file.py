@@ -22,8 +22,8 @@ def test_read_nested_section(config):
     pi_begins = config.section1.section2.section3.pi_begins
     assert strict_eq(pi_begins, 3.14159265359)
 
-    asshole = config.epure.best.app.forever.asshole
-    assert strict_eq(asshole, True)
+    epure_is_the_best = config.epure.best.app.forever.epure_is_the_best
+    assert strict_eq(epure_is_the_best, True)
 
 
 def test_read_not_exist_property(config):
