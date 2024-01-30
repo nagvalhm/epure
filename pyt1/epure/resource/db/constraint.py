@@ -40,6 +40,7 @@ class Constraint(type):
         return True
 
 class Default(metaclass=Constraint):
+    """Default is Generic"""
     py_type:type = NoneType
     default:Any = None
 
