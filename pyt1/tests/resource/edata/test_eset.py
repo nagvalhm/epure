@@ -4,6 +4,7 @@ from ....epure.epure import epure, Epure
 from typing import List
 from ...epure_classes import EpureClass1
 from ....epure.resource.edata.edata import EData
+from jsonpickle import loads
 
 #delete me
 from ....epure.resource.edata.ecollection_metacls import ECollectionMetacls
@@ -321,3 +322,37 @@ def test_non_epure_cls_w_eset():
     ins = NotEpure()
 
     ins.eset_str.save()
+
+
+def test_eset_object_type_json():
+
+    class Customer:
+        name:str
+        adress:str
+
+        def __init__(self, name, adress):
+            self.name = name
+            self.adress = adress
+
+    customer_1 = Customer("Sion Mccall", "Heathfield Road, 30")
+    customer_2 = Customer("Darcy Montes", "Ash Street, 13")
+    customer_3 = Customer("Isaiah Hughes", "Grasmere Avenue, 19")
+    customer_4 = Customer("Jodie Sandoval", " Meadow Rise, 15")
+    customer_50 = Customer("Emily Mahoney", "Park Road, 62")
+    customer_51 = Customer("Inaaya Hodge", "Rectory Lane, 42")
+    customer_52 = Customer("Blanche Colon", "Ferndale Road, 10")
+    customer_54 = Customer("Lucia Davenport", "Warwick Street, 56")
+    customer_55 = Customer("Vivian Lin", "Carlton Road, 23")
+    customer_56 = Customer("Kane Flores", "Beaufort Road, 87")
+        
+    @epure()
+    class ShipmentCompany:
+        customers_set:Eset[object] = Eset[object]([customer_1, customer_2, customer_3])
+
+    data_id = ShipmentCompany().save().data_id
+
+    company_res = ShipmentCompany.resource.read(data_id=data_id)
+
+    company_res[0].load()
+
+    
