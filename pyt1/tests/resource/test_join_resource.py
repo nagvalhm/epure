@@ -69,22 +69,22 @@ def foo2():
 
 @escript
 def test_two_joins(self):
-    md = self.md
-    dom = self.dom
-    test_order_tp = dom.test_order
-    test_office_tp = dom.test_shippment_office
+    model = self.md
+    domain = self.dom
+    test_order_tp = domain.test_order
+    test_office_tp = domain.test_shippment_office
     lst = ["bde"]
     
-    join_res = md.join(test_order_tp, md.data_id == test_order_tp.test_customer_id)
+    join_res = self.resource.join(test_order_tp, model.data_id == test_order_tp.test_customer_id)
 
-    join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.data_id)
+    join_res = join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.data_id)
 
     lst = ["bde"]
 
-    query = md.name in ("abc","def") and md.name in lst
+    query = model.name in ("abc","def") and model.name in lst
     
 
-    res_header = join_res.read([test_office_tp.adress, md.name, md, test_order_tp, md.country], test_office_tp.adress == "Washington str.") # header
+    res_header = join_res.read([test_office_tp.adress, model.name, model, test_order_tp, model.country], test_office_tp.adress == "Washington str.") # header
 
     # res_header = join_res.read([md.country], test_office_tp.adress == "Washington str.") # header country
 
