@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, List
 if TYPE_CHECKING:
     from .savable import Savable
 from queue import Queue
+from .join_resource.join_resource import JoinResource
 
 # CREATE = 'CREATE'
 # READ = 'READ'
@@ -59,4 +60,7 @@ class Resource():
         raise NotImplementedError
 
     def generate_id(self, savable:Savable=None):
+        raise NotImplementedError
+    
+    def join(self, resource:Resource, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
         raise NotImplementedError

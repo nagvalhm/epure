@@ -3,7 +3,6 @@ from .term import Term
 from typing import Any
 from .column_proxy import ColumnProxy
 from ..proxy_base_cls import ModelBase
-from ...resource.join_resource.join_resource import JoinResource
 from inflection import underscore
 
 class Model(Term, ModelBase):
@@ -11,6 +10,7 @@ class Model(Term, ModelBase):
     def __init__(self, db, table):
         self.__db__ = db
         self.__table__ = table
+        self.__resource__ = table
         self.__qp_name__ = self.serialize(parentheses=False, full_names=True)
         super().__init__()
 
@@ -49,10 +49,6 @@ class Model(Term, ModelBase):
 
         return res
     
-    def join(self, model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
-        join_resource =  JoinResource(self)
-        join_resource.join(model, on_clause, join_type, alias)
-        return join_resource
     
     def select(self, *args, joins=[], include_data_id=False, **kwargs):
         if type(args[0]) not in (tuple,list,set):

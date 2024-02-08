@@ -17,6 +17,7 @@ from uuid import UUID
 from ...parser.inspect_parser.inspect_parser import InspectParser
 from ...parser.proxy_base_cls import ColumnProxyBase
 from copy import deepcopy
+from ...resource.join_resource.join_resource import JoinResource
 
 from ...errors import DeserializeError
 from ...epure import escript
@@ -572,3 +573,8 @@ class Table(DbEntity):
     #         header = tuple(header)
         
     #     return header
+
+    def join(self, table:Table, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
+        join_resource =  JoinResource(self)
+        join_resource.join(table, on_clause, join_type, alias)
+        return join_resource
