@@ -27,7 +27,10 @@ class JoinResource:
 
     def join(self, joined_model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> None:
         join = Join(joined_model, on_clause, join_type, alias)
-        self.joins.append(join)
+        res = JoinResource(self.model)
+        res.joins = self.joins.copy()
+        res.joins.append(join)
+        return res
 
     def read(self, *args, **kwargs):
 

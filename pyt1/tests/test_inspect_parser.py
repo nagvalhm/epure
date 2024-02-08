@@ -9,6 +9,8 @@ from ..epure import escript
 # import inspect
 # import typing
 import jsonpickle
+from epure.generics import NotNull
+from typing import List
 
 def foo1():
     return 1
@@ -498,3 +500,57 @@ def test_docs_cats_example():
     Cat(7, "Krzferf-13", "5", False).save()
 
     Cat.get_all_cats_with_two_tails()
+
+def test_docs_for_in_example():
+
+    @epure()
+    class Publication:
+        text_style: str = "scientific"
+
+    @epure()
+    class Reporter:
+        full_name: str = "Victor Bennet"
+
+    @epure() # (1)!
+    class Article(Publication):
+        # text_style: str = "scientific" # inherits
+        reporter: Reporter
+        title: str
+        times_published: NotNull[int] = 3
+        authors: List[str] = ["Charles Dickens", "Frank Herbert"]
+
+        def __init__(self, reporter, title):
+            self.reporter = reporter
+            self.title = title
+
+        def get_articles_using_kwargs(self):
+
+            articles = self.resource.read(times_published=5) # -> [<Article object at 0x0...>, <Article object at 0x2...>]
+
+            return articles[0]
+        
+        @escript 
+        def get_articles(self):
+
+            model = self.md 
+
+            title_names = ["Why Epure is the best ORM?", "Why Elist is so powerfull?", "What is magic method?"] 
+
+            for name in title_names:
+                query = query or model.title == name
+
+            query = model.title in title_names 
+
+            articles = self.resource.read(query) 
+
+            return articles
+        
+    my_reporter = Reporter()
+
+    article_one = Article(my_reporter, "Why Epure is the best ORM?")
+    article_one.save()
+
+    article_two = Article(my_reporter, "Why Eset is so magnificent?")
+    article_two.save()
+
+    article_one.get_articles()
