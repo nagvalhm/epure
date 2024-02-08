@@ -73,10 +73,6 @@ def test_two_joins(self):
     domain = self.dom
     test_order_tp = domain.test_order
     test_office_tp = domain.test_shippment_office
-    model = self.md
-    domain = self.dom
-    test_order_tp = domain.test_order
-    test_office_tp = domain.test_shippment_office
     lst = ["bde"]
     
     join_res = model.join(test_order_tp, model.data_id == test_order_tp.test_customer_id)

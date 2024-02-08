@@ -4,6 +4,7 @@ from typing import Any
 from .column_proxy import ColumnProxy
 from ..proxy_base_cls import ModelBase
 from inflection import underscore
+from ...resource.join_resource.join_resource import JoinResource
 
 class Model(Term, ModelBase):
 
@@ -54,3 +55,8 @@ class Model(Term, ModelBase):
         if type(args[0]) not in (tuple,list,set):
             raise ValueError(f"first arg must be tuple, list or set, not {args[0]}")
         return "(" + self.__table__.select(*args, joins=joins, include_data_id=include_data_id, **kwargs) + ")"
+    
+    def join(self, joined_model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
+        join_resource =  JoinResource(self)
+        new_join_resource = join_resource.join(joined_model, on_clause, join_type, alias)
+        return new_join_resource

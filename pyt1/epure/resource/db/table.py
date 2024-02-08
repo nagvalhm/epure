@@ -573,8 +573,3 @@ class Table(DbEntity):
     #         header = tuple(header)
         
     #     return header
-
-    def join(self, table:Table, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
-        join_resource =  JoinResource(self)
-        join_resource.join(table, on_clause, join_type, alias)
-        return join_resource
