@@ -1,4 +1,4 @@
-from _ast import Assign, Attribute, Call, FunctionDef, In, Not, UnaryOp
+from _ast import Assign, Attribute, Call, Constant, FunctionDef, In, Not, UnaryOp
 import ast
 from types import CodeType
 from typing import Any, Dict
@@ -131,6 +131,10 @@ class InspectParser(ast.NodeTransformer):
             # self.astTypesDict.pop(assign_target)
             self.astTypesDict = dict(filter(lambda x: assign_target not in x[0].split('.'), self.astTypesDict.items()))
 
+        if hasattr(node.value, "value") and node.value.value in (True, False):
+            node.value.type = Term
+            self.astTypesDict[assign_target] = node.value
+
         return node
     
     def visit_Attribute(self, node: Attribute) -> Any:
@@ -171,6 +175,13 @@ class InspectParser(ast.NodeTransformer):
             self.astTypesDict[f'{ast.unparse(node)}'] = node
 
         return node
+    
+    # def visit_Constant(self, node: Constant) -> Any:
+    #     if node.value in (True, False) and\
+    #     str(node.value) not in self.astTypesDict.keys():
+    #         node.type = Term
+    #         self.astTypesDict[f'{ast.unparse(node)}'] = node
+    #     return node
     
     def handle_getattr(self, node, left_val):
 
@@ -228,7 +239,7 @@ class InspectParser(ast.NodeTransformer):
         return node
     
     # def handle_Eq_and_Like(self, node: Eq) -> Any:
-    def handle_Compare_Op(self, node: Any) -> Any:
+    def handle_Compare_Op(self, node: Any) -> Any: # or, and, >=, <=, == 
 
         self.generic_visit(node)
 
