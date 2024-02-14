@@ -112,8 +112,7 @@ def test_simple_queries_inspect_parser_read_decorator():
         @escript
         def test_diff_cases(self123):
             var = self123.md.f1
-            var.pole = self123.md.f1
-            var = True
+            var.pole = self123.md.f1            
             tup = ("dr","dgb")
             lst = ["br","zcv"]
 

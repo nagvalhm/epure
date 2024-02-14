@@ -63,21 +63,33 @@ class InspectParser(ast.NodeTransformer):
     #         node.decorator_list.pop(i)
 
     #     return node
+
+    def is_bool_operand(self, operand_val, operand_val_str):
+        res = operand_val_str in self.astTypesDict.keys()\
+            or isinstance(operand_val, ast.Compare)\
+            or isinstance(operand_val, ast.In)\
+            or isinstance(operand_val, ast.NotIn)\
+            or isinstance(operand_val, ast.BoolOp)
+        
+        return res
     
     def visit_BoolOp(self, node: ast.BoolOp) -> Any:
 
         self.generic_visit(node)
         
-        left_val = ast.unparse(node.values[0])
-        compare_targ = ast.unparse(node.values[1])
+        left_val = node.values[0]
+        compare_targ = node.values[1]
 
-        left_val_in_keys = left_val in self.astTypesDict.keys()
-        comp_targ_in_keys = compare_targ in self.astTypesDict.keys()
+        left_val_str = ast.unparse(left_val)
+        compare_targ_str = ast.unparse(compare_targ)
 
-        if left_val_in_keys and comp_targ_in_keys:
+        left_val_in_keys = self.is_bool_operand(left_val, left_val_str)
+        comp_targ_in_keys = self.is_bool_operand(compare_targ, compare_targ_str)
+
+        if left_val_in_keys or comp_targ_in_keys:
             # op_str = "_or" if type(node.op) is ast.Or else "_and"
             op_str = self.ast_type_method_name_dict[type(node.op)]
-            new_node_str = f"{self.first_arg_name}.md.{op_str}({left_val}, {compare_targ})"
+            new_node_str = f"{self.first_arg_name}.md.{op_str}({left_val_str}, {compare_targ_str})"
             node = ast.parse(new_node_str).body[0].value
             node.type = Term
             self.astTypesDict[new_node_str] = node
@@ -131,9 +143,9 @@ class InspectParser(ast.NodeTransformer):
             # self.astTypesDict.pop(assign_target)
             self.astTypesDict = dict(filter(lambda x: assign_target not in x[0].split('.'), self.astTypesDict.items()))
 
-        if hasattr(node.value, "value") and node.value.value in (True, False):
-            node.value.type = Term
-            self.astTypesDict[assign_target] = node.value
+        # if hasattr(node.value, "value") and node.value.value in (True, False):
+        #     node.value.type = Term
+        #     self.astTypesDict[assign_target] = node.value
 
         return node
     
@@ -239,7 +251,7 @@ class InspectParser(ast.NodeTransformer):
         return node
     
     # def handle_Eq_and_Like(self, node: Eq) -> Any:
-    def handle_Compare_Op(self, node: Any) -> Any: # or, and, >=, <=, == 
+    def handle_Compare_Op(self, node: Any) -> Any: # >=, <=, == 
 
         self.generic_visit(node)
 
