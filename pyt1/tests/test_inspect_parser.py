@@ -527,7 +527,7 @@ class Article:
         return articles[0]
     
     @escript 
-    def get_articles(self):
+    def get_articles_docs_example(self):
 
         model = self.md 
 
@@ -543,6 +543,32 @@ class Article:
         articles = self.resource.read(query) 
 
         return articles
+    
+    @escript
+    def test_diff_cases(self):
+        model = self.md 
+
+        title_names = ["Why Epure is the best ORM?", "Why Elist is so powerfull?", "What is magic method?"] 
+
+        query1 = model and True == True
+
+        query2 = 1 == 1 or False
+
+        for name in title_names:
+            query2 = query2 or model.title == name
+
+        query3 = False
+
+        for name in title_names:
+            query3 = 1 == 1 or False or query3 or model.title == name
+
+        #should fail?
+            
+        query4 = model and 5
+
+        query5 = model and model
+
+        pass
 
 def test_docs_for_in_example():
         
@@ -555,4 +581,6 @@ def test_docs_for_in_example():
     article_two = Article(my_reporter, "Why Eset is so magnificent?")
     article_two.save()
 
-    article_one.get_articles()
+    article_one.get_articles_docs_example()
+
+    article_one.test_diff_cases()
