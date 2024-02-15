@@ -73,26 +73,49 @@ class InspectParser(ast.NodeTransformer):
         
         return res
     
-    def visit_BoolOp(self, node: ast.BoolOp) -> Any:
+    # def switch_operator(self, op, left_val_str, compare_targ_str) -> str:
+
+    #     op_str = self.ast_type_method_name_dict[type(op)]
+    #     new_node_str = f"{self.first_arg_name}.md.{op_str}({left_val_str}, {compare_targ_str})"
+    #     node = ast.parse(new_node_str).body[0].value
+    #     node.type = Term
+    #     self.astTypesDict[new_node_str] = node
+
+    #     return node
+    
+    def visit_BoolOp(self, node: ast.BoolOp) -> Any: # and or
 
         self.generic_visit(node)
         
+        res_node_str = ""
         left_val = node.values[0]
-        compare_targ = node.values[1]
 
-        left_val_str = ast.unparse(left_val)
-        compare_targ_str = ast.unparse(compare_targ)
+        for index in range(1, len(node.values)):
+            compare_targ = node.values[index]
 
-        left_val_in_keys = self.is_bool_operand(left_val, left_val_str)
-        comp_targ_in_keys = self.is_bool_operand(compare_targ, compare_targ_str)
+            left_val_str = ast.unparse(left_val)
+            compare_targ_str = ast.unparse(compare_targ)
 
-        if left_val_in_keys or comp_targ_in_keys:
-            # op_str = "_or" if type(node.op) is ast.Or else "_and"
-            op_str = self.ast_type_method_name_dict[type(node.op)]
-            new_node_str = f"{self.first_arg_name}.md.{op_str}({left_val_str}, {compare_targ_str})"
-            node = ast.parse(new_node_str).body[0].value
-            node.type = Term
-            self.astTypesDict[new_node_str] = node
+            left_val_in_keys = left_val_str in self.astTypesDict.keys()
+            comp_targ_in_keys = compare_targ_str in self.astTypesDict.keys()
+
+            if left_val_in_keys or comp_targ_in_keys:
+                op_str = self.ast_type_method_name_dict[type(node.op)]
+                new_node_str = f"{self.first_arg_name}.md.{op_str}({left_val_str}, {compare_targ_str})"
+                new_node = ast.parse(new_node_str).body[0].value
+                new_node.type = Term
+                self.astTypesDict[new_node_str] = new_node
+
+                # new_node_str = self.switch_operator(node.op, left_val_str, compare_targ_str)
+                # left_val = node
+            else:
+                op_str = "and" if type(node.op) == ast.And else "or"
+                new_node_str = f"{left_val_str} {op_str} {compare_targ_str}"
+
+            res_node_str = new_node_str
+            left_val = ast.parse(res_node_str).body[0].value
+
+        node = ast.parse(res_node_str).body[0].value
         
         return node
     

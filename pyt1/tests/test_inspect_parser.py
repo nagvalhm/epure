@@ -552,7 +552,7 @@ class Article:
 
         query1 = model and True == True
 
-        query2 = 1 == 1 or False
+        query2 = 9 == 9 or False
 
         for name in title_names:
             query2 = query2 or model.title == name
@@ -561,6 +561,24 @@ class Article:
 
         for name in title_names:
             query3 = 1 == 1 or False or query3 or model.title == name
+
+        assert query3 == "True OR public.article.title = 'What is magic method?'"
+
+        query9 = 14 == 14 or False or query3 or model.title == name
+
+        assert query9 == "True OR True OR public.article.title = 'What is magic method?' OR public.article.title = 'What is magic method?'"
+
+        query10 = 13 == 13 and False or query3 or model.title == name
+
+        assert query10 == "False OR True OR public.article.title = 'What is magic method?' OR public.article.title = 'What is magic method?'"
+
+        query11 = 11 == 11 and False and query3 or model.title == name
+
+        assert query11 == "False AND True OR public.article.title = 'What is magic method?' OR public.article.title = 'What is magic method?'"
+
+        query11 = 11 == 11 and False and query3 and model.title == name
+
+        assert query11 == "False AND True OR public.article.title = 'What is magic method?' AND public.article.title = 'What is magic method?'"
 
         #should fail?
             
