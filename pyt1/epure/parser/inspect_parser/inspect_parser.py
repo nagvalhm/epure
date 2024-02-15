@@ -64,24 +64,14 @@ class InspectParser(ast.NodeTransformer):
 
     #     return node
 
-    def is_bool_operand(self, operand_val, operand_val_str):
-        res = operand_val_str in self.astTypesDict.keys()\
-            or isinstance(operand_val, ast.Compare)\
-            or isinstance(operand_val, ast.In)\
-            or isinstance(operand_val, ast.NotIn)\
-            or isinstance(operand_val, ast.BoolOp)
+    # def is_bool_operand(self, operand_val, operand_val_str):
+    #     res = operand_val_str in self.astTypesDict.keys()\
+    #         or isinstance(operand_val, ast.Compare)\
+    #         or isinstance(operand_val, ast.In)\
+    #         or isinstance(operand_val, ast.NotIn)\
+    #         or isinstance(operand_val, ast.BoolOp)
         
-        return res
-    
-    # def switch_operator(self, op, left_val_str, compare_targ_str) -> str:
-
-    #     op_str = self.ast_type_method_name_dict[type(op)]
-    #     new_node_str = f"{self.first_arg_name}.md.{op_str}({left_val_str}, {compare_targ_str})"
-    #     node = ast.parse(new_node_str).body[0].value
-    #     node.type = Term
-    #     self.astTypesDict[new_node_str] = node
-
-    #     return node
+    #     return res
     
     def visit_BoolOp(self, node: ast.BoolOp) -> Any: # and or
 
