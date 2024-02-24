@@ -402,7 +402,7 @@ def test_inspect_parser_like_comp_etc():
         @escript
         def cls_method_escript(cls):
             inst = InspectParserTestCls2("Mike", "Ermantraut", 60)
-            cls_mod = cls.model(InspectParserTestCls2)
+            cls_mod = cls.get_model(InspectParserTestCls2)
             query1 = cls.md.name != "Mike" and cls.md.last_name is not None
             assert query1 == "public.inspect_parser_test_cls2.name <> 'Mike' AND public.inspect_parser_test_cls2.last_name IS NOT NULL"
             return query1

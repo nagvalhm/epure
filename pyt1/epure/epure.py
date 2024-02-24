@@ -391,19 +391,19 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
         
         self.dom = Domain(db)
         self.md = getattr(self.dom, full_name)
-        self.model = create_model_from_class
+        self.get_model = get_model_from_class
 
         res = func(self, *args, **kwargs)
 
         delattr(self, "dom")
         delattr(self, "md")
-        delattr(self, "model")
+        delattr(self, "get_model")
         
         return res
 
     return inner
 
-def create_model_from_class(cls:Epure) -> Model:
+def get_model_from_class(cls:Epure) -> Model:
     if cls not in Epure.epures:
         raise EpureError(f"Model cannot be created from class {cls.__name__} that is not decorated by @epure")
     return Model(cls.resource.db, cls.resource)
