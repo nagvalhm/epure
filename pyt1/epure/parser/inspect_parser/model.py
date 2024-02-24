@@ -4,9 +4,9 @@ from typing import Any
 from .column_proxy import ColumnProxy
 from ..proxy_base_cls import ModelBase
 from inflection import underscore
-from ...resource.join_resource.join_resource import JoinResource
+from ...resource.join_resource.join_resource import JoinResource, JoinMethods
 
-class Model(Term, ModelBase):
+class Model(Term, ModelBase, JoinMethods):
 
     def __init__(self, db, table):
         self.__db__ = db
@@ -56,7 +56,7 @@ class Model(Term, ModelBase):
             raise ValueError(f"first arg must be tuple, list or set, not {args[0]}")
         return "(" + self.__table__.select(*args, joins=joins, include_data_id=include_data_id, **kwargs) + ")"
     
-    def join(self, joined_model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> JoinResource:
+    def _join(self, joined_model:Model, on_clause:str, join_type:str="", alias:str="") -> JoinResource:
         join_resource =  JoinResource(self)
-        new_join_resource = join_resource.join(joined_model, on_clause, join_type, alias)
+        new_join_resource = join_resource._join(joined_model, on_clause, join_type, alias)
         return new_join_resource

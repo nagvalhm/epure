@@ -6,7 +6,18 @@ if TYPE_CHECKING:
     # from ...resource.db.table import Table
 
 class JoinMethods:
-    pass
+    
+    def left_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        return self._join(joined_model, on_clause, "LEFT",alias)
+
+    def right_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        return self._join(joined_model, on_clause, "RIGHT",alias)
+
+    def inner_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        return self._join(joined_model, on_clause, "INNER",alias)
+
+    def outer_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        return self._join(joined_model, on_clause, "OUTER",alias)
 
 class Join:
     model:Model
@@ -20,7 +31,7 @@ class Join:
         self.join_type = join_type
         self.alias = alias
         
-class JoinResource:
+class JoinResource(JoinMethods):
     model:Model
     joins:list[Join]
 
@@ -28,7 +39,7 @@ class JoinResource:
         self.joins = []
         self.model = model
 
-    def join(self, joined_model:Model, on_clause:str, join_type:str="LEFT", alias:str="") -> None:
+    def _join(self, joined_model:Model, on_clause:str, join_type:str="", alias:str="") -> None:
         join = Join(joined_model, on_clause, join_type, alias)
         res = JoinResource(self.model)
         res.joins = self.joins.copy()

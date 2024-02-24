@@ -75,9 +75,9 @@ def test_two_joins(self):
     test_office_tp = domain.test_shippment_office
     lst = ["bde"]
     
-    join_res = model.join(test_order_tp, model.data_id == test_order_tp.test_customer_id)
+    join_res = model.left_join(test_order_tp, model.data_id == test_order_tp.test_customer_id)
 
-    join_res = join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.data_id)
+    join_res = join_res.left_join(test_office_tp, test_order_tp.office_id == test_office_tp.data_id)
 
     lst = ["bde"]
 
