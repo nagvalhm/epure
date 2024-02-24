@@ -5,6 +5,9 @@ if TYPE_CHECKING:
     from ...parser.inspect_parser.model import Model
     # from ...resource.db.table import Table
 
+class JoinMethods:
+    pass
+
 class Join:
     model:Model
     on_clause:str

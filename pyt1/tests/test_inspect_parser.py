@@ -602,3 +602,34 @@ def test_docs_for_in_example():
     article_one.get_articles_docs_example()
 
     article_one.test_diff_cases()
+
+@epure()
+class Cat:
+    color:str
+
+    @escript
+    def get_orange_cats(self):
+        cat = self.dom.cat
+        cat = self.md
+        res = self.resource.read(cat.color == "orange")
+
+def test_docs_cats_example():
+
+    cat = Cat()
+    cat.save()
+    cat.get_orange_cats()
+
+@epure()
+class Model:
+    int_val:int
+
+    @escript
+    def try_getting_model_model(self):
+        model = self.dom.model
+        
+        pass
+
+def test_model_cls_case():
+
+    model = Model()
+    model.try_getting_model_model()
