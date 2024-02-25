@@ -8,16 +8,16 @@ if TYPE_CHECKING:
 class JoinMethods:
     
     def left_join(self, joined_model:Model, on_clause:str, alias:str=""):
-        return self._join(joined_model, on_clause, "LEFT",alias)
+        return self._join(joined_model, on_clause, "LEFT", alias)
 
     def right_join(self, joined_model:Model, on_clause:str, alias:str=""):
-        return self._join(joined_model, on_clause, "RIGHT",alias)
+        return self._join(joined_model, on_clause, "RIGHT", alias)
 
-    def inner_join(self, joined_model:Model, on_clause:str, alias:str=""):
-        return self._join(joined_model, on_clause, "INNER",alias)
+    def join(self, joined_model:Model, on_clause:str, alias:str=""):
+        return self._join(joined_model, on_clause, "", alias)
 
-    def outer_join(self, joined_model:Model, on_clause:str, alias:str=""):
-        return self._join(joined_model, on_clause, "OUTER",alias)
+    def full_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        return self._join(joined_model, on_clause, "OUTER", alias)
 
 class Join:
     model:Model

@@ -606,6 +606,8 @@ def test_docs_for_in_example():
 @epure()
 class Cat:
     color:str
+    nickname:str
+    lives:int
 
     @escript
     def get_orange_cats(self):
@@ -614,6 +616,12 @@ class Cat:
         res = self.resource.read(cat.color == "orange")
 
 def test_docs_cats_example():
+    
+    # @epure()
+    # class Cat:
+    #     color:str
+    #     nickname:str
+    #     lives:int
 
     cat = Cat()
     cat.save()
