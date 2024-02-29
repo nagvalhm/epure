@@ -637,7 +637,15 @@ class Model:
         
         pass
 
+    @escript
+    def test_code_ln_break(self):
+        model = self\
+                .dom\
+                .model
+
 def test_model_cls_case():
 
     model = Model()
     model.try_getting_model_model()
+
+
