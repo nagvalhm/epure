@@ -280,22 +280,32 @@ def _create_epure(cls, saver, _Epure):
 def proto(resource:object='', saver:type=Proto, epure_metaclass:type=Epure) -> Callable:
     return epure(resource, saver, epure_metaclass)
 
-def _get_func_br_lines(func_str) -> List[int]:
+def _get_func_br_lines(func_str:str) -> Dict[int, str]:
     
     code_src_splited = func_str.splitlines(True)
 
     src_lines_dict = dict(enumerate(code_src_splited))
 
-    br_lines_list = [k for k, v in src_lines_dict.items() if v=='\n' or ("#" in v and v.strip().startswith('#'))]
+    # br_lines_list = {k for k, v in src_lines_dict.items() if v=='\n' or v.endswith('\\\n') or ("#" in v and v.strip().startswith('#'))}
+    
+    br_lines_dict = {}
 
-    return br_lines_list
+    for key, val in src_lines_dict.items():
+        if val =='\n' or ("#" in val and val.strip().startswith('#')):
+            br_lines_dict[key] = "\n"
+        
+        elif val.endswith('\\\n'):
+            br_lines_dict[key] = "\\\n"
 
-def _insert_br_lines(func_str:str, br_lines_list:List[int]) -> str:
+
+    return br_lines_dict
+
+def _insert_br_lines(func_str:str, br_lines_dict:Dict[int, str]) -> str:
 
     new_func_list = func_str.splitlines(True)
 
-    for i in br_lines_list:
-        new_func_list.insert(i, '\n')
+    for num, br_char in br_lines_dict.items():
+        new_func_list.insert(num, br_char)
 
     func_str = "".join(new_func_list)
 
@@ -344,7 +354,7 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
 
     dedent_src = textwrap.dedent(func_source)
 
-    br_lines_list = _get_func_br_lines(dedent_src)
+    br_lines_dict = _get_func_br_lines(dedent_src)
 
     parsed_tree = InspectParser().parse(dedent_src)
 
@@ -352,7 +362,7 @@ def escript(func: Callable) -> Callable[[DecoratedCallable], DecoratedCallable]:
 
     new_func_str = ast.unparse(parsed_tree)
 
-    new_func_w_br_lines = _insert_br_lines(new_func_str, br_lines_list)
+    new_func_w_br_lines = _insert_br_lines(new_func_str, br_lines_dict)
 
     func_name = parsed_tree.body[0].name
 

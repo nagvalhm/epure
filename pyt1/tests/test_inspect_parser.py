@@ -638,14 +638,54 @@ class Model:
         pass
 
     @escript
-    def test_code_ln_break(self):
+    def test_code_ln_break_correct_debug(self):
         model = self\
                 .dom\
                 .model
+        
+        new_line_ch1 = "\n"
+
+        model2 = self\
+                .dom\
+                .model
+
+        new_line_ch2 = "\\n"
+
+        new_line_ch3 = "\\\n"
+
+        model3 = self\
+                .dom
+
+        new_line_ch4 = "\\\\n"
+
+    def test_code_ln_break_no_escript(self):
+        model = str(self)\
+                + "cattie"\
+                + "doggi"
+        
+        new_line_ch1 = "\n"
+
+        model = str(self)\
+                + "cattie"\
+                + "doggi"
+
+        new_line_ch2 = "\\n"
+
+        new_line_ch3 = "\\\n"
+
+        model = str(self)\
+                .__eq__("cattie")\
+                .__eq__(True)
+
+        new_line_ch1 = "\\\\n"
 
 def test_model_cls_case():
 
     model = Model()
+
     model.try_getting_model_model()
 
+    model.test_code_ln_break_correct_debug()
+
+    model.test_code_ln_break_no_escript()
 
