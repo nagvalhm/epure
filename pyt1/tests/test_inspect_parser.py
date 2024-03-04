@@ -610,18 +610,18 @@ class Cat:
     lives:int
 
     @escript
-    def get_orange_cats(self):
+    def get_cats(self):
         cat = self.dom.cat
         cat = self.md
-        res = self.resource.read(cat.color == "orange")
+        res = self.resource.read(cat.color == "orange" and cat.lives == 2)
 
 def test_docs_cats_example():
     
-    # @epure()
-    # class Cat:
-    #     color:str
-    #     nickname:str
-    #     lives:int
+    @epure()
+    class Cat:
+        tail:object
+        color:str
+        lives:int=9
 
     cat = Cat()
     cat.save()
