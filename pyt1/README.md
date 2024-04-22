@@ -7,9 +7,11 @@
 
 ---
 
-**Documentation**: <a href="https://epurelib.github.io/docs/" target="_blank">https://epurelib.github.io/latest/</a>
+**Documentation**: <a href="https://epurelib.github.io/latest/" target="_blank">https://epurelib.github.io/latest/</a>
 
 **Source Code**: <a href="https://github.com/nagvalhm/epure" target="_blank">https://github.com/nagvalhm/epure</a>
+
+**PyPI**: <a href="https://pypi.org/project/epure/" target="_blank">https://pypi.org/project/epure/</a>
 
 ---
 
@@ -37,4 +39,4 @@ Key features:
     Please refer to our official documentation! 
 </p>
 
-<p align="center" style="font-size: 1.5rem"> <a href="https://github.com/nagvalhm/epure" target="_blank">https://epurelib.github.io/latest/</a></p>
+<p align="center" style="font-size: 1.5rem"> <a href="https://epurelib.github.io/latest/" target="_blank">https://epurelib.github.io/latest/</a></p>
