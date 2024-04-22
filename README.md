@@ -12,6 +12,7 @@
 **Source Code**: <a href="https://github.com/nagvalhm/epure" target="_blank">https://github.com/nagvalhm/epure</a>
 
 **PyPI**: <a href="https://pypi.org/project/epure/" target="_blank">https://pypi.org/project/epure/</a>
+
 ---
 
 Epure is python type-hints based ORM - you can store and retrieve data having no idea about database, table and columns. 
