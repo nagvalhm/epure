@@ -71,24 +71,28 @@ def foo2():
 def test_two_joins(self):
     model = self.md
     domain = self.dom
-    test_order_tp = domain.test_order
-    test_office_tp = domain.test_shippment_office
+    test_order_model = domain.test_order
+
+    # test_office_model = domain.test_shippment_office
+    # or
+    test_office_model = self.get_model(TestShippmentOffice)
+
     lst = ["bde"]
     
-    join_res = model.join(test_order_tp, model.data_id == test_order_tp.test_customer_id)
+    join_res = model.join(test_order_model, model.data_id == test_order_model.test_customer_id)
 
-    join_res = join_res.join(test_office_tp, test_order_tp.office_id == test_office_tp.data_id)
+    join_res = join_res.join(test_office_model, test_order_model.office_id == test_office_model.data_id)
 
     lst = ["bde"]
 
     query = model.name in ("abc","def") and model.name in lst
     
 
-    res_header = join_res.read([test_office_tp.adress, model.name, model, test_order_tp, model.country], test_office_tp.adress == "Washington str.") # header
+    res_header = join_res.read([test_office_model.adress, model.name, model, test_order_model, model.country], test_office_model.adress == "Washington str.") # header
 
     # res_header = join_res.read([md.country], test_office_tp.adress == "Washington str.") # header country
 
-    res_no_header = join_res.read(test_office_tp.adress == "Washington str.") # no header
+    res_no_header = join_res.read(test_office_model.adress == "Washington str.") # no header
 
     res_empty = join_res.read() # no header no on_clause
 

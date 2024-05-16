@@ -74,7 +74,7 @@ class TableData(EData):
     resource:Savable
 
     def __init__(self, data_id:object=None, resource:Resource=None, **kwargs) -> None:
-        if data_id != None and isinstance(data_id, str):
+        if data_id != None and is_uuid(data_id):
             data_id = UUID(data_id)
 
         if not isinstance(data_id, UUID):
