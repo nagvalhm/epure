@@ -27,6 +27,7 @@ class GresDb(Db):
     nosql_table_type: Type[Table] = JsonbTable
     default_namespace:str='Public'
     log_level:int = logging.NOTSET
+    esc_char_dict:dict = {r"\\":"\\", "'":"''", '"':'""', "%":"\%"}
 
 
     def __init__(self, connect_str:str='', database:str='', user:str='', password:str='',

@@ -428,6 +428,8 @@ def test_inspect_parser_like_comp_etc():
     maten.save()
     vic = InspectParserTestCls2("\%Victor", "Volben", 50)
     vic.save()
+    vic = InspectParserTestCls2("\%%Victor", "Volben", 50)
+    vic.save()
     vic = InspectParserTestCls2("Diamond'", "Novak", 50)
     vic.save()
 
