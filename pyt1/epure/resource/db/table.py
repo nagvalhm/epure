@@ -174,7 +174,7 @@ class Table(DbEntity):
 
         # res = self.serialize_read(header=header, joins=[], where_clause=where_clause, full_names=True)
         res = self.select(header, where_clause, joins=joins,include_data_id=True, **kwargs)
-        res = res.replace(r"\\","\\")
+        # res = res.replace(r"\\","\\")
         return self.read_by_sql(res)
 
         raise NotImplementedError(f'couldn read by object of type {type(args)}')

@@ -134,6 +134,17 @@ class GresDb(Db):
         return result
 
 
+    def has_esc_ch(self, string:str) -> bool:
+        for esc_ch in self.esc_char_dict.keys():
+            if esc_ch in string:
+                return True
+        return False
+
+
+    def translate_esc_chrs(self, string:str) -> str:
+        for esc_ch, key in self.esc_char_dict.items():
+            string = string.replace(esc_ch, key)
+        return string
 
 
     def _deserialize_table_name(self, table_columns:list) -> FullName:
@@ -224,8 +235,15 @@ class GresDb(Db):
             return 'NULL'
         if py_type in (int, float, bool):
             return str(val)
-        if py_type in (str, UUID):
+        if py_type == UUID:
             res = f"'{str(val)}'"
+            return res
+        if py_type == str:
+            if self.has_esc_ch(val): # avoid errors with escape sequences
+                val = self.translate_esc_chrs(val)
+                res = f"E'{str(val)}'" # mark that its str with escape char(s)
+            else:
+                res = f"'{str(val)}'"
             return res
         if py_type in (bytes, bytearray):        
             val = val.decode()
