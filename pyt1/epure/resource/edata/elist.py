@@ -434,7 +434,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         return iter([item.value for item in it_obj])
     
     def update(self, *s: Iterable, **kwargs:[UUID, UUID]) -> None:
-
+        """
+        Add items to Eset instance from an iterable
+        """
         fin_res = []
         if kwargs["ids_dict"]:
             for ind, _iterable in enumerate(s):
