@@ -318,6 +318,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         return super(self.__class__, self).discard(el)
     
     def clear(self) -> None:
+        """
+        Clear Eset from elements
+        """
         entries = self.copy()
         self.deleted_entries.extend(entries)
         return super(self.__class__, self).clear()
