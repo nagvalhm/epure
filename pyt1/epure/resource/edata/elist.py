@@ -265,7 +265,9 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
         super(self.__class__, self).add(res)
 
     def save(self, asynch:bool=False) -> Elist:
-            
+        """
+        Save all items stored in Eset, if asynch=True is passed - Eset will be saved asynchronously
+        """
         if not hasattr(self, "data_id") or not self.data_id:
             self.data_id = uuid4()
 
