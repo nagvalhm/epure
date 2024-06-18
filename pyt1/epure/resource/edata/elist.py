@@ -40,7 +40,9 @@ class Elist(TableData, List, metaclass=ECollectionMetacls):
         return cls.collection_epure
 
     def save(self, asynch:bool=False) -> Elist:
-            
+        """
+        Save all items stored in Elist, if asynch=True is passed - Elist will be saved asynchronously
+        """
         if not hasattr(self,"data_id") or not self.data_id:
             self.data_id = uuid4()
 
