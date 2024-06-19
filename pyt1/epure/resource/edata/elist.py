@@ -361,7 +361,8 @@ class Eset(set, TableData, metaclass=ECollectionMetacls):
 
 
     @classmethod
-    def get_collection_epure(cls, table=None, parent_obj=None, field_name=None):        
+    def get_collection_epure(cls, table=None, parent_obj=None, field_name=None):
+        """Get Epure class from Eset"""        
         from .edata import EsetTableData
 
         if table != None:
