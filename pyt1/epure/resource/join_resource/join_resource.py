@@ -8,15 +8,19 @@ if TYPE_CHECKING:
 class JoinMethods:
     
     def left_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        """Left Join table on on_clause"""
         return self._join(joined_model, on_clause, "LEFT", alias)
 
     def right_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        """Right Join table on on_clause"""
         return self._join(joined_model, on_clause, "RIGHT", alias)
 
     def join(self, joined_model:Model, on_clause:str, alias:str=""):
+        """Inner Join table on on_clause, considered as default"""
         return self._join(joined_model, on_clause, "", alias)
 
     def full_join(self, joined_model:Model, on_clause:str, alias:str=""):
+        """Outer Join table on on_clause"""
         return self._join(joined_model, on_clause, "OUTER", alias)
 
 class Join:
