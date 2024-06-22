@@ -51,7 +51,7 @@ class JoinResource(JoinMethods):
         return res
 
     def read(self, *args, **kwargs):
-
+        """Get items from JoinResource object using where clause"""
         # header = []
         where_clause = ""
 
