@@ -125,12 +125,12 @@ class GresDb(Db):
         result = []
         with psycopg2.connect(**self.params) as connection:
             with connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                cursor.execute(script)
-                if cursor.rowcount > 0:
-                    try:
+                try:
+                    cursor.execute(script)
+                    if cursor.rowcount > 0:
                         result = cursor.fetchall()
-                    except psycopg2.ProgrammingError as err:
-                        self.logger.info(err)
+                except psycopg2.ProgrammingError as err:
+                    self.logger.info(err)
 
         return result
 
@@ -236,7 +236,7 @@ class GresDb(Db):
             return 'NULL'
         if py_type in (int, float, bool):
             return str(val)
-        if py_type == UUID:
+        if py_type in (UUID, datetime):
             res = f"'{str(val)}'"
             return res
         if py_type == str:
@@ -268,6 +268,7 @@ class GresDb(Db):
         UUID: 'uuid',
         bool: 'boolean',
         Any: 'jsonb',
+        datetime: 'timestamp',
 
         #bytea siblings
         bytes: 'bytea',
@@ -308,7 +309,9 @@ class GresDb(Db):
         'regproc': str, #sql procidure name
         'regtype': str, #sql type name
         'timestamp' : datetime,
+        'timestamp without time zone': datetime,
         'timestamp with time zone': datetime,
+        'timestamptz' : datetime,
         'time' : datetime,
         'time with time zone' : datetime,
         'double precision': float,
